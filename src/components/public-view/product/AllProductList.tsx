@@ -1,0 +1,576 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import React, { useState, useCallback } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import {
+  LayoutGrid,
+  LayoutList,
+  ChevronDown,
+  ChevronRight,
+  SlidersHorizontal,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+import { useGetAllProductsQuery } from "@/redux/features/product/product.api";
+import { useGetAllCategoriesQuery } from "@/redux/features/category/category.api";
+import { useGetAllBrandsQuery } from "@/redux/features/brand/brand.api";
+import CategoryByProductCard from "@/components/public-view/common/CategoryByProductCard";
+import ProductSkeleton from "@/components/public-view/common/ProductSkeleton";
+import { IProduct } from "@/types";
+
+const PRICE_MIN = 0;
+const PRICE_MAX = 10000;
+
+const SORT_OPTIONS = [
+  { value: "default", label: "Default sorting" },
+  { value: "-createdAt", label: "Newest first" },
+  { value: "price", label: "Price: Low → High" },
+  { value: "-price", label: "Price: High → Low" },
+  { value: "-totalSold", label: "Popularity" },
+  { value: "-ratings", label: "Rating" },
+];
+
+function ShopPagination({
+  page,
+  totalPages,
+  onPage,
+}: {
+  page: number;
+  totalPages: number;
+  onPage: (p: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  const pages: number[] = [];
+  const range = 2;
+  for (
+    let i = Math.max(1, page - range);
+    i <= Math.min(totalPages, page + range);
+    i++
+  )
+    pages.push(i);
+
+  return (
+    <div className="flex items-center justify-center gap-1 mt-10">
+      {/* Prev */}
+      <button
+        onClick={() => onPage(page - 1)}
+        disabled={page === 1}
+        className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-sm text-gray-600 disabled:opacity-40 hover:border-amber-400 hover:text-amber-600 dark:border-gray-700 dark:text-gray-400 transition-colors"
+      >
+        ‹
+      </button>
+
+      {pages[0] > 1 && (
+        <>
+          <button
+            onClick={() => onPage(1)}
+            className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-sm text-gray-600 hover:border-amber-400 hover:text-amber-600 dark:border-gray-700 dark:text-gray-400 transition-colors"
+          >
+            1
+          </button>
+          {pages[0] > 2 && <span className="text-gray-400 px-1">…</span>}
+        </>
+      )}
+
+      {pages.map((p) => (
+        <button
+          key={p}
+          onClick={() => onPage(p)}
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded-md border text-sm font-medium transition-colors",
+            p === page
+              ? "border-amber-500 bg-amber-500 text-white"
+              : "border-gray-200 text-gray-600 hover:border-amber-400 hover:text-amber-600 dark:border-gray-700 dark:text-gray-400",
+          )}
+        >
+          {p}
+        </button>
+      ))}
+
+      {pages[pages.length - 1] < totalPages && (
+        <>
+          {pages[pages.length - 1] < totalPages - 1 && (
+            <span className="text-gray-400 px-1">…</span>
+          )}
+          <button
+            onClick={() => onPage(totalPages)}
+            className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-sm text-gray-600 hover:border-amber-400 hover:text-amber-600 dark:border-gray-700 dark:text-gray-400 transition-colors"
+          >
+            {totalPages}
+          </button>
+        </>
+      )}
+
+      {/* Next */}
+      <button
+        onClick={() => onPage(page + 1)}
+        disabled={page === totalPages}
+        className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-sm text-gray-600 disabled:opacity-40 hover:border-amber-400 hover:text-amber-600 dark:border-gray-700 dark:text-gray-400 transition-colors"
+      >
+        ›
+      </button>
+    </div>
+  );
+}
+
+function SidebarContent({
+  priceRange,
+  onPriceChange,
+  onPriceApply,
+  brands,
+  selectedBrand,
+  onBrandChange,
+}: {
+  priceRange: [number, number];
+  onPriceChange: (v: [number, number]) => void;
+  onPriceApply: () => void;
+  brands: any[];
+  selectedBrand: string;
+  onBrandChange: (id: string) => void;
+}) {
+  const [brandsOpen, setBrandsOpen] = useState(true);
+
+  return (
+    <div className="space-y-6">
+      {/* Filter By Price */}
+      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+        <h3 className="mb-4 text-sm font-bold text-gray-900 dark:text-gray-50">
+          Filter By Price
+        </h3>
+        <Slider
+          min={PRICE_MIN}
+          max={PRICE_MAX}
+          step={50}
+          value={priceRange}
+          onValueChange={(v: any) => onPriceChange(v as [number, number])}
+          className="mb-4"
+        />
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            Price:{" "}
+            <span className="font-semibold text-gray-900 dark:text-gray-50">
+              ৳ {priceRange[0]}
+            </span>
+            {" — "}
+            <span className="font-semibold text-gray-900 dark:text-gray-50">
+              ৳ {priceRange[1]}
+            </span>
+          </p>
+          <Button
+            size="sm"
+            onClick={onPriceApply}
+            className="h-7 rounded-full bg-amber-500 px-3 text-xs text-white hover:bg-amber-600"
+          >
+            Filter
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter By Brands */}
+      <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 overflow-hidden">
+        <button
+          onClick={() => setBrandsOpen((b) => !b)}
+          className="flex w-full items-center justify-between p-4 text-sm font-bold text-gray-900 dark:text-gray-50"
+        >
+          Filter By Brands
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 text-gray-400 transition-transform",
+              brandsOpen && "rotate-180",
+            )}
+          />
+        </button>
+
+        {brandsOpen && (
+          <div className="border-t border-gray-100 px-4 pb-4 dark:border-gray-800 space-y-1.5 pt-3">
+            <button
+              onClick={() => onBrandChange("")}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors",
+                !selectedBrand
+                  ? "text-amber-600 font-semibold"
+                  : "text-gray-600 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400",
+              )}
+            >
+              All Brands
+            </button>
+            {brands.map((brand: any) => (
+              <button
+                key={brand._id}
+                onClick={() => onBrandChange(brand._id)}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors",
+                  selectedBrand === brand._id
+                    ? "text-amber-600 font-semibold"
+                    : "text-gray-600 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400",
+                )}
+              >
+                <ChevronRight className="h-3 w-3 shrink-0" />
+                {brand.title}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function AllProductList() {
+  const searchParams = useSearchParams();
+
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(12);
+  const [sort, setSort] = useState("default");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    PRICE_MIN,
+    PRICE_MAX,
+  ]);
+  const [appliedPrice, setAppliedPrice] = useState<[number, number]>([
+    PRICE_MIN,
+    PRICE_MAX,
+  ]);
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const searchQuery = searchParams.get("search") ?? "";
+
+  const queryArgs: any = {
+    page,
+    limit: perPage,
+    ...(sort !== "default" && { sort }),
+    ...(searchQuery && { searchTerm: searchQuery }),
+    ...(selectedBrand && { brand: selectedBrand }),
+    ...(selectedCategory && { category: selectedCategory }),
+    ...(appliedPrice[0] > PRICE_MIN && { "price[gte]": appliedPrice[0] }),
+    ...(appliedPrice[1] < PRICE_MAX && { "price[lte]": appliedPrice[1] }),
+  };
+
+  const {
+    data: productsData,
+    isLoading,
+    isError,
+  } = useGetAllProductsQuery(queryArgs);
+  const { data: categoriesData } = useGetAllCategoriesQuery({ limit: 100 });
+  const { data: brandsData } = useGetAllBrandsQuery({ limit: 100 });
+
+  const products: IProduct[] = productsData?.data ?? [];
+  const totalCount = productsData?.meta?.total ?? 0;
+  const totalPages =
+    productsData?.meta?.totalPage ?? Math.ceil(totalCount / perPage);
+  const categories = categoriesData?.data ?? [];
+  const brands = brandsData?.data ?? [];
+
+  const handlePriceApply = useCallback(() => {
+    setAppliedPrice(priceRange);
+    setPage(1);
+  }, [priceRange]);
+
+  const handleBrandChange = (id: string) => {
+    setSelectedBrand(id);
+    setPage(1);
+  };
+
+  const handleCategoryClick = (slug: string) => {
+    setSelectedCategory((prev) => (prev === slug ? "" : slug));
+    setPage(1);
+  };
+
+  const showing1 = (page - 1) * perPage + 1;
+  const showing2 = Math.min(page * perPage, totalCount);
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-gray-950">
+      <div className="mx-auto max-w-350 px-4 py-6 sm:px-6 lg:px-8">
+        {/* ── Breadcrumb + count ── */}
+        <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <nav className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+            <Link
+              href="/"
+              className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+            >
+              Home
+            </Link>
+            <span>/</span>
+            <span className="font-medium text-gray-900 dark:text-gray-50">
+              Shop
+            </span>
+            {searchQuery && (
+              <>
+                <span>/</span>
+                <span className="font-medium text-amber-600 dark:text-amber-400">
+                  &quot;{searchQuery}&quot;
+                </span>
+              </>
+            )}
+          </nav>
+          {totalCount > 0 && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Showing {showing1}–{showing2} of {totalCount} results
+            </p>
+          )}
+        </div>
+
+        {/* ── Category scroll row ── */}
+        {categories.length > 0 && (
+          <div className="mb-6 overflow-x-auto">
+            <div
+              className="flex gap-4 pb-2"
+              style={{ minWidth: "max-content" }}
+            >
+              {categories.map((cat: any) => (
+                <button
+                  key={cat?.slug}
+                  onClick={() => handleCategoryClick(cat.slug)}
+                  className={cn(
+                    "flex flex-col items-center gap-2 rounded-xl p-3 text-center transition-all duration-200 min-w-22.5",
+                    selectedCategory === cat.slug
+                      ? "bg-amber-50 ring-2 ring-amber-400 dark:bg-amber-900/20"
+                      : "bg-gray-50 hover:bg-amber-50/60 dark:bg-gray-900 dark:hover:bg-amber-900/10",
+                  )}
+                >
+                  {/* Category image */}
+                  {/* <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+                    {cat.image?.[0] ? (
+                      <Image src={cat.image[0] ?? ""} alt={cat.title ?? ""} fill priority quality={90} sizes="64px" className="object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-gray-300 text-xs">?</div>
+                    )}
+                  </div> */}
+                  <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 leading-tight">
+                    {cat.title}
+                  </p>
+                  {cat.productCount !== undefined && (
+                    <p className="text-[10px] text-gray-400">
+                      {cat.productCount} products
+                    </p>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Main layout: Sidebar + Products ── */}
+        <div className="flex gap-6">
+          {/* ── Desktop Sidebar ── */}
+          <aside className="hidden lg:block w-52 xl:w-60 shrink-0 space-y-4">
+            <SidebarContent
+              priceRange={priceRange}
+              onPriceChange={setPriceRange}
+              onPriceApply={handlePriceApply}
+              brands={brands}
+              selectedBrand={selectedBrand}
+              onBrandChange={handleBrandChange}
+            />
+          </aside>
+
+          {/* ── Products area ── */}
+          <div className="flex-1 min-w-0">
+            {/* ── Shop header bar ── */}
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-bold text-gray-900 dark:text-gray-50">
+                  Shop
+                </h1>
+
+                {/* Mobile filter trigger */}
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="lg:hidden gap-1.5 rounded-lg text-xs h-8"
+                    >
+                      <SlidersHorizontal className="h-3.5 w-3.5" />
+                      Filters
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-72 p-4">
+                    <h2 className="mb-4 text-base font-bold">Filters</h2>
+                    <SidebarContent
+                      priceRange={priceRange}
+                      onPriceChange={setPriceRange}
+                      onPriceApply={handlePriceApply}
+                      brands={brands}
+                      selectedBrand={selectedBrand}
+                      onBrandChange={handleBrandChange}
+                    />
+                  </SheetContent>
+                </Sheet>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Show per page */}
+                <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                  <span>Show:</span>
+                  {[9, 12, 18, 24].map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => {
+                        setPerPage(n);
+                        setPage(1);
+                      }}
+                      className={cn(
+                        "h-7 w-7 rounded text-xs font-medium transition-colors",
+                        perPage === n
+                          ? "bg-amber-500 text-white"
+                          : "text-gray-600 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400",
+                      )}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+
+                {/* View toggles */}
+                <div className="flex items-center gap-1 rounded-lg border border-gray-200 p-0.5 dark:border-gray-700">
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={cn(
+                      "rounded p-1.5 transition-colors",
+                      viewMode === "list"
+                        ? "bg-amber-500 text-white"
+                        : "text-gray-400 hover:text-amber-500",
+                    )}
+                  >
+                    <LayoutList className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={cn(
+                      "rounded p-1.5 transition-colors",
+                      viewMode === "grid"
+                        ? "bg-amber-500 text-white"
+                        : "text-gray-400 hover:text-amber-500",
+                    )}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </button>
+                  {/* 3-col grid icon */}
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className="rounded p-1.5 text-gray-300 hover:text-amber-500 transition-colors"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                    >
+                      <rect x="0" y="0" width="4" height="4" rx="0.5" />
+                      <rect x="6" y="0" width="4" height="4" rx="0.5" />
+                      <rect x="12" y="0" width="4" height="4" rx="0.5" />
+                      <rect x="0" y="6" width="4" height="4" rx="0.5" />
+                      <rect x="6" y="6" width="4" height="4" rx="0.5" />
+                      <rect x="12" y="6" width="4" height="4" rx="0.5" />
+                      <rect x="0" y="12" width="4" height="4" rx="0.5" />
+                      <rect x="6" y="12" width="4" height="4" rx="0.5" />
+                      <rect x="12" y="12" width="4" height="4" rx="0.5" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Sort */}
+                <Select
+                  value={sort}
+                  onValueChange={(v) => {
+                    setSort(v);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-44 rounded-lg border-gray-200 bg-gray-50/60 text-xs dark:border-gray-700 dark:bg-gray-800/60">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {SORT_OPTIONS.map((o) => (
+                      <SelectItem
+                        key={o.value}
+                        value={o.value}
+                        className="cursor-pointer text-sm"
+                      >
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* ── Product grid ── */}
+            {isLoading ? (
+              <ProductSkeleton />
+            ) : isError ? (
+              <p className="text-center text-red-500 py-12">
+                Something went wrong. Please try again.
+              </p>
+            ) : products.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+                <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                  No products found
+                </p>
+                <p className="text-sm text-gray-400">
+                  Try adjusting your filters or search term
+                </p>
+                {(selectedBrand ||
+                  selectedCategory ||
+                  appliedPrice[0] > PRICE_MIN ||
+                  appliedPrice[1] < PRICE_MAX) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedBrand("");
+                      setSelectedCategory("");
+                      setPriceRange([PRICE_MIN, PRICE_MAX]);
+                      setAppliedPrice([PRICE_MIN, PRICE_MAX]);
+                      setPage(1);
+                    }}
+                    className="mt-2 rounded-full"
+                  >
+                    Clear all filters
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  "grid gap-4",
+                  viewMode === "grid"
+                    ? "grid-cols-2 sm:grid-cols-3 xl:grid-cols-4"
+                    : "grid-cols-1",
+                )}
+              >
+                {products.map((product) => (
+                  <CategoryByProductCard key={product._id} product={product} />
+                ))}
+              </div>
+            )}
+
+            {/* ── Pagination ── */}
+            <ShopPagination
+              page={page}
+              totalPages={totalPages}
+              onPage={(p) => {
+                setPage(p);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
