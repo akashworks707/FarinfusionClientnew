@@ -95,8 +95,6 @@ export function OrderRowActions({
 
   const sellerOptions = users?.data ?? [];
 
-  console.log("staffs ",  sellerOptions)
-
   const currentSellerName =
     (order.seller as any)?.name ??
     sellerOptions.find((u) => u._id === order.seller)?.name ??
