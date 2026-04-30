@@ -307,6 +307,9 @@ export default function DashboardOverview() {
     isError,
   } = useGetDashboardOverviewQuery(queryParams);
   const data: IDashboardOverview | undefined = overviewRes?.data;
+   
+  const commissionSalary = me?.data?.commissionSalary || 20
+  const totalCommission = (data?.orderStats?.COMPLETED as number) * commissionSalary;
 
   const applyPreset = (preset: (typeof PRESETS)[number]) => {
     const { from, to } = preset.get();
@@ -355,23 +358,23 @@ export default function DashboardOverview() {
 
   const orderStatsChartData = data
     ? [
-        { name: "Pending", value: data?.orderStats?.PENDING, fill: "#f59e0b" },
-        {
-          name: "Confirmed",
-          value: data?.orderStats?.CONFIRMED,
-          fill: "#10b981",
-        },
-        {
-          name: "Completed",
-          value: data?.orderStats?.COMPLETED,
-          fill: "#8b5cf6",
-        },
-        {
-          name: "Cancelled",
-          value: data?.orderStats?.CANCELLED,
-          fill: "#ef4444",
-        },
-      ]
+      { name: "Pending", value: data?.orderStats?.PENDING, fill: "#f59e0b" },
+      {
+        name: "Confirmed",
+        value: data?.orderStats?.CONFIRMED,
+        fill: "#10b981",
+      },
+      {
+        name: "Completed",
+        value: data?.orderStats?.COMPLETED,
+        fill: "#8b5cf6",
+      },
+      {
+        name: "Cancelled",
+        value: data?.orderStats?.CANCELLED,
+        fill: "#ef4444",
+      },
+    ]
     : [];
 
   const staffBarData = useMemo(() => {
@@ -666,7 +669,7 @@ export default function DashboardOverview() {
               "grid gap-4",
               isAdmin
                 ? "grid-cols-2 lg:grid-cols-4"
-                : "grid-cols-2 sm:grid-cols-2",
+                : "grid-cols-2 sm:grid-cols-3",
             )}
           >
             <StatCard
@@ -678,6 +681,13 @@ export default function DashboardOverview() {
             <StatCard
               label="Total Revenue"
               value={`৳${data.totalRevenue}`}
+              icon={TrendingUp}
+              accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+              sub="All confirmed payments"
+            />
+            <StatCard
+              label="Total Commission"
+              value={`৳${totalCommission}`}
               icon={TrendingUp}
               accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
               sub="All confirmed payments"
@@ -995,13 +1005,13 @@ export default function DashboardOverview() {
                       <p className="shrink-0 text-xs text-gray-400 dark:text-gray-500">
                         {order.createdAt
                           ? new Date(order.createdAt).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )
                           : "—"}
                       </p>
                     </div>
