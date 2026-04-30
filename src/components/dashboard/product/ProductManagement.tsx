@@ -508,7 +508,7 @@ export default function ProductManagement() {
           }
         />
         <StatCard
-          label={dateChipLabel ? "Sold (Period)" : "Units Sold"}
+          label={dateChipLabel ? "Sold (Period)" : "Units Sold Completed"}
           value={totalSold.toLocaleString()}
           sub={dateChipLabel ? dateChipLabel : "across all products"}
           icon={ShoppingCart}
