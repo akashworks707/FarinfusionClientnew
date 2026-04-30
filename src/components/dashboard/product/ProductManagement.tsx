@@ -93,6 +93,7 @@ import { cn } from "@/lib/utils";
 import { useGetMeQuery } from "@/redux/features/user/user.api";
 
 const LIMIT = 10;
+const allProductLimit = 5000;
 
 const PRESETS = [
   {
@@ -318,27 +319,31 @@ export default function ProductManagement() {
     limit: LIMIT,
   });
 
-  const rawProducts: IProduct[] = data?.data ?? [];
+
+  const { data: allPro } = useGetAllProductsQuery({ limit: allProductLimit });
+
+  const allProducts = allPro?.data ?? [];
+  const rawProducts: IProduct[] = data?.data ?? []; 
   const meta = data?.meta;
   const totalCount = meta?.total ?? rawProducts.length;
   const totalPages = meta?.totalPage ?? Math.ceil(totalCount / LIMIT);
 
-  const activeCount = rawProducts.filter((p) => p.status === "ACTIVE").length;
-  const outOfStock = rawProducts.filter(
+  const activeCount = allProducts.filter((p) => p.status === "ACTIVE").length;
+  const outOfStock = allProducts.filter(
     (p) => (p.availableStock ?? 0) === 0,
   ).length;
-  const totalSold = rawProducts.reduce((s, p) => s + (p.totalSold ?? 0), 0);
+  const totalSold = allProducts.reduce((s, p) => s + (p.totalSold ?? 0), 0);
 
   const products = clientSort
     ? [...rawProducts].sort((a, b) => {
-        const av = (a as any)[clientSort.key] ?? 0;
-        const bv = (b as any)[clientSort.key] ?? 0;
-        if (typeof av === "string")
-          return clientSort.dir === "asc"
-            ? av.localeCompare(bv)
-            : bv.localeCompare(av);
-        return clientSort.dir === "asc" ? av - bv : bv - av;
-      })
+      const av = (a as any)[clientSort.key] ?? 0;
+      const bv = (b as any)[clientSort.key] ?? 0;
+      if (typeof av === "string")
+        return clientSort.dir === "asc"
+          ? av.localeCompare(bv)
+          : bv.localeCompare(av);
+      return clientSort.dir === "asc" ? av - bv : bv - av;
+    })
     : rawProducts;
 
   const handleClientSort = (key: string) => {
@@ -485,14 +490,14 @@ export default function ProductManagement() {
           sub={dateChipLabel ? `in ${dateChipLabel}` : undefined}
         />
         <StatCard
-          label="Active"
+          label="Active Products"
           value={activeCount}
           sub={`${totalCount ? Math.round((activeCount / totalCount) * 100) : 0}% of total`}
           icon={CheckCircle2}
           accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
         />
         <StatCard
-          label="Out of Stock"
+          label="Out Of Stock Products"
           value={outOfStock}
           sub="needs restocking"
           icon={Boxes}
@@ -505,7 +510,7 @@ export default function ProductManagement() {
         <StatCard
           label={dateChipLabel ? "Sold (Period)" : "Units Sold"}
           value={totalSold.toLocaleString()}
-          sub={dateChipLabel ? dateChipLabel : "across current page"}
+          sub={dateChipLabel ? dateChipLabel : "across all products"}
           icon={ShoppingCart}
           accent="bg-violet-50 text-violet-600 dark:bg-violet-900/20 dark:text-violet-400"
         />
@@ -880,8 +885,8 @@ export default function ProductManagement() {
                         className={cn(
                           "py-3 text-[10px] font-bold uppercase tracking-widest text-amber-700/60 dark:text-amber-500/60 px-3",
                           col.sortable &&
-                            col.key &&
-                            "cursor-pointer select-none hover:text-amber-700 dark:hover:text-amber-400 transition-colors",
+                          col.key &&
+                          "cursor-pointer select-none hover:text-amber-700 dark:hover:text-amber-400 transition-colors",
                           col.cls,
                         )}
                       >
@@ -1134,7 +1139,7 @@ export default function ProductManagement() {
                       className={cn(
                         "cursor-pointer",
                         page === pageNum &&
-                          "border-amber-400 text-amber-700 bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:bg-amber-900/20",
+                        "border-amber-400 text-amber-700 bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:bg-amber-900/20",
                       )}
                     >
                       {pageNum}
