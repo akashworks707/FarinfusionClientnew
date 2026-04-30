@@ -8,7 +8,8 @@ import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 
 const ProductList = () => {
-  const { data, isLoading, isError } = useGetAllProductsQuery({});
+  const limit = 1000;
+  const { data, isLoading, isError } = useGetAllProductsQuery({limit});
 
   const productData = data?.data || [];
   const featuredData = productData.filter((item) => item.isFeatured);
