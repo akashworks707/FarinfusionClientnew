@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "../baseApi";
 import type {
@@ -11,7 +12,7 @@ interface GetAllOrdersResponse {
   success: boolean;
   data: Order[];
   totalCount: number;
-  stats?: {
+  stats: {
     total: number;
     PENDING: number;
     CONFIRMED: number;

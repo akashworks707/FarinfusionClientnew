@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -46,17 +47,14 @@ const UsersManagement = () => {
     limit,
   });
 
-  // Calculate stats
+  // Calculate stats - Use lifetime data from meta object
   const users = data?.data ?? [];
   const totalUsers = data?.meta?.total ?? 0;
-  const activeUsers = users.filter((u) => u.status === "active").length;
-  const newHires = users.filter((u) => {
-    const createdDate = new Date(u?.createdAt ?? "");
-    const monthAgo = new Date();
-    monthAgo.setMonth(monthAgo.getMonth() - 1);
-    return createdDate > monthAgo;
-  }).length;
-  const pendingApprovals = users.filter((u) => u.status === "pending").length;
+  
+  // Lifetime salary stats from backend meta (not paginated)
+  const totalSalary = data?.meta?.totalSalary ?? 0;
+  const totalFixedSalary = data?.meta?.totalFixedSalary ?? 0;
+  const totalSalaryByProduct = data?.meta?.totalSalaryByProduct ?? 0;
 
   // Modal states
   const [selectedUser, setSelectedUser] = React.useState<IUser | null>(null);
@@ -134,9 +132,9 @@ const UsersManagement = () => {
       {/* Stats Section */}
       <StaffManagementStats
         totalUsers={totalUsers}
-        activeUsers={activeUsers}
-        newHires={newHires}
-        pendingApprovals={pendingApprovals}
+        totalSalary={totalSalary}
+        totalFixedSalary={totalFixedSalary}
+        totalSalaryByProduct={totalSalaryByProduct}
         loading={isLoading}
       />
 

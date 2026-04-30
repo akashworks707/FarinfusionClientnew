@@ -1,3 +1,4 @@
+
 import { IRegisterResponse } from "@/types/auth.types";
 import { baseApi } from "../baseApi";
 import type {
@@ -5,14 +6,21 @@ import type {
   IUserApiResponse,
   IResponse,
   GetQueryParams,
-  IPaginationMeta,
 } from "@/types";
 import { ILead } from "@/types/lead.types";
 
 interface GetAllUsersResponse {
   success: boolean;
   data: IUser[];
-  meta: IPaginationMeta;
+  meta: {
+    total: number;
+    totalPage: number;
+
+    totalStaffs: number;
+    totalFixedSalary: number;
+    totalSalaryByProduct: number;
+    totalSalary: number;
+  };
 }
 
 export const userApi = baseApi.injectEndpoints({

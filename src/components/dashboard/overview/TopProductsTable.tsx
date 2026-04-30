@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -283,7 +284,10 @@ export function TopProductsTable({
           <TableBody>
             {paginatedData.map((product, idx) => {
               const displayIdx = startIdx + idx + 1;
-              const sellPrice = product.discountPrice ?? product.price;
+            const sellPrice =
+                product.discountPrice && product.discountPrice > 0
+                  ? product.discountPrice
+                  : product.price;
               const share =
                 totalPeriodSold > 0
                   ? Math.round(

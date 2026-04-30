@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -11,7 +12,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import { CourierInfo } from "./CourierInfo";
-import { User, Mail, Phone, MapPin, DollarSign, Clock } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  Car,
+} from "lucide-react";
 import type { Order } from "@/types/orders";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useGetCourierByOrderIdQuery } from "@/lib/hooks";
@@ -140,12 +148,21 @@ export function OrderDetailsModal({
                 ))}
               </div>
             </div>
+ <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Car className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Delivery Charge</span>
+                </div>
+                <p className="text-xl font-bold">৳{order?.shippingCost}</p>
+              </div>
+            </div>
 
             {/* Order Summary */}
             <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  
                   <span className="text-sm font-medium">Total Amount</span>
                 </div>
                 <p className="text-xl font-bold">৳{order?.total?.toFixed(2)}</p>
@@ -157,6 +174,8 @@ export function OrderDetailsModal({
                 </span>
               </div>
             </div>
+
+           
 
             {courier && <CourierInfo courier={courier} />}
           </div>
