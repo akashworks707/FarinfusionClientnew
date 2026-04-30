@@ -76,17 +76,6 @@ export function OrderRowActions({
     ["ADMIN", "MODERATOR", "MANAGER", "TELLICELSS"].includes(userRole) &&
     !order?.courierName;
 
-  // const isRoleAllowed =
-  //     ["ADMIN", "MANAGER", "TELLICELSS"].includes(userRole) ||
-  //     (userRole === "MODERATOR" && !isConfirmed);
-  //
-  // const canEdit =
-  //     userRole &&
-  //     isRoleAllowed &&
-  //     !order?.courierName &&
-  //     !isCompleted &&
-  //     !isDelivered;
-
   const hasAccess =
     userRole && ["ADMIN", "MANAGER", "TELLICELSS"].includes(userRole);
 
@@ -100,16 +89,13 @@ export function OrderRowActions({
     (order.seller as any)?._id ?? order.seller ?? "",
   );
   const [isSaving, setIsSaving] = useState(false);
-
-  const { data: users } = useGetAllUsersQuery({});
+  const limit = 150;
+  const { data: users } = useGetAllUsersQuery({limit});
   const [updateSeller] = useUpdateSellerMutation();
 
-  const sellerOptions =
-    users?.data?.filter((u) =>
-      ["ADMIN", "MANAGER", "TELLICELSS"].includes(
-        u.role?.toUpperCase?.() ?? "",
-      ),
-    ) ?? [];
+  const sellerOptions = users?.data ?? [];
+
+  console.log("staffs ",  sellerOptions)
 
   const currentSellerName =
     (order.seller as any)?.name ??
