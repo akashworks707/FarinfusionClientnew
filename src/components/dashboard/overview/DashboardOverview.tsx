@@ -286,6 +286,7 @@ export default function DashboardOverview() {
   const { data: me } = useGetMeQuery(undefined);
   const userRole = me?.data?.role?.toUpperCase() ?? "CUSTOMER";
   const isAdmin = userRole === "ADMIN";
+  const isModerator = userRole === "MODERATOR";
   const isManager = userRole === "MANAGER";
   const isStaff = ["MANAGER", "MODERATOR", "TELLICELSS"].includes(userRole);
   const isGeneralStaff = userRole === "GENERALSTAFF";
@@ -307,7 +308,7 @@ export default function DashboardOverview() {
     isError,
   } = useGetDashboardOverviewQuery(queryParams);
   const data: IDashboardOverview | undefined = overviewRes?.data;
-   
+
   const commissionSalary = me?.data?.commissionSalary || 20
   const totalCommission = (data?.orderStats?.COMPLETED as number) * commissionSalary;
 
@@ -668,8 +669,10 @@ export default function DashboardOverview() {
             className={cn(
               "grid gap-4",
               isAdmin
-                ? "grid-cols-2 lg:grid-cols-4"
-                : "grid-cols-2 sm:grid-cols-3",
+                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+                : isModerator
+                  ? "grid-cols-1 sm:grid-cols-3"
+                  : "grid-cols-2"
             )}
           >
             <StatCard
@@ -685,13 +688,16 @@ export default function DashboardOverview() {
               accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
               sub="All confirmed payments"
             />
-            <StatCard
-              label="Total Commission"
-              value={`৳${totalCommission}`}
-              icon={TrendingUp}
-              accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-              sub="All confirmed payments"
-            />
+            {
+
+              isModerator && <StatCard
+                label="Total Commission"
+                value={`৳${totalCommission}`}
+                icon={TrendingUp}
+                accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+                sub="All confirmed payments"
+              />
+            }
             {isAdmin && data.totalUsers !== undefined && (
               <StatCard
                 label="Total Users"
