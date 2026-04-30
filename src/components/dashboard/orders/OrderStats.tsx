@@ -1,16 +1,12 @@
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { ShoppingCart, Clock, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface OrderStatsProps {
-  stats: {
-    total: number;
-    PENDING: number;
-    CONFIRMED: number;
-    COMPLETED: number;
-    CANCELLED: number;
-  };
+  stats: any;
 }
 
 function StatCard({

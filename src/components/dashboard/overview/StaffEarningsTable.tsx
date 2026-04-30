@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -105,10 +106,10 @@ export function StaffEarningsTable({ staffEarnings, dateLabel }: StaffEarningsTa
                 <SortIcon active={sortKey === "sellerName"} dir={sortDir} />
               </TableHead>
               <TableHead className="text-[10px] font-bold uppercase tracking-widest text-amber-700/60 dark:text-amber-500/60">
-                Email
+                Phone
               </TableHead>
               <TableHead className="text-[10px] font-bold uppercase tracking-widest text-amber-700/60 dark:text-amber-500/60">
-                Total Shipping Cost
+                Total Order Value
               </TableHead>
               <TableHead
                 className="text-[10px] font-bold uppercase tracking-widest text-amber-700/60 dark:text-amber-500/60 cursor-pointer select-none text-center"
@@ -118,13 +119,13 @@ export function StaffEarningsTable({ staffEarnings, dateLabel }: StaffEarningsTa
                 <SortIcon active={sortKey === "totalOrders"} dir={sortDir} />
               </TableHead>
               <TableHead className="text-[10px] font-bold uppercase tracking-widest text-amber-700/60 dark:text-amber-500/60 text-right">
-                Avg / Order
+               Commission Per Product
               </TableHead>
               <TableHead
                 className="text-[10px] font-bold uppercase tracking-widest text-amber-700/60 dark:text-amber-500/60 text-right pr-5 cursor-pointer select-none"
                 onClick={() => handleSort("totalEarnings")}
               >
-                Revenue
+                Total Salary / Commission
                 <SortIcon active={sortKey === "totalEarnings"} dir={sortDir} />
               </TableHead>
             </TableRow>
@@ -140,7 +141,7 @@ export function StaffEarningsTable({ staffEarnings, dateLabel }: StaffEarningsTa
               const avatarHue = [...(staff.sellerName ?? "U")].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
 
               return (
-                <TableRow key={staff.sellerId}
+                <TableRow key={staff._id}
                   className={cn(
                     "border-b border-gray-100/80 dark:border-gray-800/60 transition-colors hover:bg-amber-50/30 dark:hover:bg-amber-900/5",
                     idx % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/30 dark:bg-gray-800/20",
@@ -175,14 +176,14 @@ export function StaffEarningsTable({ staffEarnings, dateLabel }: StaffEarningsTa
                       </div>
                     </div>
                   </TableCell>
-                  {/* Email */}
+                  {/* Phone */}
                   <TableCell className="text-xs text-gray-500 dark:text-gray-400 max-w-40 truncate">
-                    {staff.email}
+                    {staff.phone}
                   </TableCell>
 
-                  {/* Delivery Charge */}
+                  {/* Total Order Value */}
                   <TableCell className="text-xs text-gray-500 dark:text-gray-400 max-w-40 truncate">
-                   ৳{staff?.shippingCost}
+                    ৳{(staff?.totalOrderValue || 0).toLocaleString()}
                   </TableCell>
                   {/* Orders */}
                   <TableCell className="text-center">
@@ -192,11 +193,11 @@ export function StaffEarningsTable({ staffEarnings, dateLabel }: StaffEarningsTa
                     </Badge>
                   </TableCell>
                   {/* Avg */}
-                  <TableCell className="text-right text-xs font-semibold tabular-nums text-gray-600 dark:text-gray-400">
+                  <TableCell className="text-center text-xs font-semibold tabular-nums text-gray-600 dark:text-gray-400">
                     ৳{avg.toLocaleString()}
                   </TableCell>
                   {/* Revenue */}
-                  <TableCell className="text-right pr-5 font-bold tabular-nums text-amber-600 dark:text-amber-400">
+                  <TableCell className="text-center pr-5 font-bold tabular-nums text-amber-600 dark:text-amber-400">
                     ৳{staff.totalEarnings.toLocaleString()}
                   </TableCell>
                 </TableRow>

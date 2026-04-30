@@ -7,10 +7,13 @@ export interface IOrderStats {
 }
 
 export interface IStaffEarning {
+  _id: string
   sellerId: string;
   sellerName: string;
   email: string;
+  phone: number;
   totalOrders: number;
+  totalOrderValue: number;
   shippingCost: number;
   totalEarnings: number;
 }

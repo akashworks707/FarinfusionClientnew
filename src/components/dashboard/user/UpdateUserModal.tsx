@@ -1,3 +1,4 @@
+
 /* eslint-disable react-hooks/incompatible-library */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -443,7 +444,7 @@ export default function UpdateUserModal({
                         htmlFor="salary"
                         className="font-semibold text-foreground"
                       >
-                        Base Salary (Optional)
+                        Fixed Salary (Optional)
                       </Label>
                       <Input
                         id="salary"
@@ -466,7 +467,7 @@ export default function UpdateUserModal({
                         htmlFor="commissionSalary"
                         className="font-semibold text-foreground"
                       >
-                        Commission % (Optional)
+                        Per Product Commission (Optional)
                       </Label>
                       <Input
                         id="commissionSalary"
