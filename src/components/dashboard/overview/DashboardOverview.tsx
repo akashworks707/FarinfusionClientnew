@@ -1,3 +1,4 @@
+
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client";
 
@@ -68,6 +69,7 @@
 // import { StaffEarningsTable } from "./StaffEarningsTable";
 // import { TopProductsTable } from "./TopProductsTable";
 // import { ConfirmedProductsTable } from "./ConfirmedProductsTable";
+// import { RecentOrdersTable } from "./RecentOrdersTable";
 
 // const PRESETS = [
 //   {
@@ -188,12 +190,12 @@
 //     "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
 // };
 
-// const STATUS_ICON: Record<string, React.ElementType> = {
-//   PENDING: Clock,
-//   CONFIRMED: CheckCircle2,
-//   COMPLETED: CheckCircle2,
-//   CANCELLED: XCircle,
-// };
+// // const STATUS_ICON: Record<string, React.ElementType> = {
+// //   PENDING: Clock,
+// //   CONFIRMED: CheckCircle2,
+// //   COMPLETED: CheckCircle2,
+// //   CANCELLED: XCircle,
+// // };
 
 // function Skeleton({ className }: { className?: string }) {
 //   return (
@@ -308,9 +310,9 @@
 //     isError,
 //   } = useGetDashboardOverviewQuery(queryParams);
 //   const data: IDashboardOverview | undefined = overviewRes?.data;
-
 //   const commissionSalary = me?.data?.commissionSalary || 20
 //   const totalCommission = (data?.orderStats?.COMPLETED as number) * commissionSalary;
+
 
 //   const applyPreset = (preset: (typeof PRESETS)[number]) => {
 //     const { from, to } = preset.get();
@@ -688,6 +690,8 @@
 //               accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
 //               sub="All confirmed payments"
 //             />
+
+
 //             {
 
 //               isModerator && <StatCard
@@ -698,9 +702,11 @@
 //                 sub="All confirmed payments"
 //               />
 //             }
+
+
 //             {isAdmin && data.totalUsers !== undefined && (
 //               <StatCard
-//                 label="Total Users"
+//                 label="Total Staffs"
 //                 value={data.totalUsers}
 //                 icon={Users}
 //                 accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
@@ -709,7 +715,7 @@
 //             {isAdmin && (
 //               <>
 //                 <StatCard
-//                   label="Product Cost"
+//                   label="Total Buying Price"
 //                   value={`৳${(data as any).totalCost ?? 0}`}
 //                   icon={Package}
 //                   accent="bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
@@ -971,58 +977,7 @@
 //                 <Truck className="h-4 w-4 text-amber-500" />
 //               </div>
 //               <div className="divide-y divide-gray-100/80 dark:divide-gray-800/60">
-//                 {data.recentOrders.map((order: any, idx: number) => {
-//                   const StatusIcon = STATUS_ICON[order.orderStatus] ?? Clock;
-//                   return (
-//                     <div
-//                       key={order._id ?? idx}
-//                       className="flex flex-col gap-2 px-5 py-3.5 transition-colors hover:bg-amber-50/20 dark:hover:bg-amber-900/5 sm:flex-row sm:items-center sm:gap-4"
-//                     >
-//                       <p className="shrink-0 font-mono text-xs font-semibold text-gray-700 dark:text-gray-300">
-//                         {order.customOrderId
-//                           ? `#${order.customOrderId}`
-//                           : order._id?.slice(0, 10) + "…"}
-//                       </p>
-//                       <div className="flex-1 min-w-0">
-//                         <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-50">
-//                           {order.billingDetails?.fullName ??
-//                             order.customer?.name ??
-//                             "—"}
-//                         </p>
-//                         <p className="truncate text-xs text-gray-400 dark:text-gray-500">
-//                           {order.billingDetails?.email ??
-//                             order.customer?.email ??
-//                             ""}
-//                         </p>
-//                       </div>
-//                       <Badge
-//                         variant="outline"
-//                         className={cn(
-//                           "shrink-0 flex w-fit items-center gap-1.5 rounded-full border text-[10px] font-semibold",
-//                           STATUS_BADGE[order.orderStatus] ?? "",
-//                         )}
-//                       >
-//                         <StatusIcon className="h-3 w-3" />
-//                         {order.orderStatus}
-//                       </Badge>
-//                       <p className="shrink-0 font-bold tabular-nums text-amber-600 dark:text-amber-400">
-//                         ৳{order.total ?? "0"}
-//                       </p>
-//                       <p className="shrink-0 text-xs text-gray-400 dark:text-gray-500">
-//                         {order.createdAt
-//                           ? new Date(order.createdAt).toLocaleDateString(
-//                             "en-US",
-//                             {
-//                               month: "short",
-//                               day: "numeric",
-//                               year: "numeric",
-//                             },
-//                           )
-//                           : "—"}
-//                       </p>
-//                     </div>
-//                   );
-//                 })}
+//                 <RecentOrdersTable orders={data.recentOrders} />
 //               </div>
 //             </div>
 //           )}
@@ -1031,7 +986,6 @@
 //     </div>
 //   );
 // }
-
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -1097,7 +1051,10 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboard.api";
-import { useGetMeQuery } from "@/redux/features/user/user.api";
+import {
+  useGetAllUsersQuery,
+  useGetMeQuery,
+} from "@/redux/features/user/user.api";
 import { cn } from "@/lib/utils";
 import { IDashboardOverview } from "@/types/dashboard-overview";
 import { StaffEarningsTable } from "./StaffEarningsTable";
@@ -1347,6 +1304,8 @@ export default function DashboardOverview() {
   const commissionSalary = me?.data?.commissionSalary || 20
   const totalCommission = (data?.orderStats?.COMPLETED as number) * commissionSalary;
 
+
+  const { data: users } = useGetAllUsersQuery({});
 
   const applyPreset = (preset: (typeof PRESETS)[number]) => {
     const { from, to } = preset.get();
@@ -1724,8 +1683,6 @@ export default function DashboardOverview() {
               accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
               sub="All confirmed payments"
             />
-
-
             {
 
               isModerator && <StatCard
@@ -1736,8 +1693,6 @@ export default function DashboardOverview() {
                 sub="All confirmed payments"
               />
             }
-
-
             {isAdmin && data.totalUsers !== undefined && (
               <StatCard
                 label="Total Staffs"
@@ -1757,7 +1712,7 @@ export default function DashboardOverview() {
                 />
                 <StatCard
                   label="Staff Salary"
-                  value={`৳${(data as any).totalSalary.toFixed(0) ?? 0}`}
+                  value={`৳${users?.meta?.totalSalary ?? 0}`}
                   icon={Users}
                   accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
                   sub="Total salary paid"
@@ -2020,3 +1975,4 @@ export default function DashboardOverview() {
     </div>
   );
 }
+
