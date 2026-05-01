@@ -283,7 +283,6 @@ export default function ProductManagement() {
   const [toggleFeatured] = useToggleFeaturedMutation();
   const { data: user } = useGetMeQuery(undefined);
   const role = user?.data?.role;
-
   const [localSearch, setLocalSearch] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -323,7 +322,7 @@ export default function ProductManagement() {
   const { data: allPro } = useGetAllProductsQuery({ limit: allProductLimit });
 
   const allProducts = allPro?.data ?? [];
-  const rawProducts: IProduct[] = data?.data ?? []; 
+  const rawProducts: IProduct[] = data?.data ?? [];
   const meta = data?.meta;
   const totalCount = meta?.total ?? rawProducts.length;
   const totalPages = meta?.totalPage ?? Math.ceil(totalCount / LIMIT);
@@ -1077,6 +1076,7 @@ export default function ProductManagement() {
                               View Details
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                              disabled={role !== "ADMIN" && role !== "MANAGER"}
                               className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
                               onClick={() =>
                                 router.push(
@@ -1089,6 +1089,7 @@ export default function ProductManagement() {
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
+                              disabled={role !== "ADMIN" && role !== "MANAGER"}
                               className="gap-2 text-sm cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400"
                               onClick={() => {
                                 setDeleteTarget(product);

@@ -144,7 +144,7 @@ export function EditOrderModal({
     useGetAllProductsQuery(
       {
         search: debouncedSearch || undefined,
-        limit: 20,
+        limit: 500,
         page: 1,
       },
       {
