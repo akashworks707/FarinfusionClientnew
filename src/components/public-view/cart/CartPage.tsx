@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import EmptyCartList from "@/components/public-view/cart/EmptyCart";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function CartPage() {
   const router = useRouter();
@@ -26,10 +27,18 @@ export default function CartPage() {
   const cartItems = useSelector((state: RootState) => state.cart.items);
 
   // 🟡 Subtotal
-  const subtotal = cartItems.reduce(
-    (total, item) => total + (item?.discountPrice ?? 0) * item.quantity,
-    0,
-  );
+  const subtotal = cartItems.reduce((total, item) => {
+    const unitPrice =
+      item?.discountPrice && item.discountPrice > 0
+        ? item.discountPrice
+        : item.price;
+
+    return total + unitPrice * item.quantity;
+  }, 0);
+
+  if (cartItems.length === 0) {
+    return <EmptyCartList />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-6">
@@ -51,8 +60,10 @@ export default function CartPage() {
                 <ShoppingBag /> Clear All
               </Button>
               <Separator className={"my-5"} />
-              {cartItems.length > 0 ? (
-                cartItems.map((cartItem) => (
+              {cartItems.map((cartItem) => {
+                const isMaxQtyReached = cartItem.quantity > cartItem.availableStock;
+
+                return (
                   <div key={cartItem._id}>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-lg">
                       {/* LEFT */}
@@ -65,7 +76,7 @@ export default function CartPage() {
                         </button>
 
                         <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                          <Link href={`/products/${cartItem.slug}`}>
+                          <Link href={`/product/${cartItem.slug}`}>
                             <Image
                               src={cartItem.images?.[0]}
                               alt={cartItem.title}
@@ -78,60 +89,74 @@ export default function CartPage() {
 
                         <div className="min-w-0">
                           <h3 className="text-sm font-medium line-clamp-2">
-                            <Link href={`/products/${cartItem.slug}`}>
+                            <Link href={`/product/${cartItem.slug}`}>
                               {cartItem.title}
                             </Link>
                           </h3>
                           <div className="flex items-center gap-2">
-                            <p className="text-yellow-700 font-semibold mt-1">
-                              ৳ {cartItem?.discountPrice}
-                            </p>
-                            <p className="text-rose-500 line-through font-semibold mt-1">
-                              ৳ {cartItem?.price}
-                            </p>
+                            {cartItem?.discountPrice ? (
+                              <>
+                                <p className="text-yellow-700 font-semibold mt-1">
+                                  ৳ {cartItem.discountPrice}
+                                </p>
+                                <p className="text-rose-500 line-through font-semibold mt-1">
+                                  ৳ {cartItem.price}
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-yellow-700 font-semibold mt-1">
+                                ৳ {cartItem.price}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
 
                       {/* MIDDLE: QUANTITY */}
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => {
-                            if (cartItem && cartItem.quantity > 1) {
-                              dispatch(decreaseQty(cartItem._id));
-                            }
-                          }}
-                          disabled={!cartItem || cartItem.quantity <= 1}
-                          className={`w-8 h-8 border rounded flex items-center justify-center 
+                      <div>
+                        {isMaxQtyReached && (
+                          <p className="text-xs text-red-500 mb-2 font-semibold text-center">
+                            only {cartItem.availableStock - cartItem.quantity} left
+                          </p>
+                        )}
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => {
+                              if (cartItem && cartItem.quantity > 1) {
+                                dispatch(decreaseQty(cartItem._id));
+                              }
+                            }}
+                            disabled={!cartItem || cartItem.quantity <= 1}
+                            className={`w-8 h-8 border rounded flex items-center justify-center 
                                       ${
                                         !cartItem || cartItem.quantity <= 1
                                           ? "cursor-not-allowed opacity-50"
                                           : "hover:bg-gray-100 cursor-pointer"
                                       }`}
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
 
-                        <input
-                          value={cartItem.quantity}
-                          readOnly
-                          className="w-10 h-8 text-center border rounded text-sm"
-                        />
+                          <input
+                            value={cartItem.quantity}
+                            readOnly
+                            className="w-10 h-8 text-center border rounded text-sm"
+                          />
 
-                        <button
-                          onClick={() => {
-                            if (
-                              cartItem &&
-                              cartItem.quantity < cartItem.availableStock
-                            ) {
-                              dispatch(increaseQty(cartItem._id));
+                          <button
+                            onClick={() => {
+                              if (
+                                cartItem &&
+                                cartItem.quantity < cartItem.availableStock
+                              ) {
+                                dispatch(increaseQty(cartItem._id));
+                              }
+                            }}
+                            disabled={
+                              !cartItem ||
+                              cartItem.quantity >= cartItem.availableStock
                             }
-                          }}
-                          disabled={
-                            !cartItem ||
-                            cartItem.quantity >= cartItem.availableStock
-                          }
-                          className={`w-8 h-8 border rounded flex items-center justify-center 
+                            className={`w-8 h-8 border rounded flex items-center justify-center 
                                     ${
                                       !cartItem ||
                                       cartItem.quantity >=
@@ -139,9 +164,10 @@ export default function CartPage() {
                                         ? "cursor-not-allowed opacity-50"
                                         : "hover:bg-gray-100 cursor-pointer"
                                     }`}
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
 
                       {/* RIGHT: SUBTOTAL */}
@@ -150,16 +176,17 @@ export default function CartPage() {
                         <p className="font-bold text-yellow-700">
                           ৳{" "}
                           {(
-                            cartItem?.discountPrice ?? 0 * cartItem?.quantity
+                            (cartItem?.discountPrice &&
+                            cartItem.discountPrice > 0
+                              ? cartItem.discountPrice
+                              : cartItem.price) * cartItem.quantity
                           ).toLocaleString()}
                         </p>
                       </div>
                     </div>
                   </div>
-                ))
-              ) : (
-                <EmptyCartList />
-              )}
+                );
+              })}
             </div>
 
             {/* SUGGESTION */}
@@ -192,7 +219,14 @@ export default function CartPage() {
               </div>
 
               <Button
-                onClick={() => router.push("/checkout")}
+                onClick={() => {
+                  const hasInvalidQty = cartItems.some((item) => item.quantity > item.availableStock);
+                  if(hasInvalidQty){
+                    toast.error("Please fix quantity before checkout");
+                    return;
+                  }
+                  router.push("/checkout")
+                }}
                 className="cursor-pointer w-full mt-6 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-6"
               >
                 Proceed To Checkout

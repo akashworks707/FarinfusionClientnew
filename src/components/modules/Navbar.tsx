@@ -107,17 +107,15 @@ const Navbar: FC = () => {
                 {wishlistCount}
               </span>
             </button>
+
             <button
               onClick={() => router.push("/cart")}
-              aria-label="Shopping cart"
-              className="relative flex h-10 w-10 items-center justify-center text-slate-300 hover:text-yellow-500 transition-all duration-200 hover:bg-slate-800 rounded-lg active:scale-90 shrink-0"
+              className="cursor-pointer relative flex h-9 w-9 items-center justify-center text-white hover:text-[#c9a84c]"
             >
               <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-slate-900 text-xs font-bold">
-                  {cartCount}
-                </span>
-              )}
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#c9a84c] text-[9px] font-bold text-black">
+                {cartCount}
+              </span>
             </button>
             {user && <NavbarDropdown user={user} onLogout={logout} />}
           </div>
@@ -201,32 +199,25 @@ const Navbar: FC = () => {
           {/* Right Actions */}
           <div className="flex items-center gap-4">
             {/* Wishlist */}
-            <Link
-              href="/wishlist"
-              className="relative flex h-10 w-10 items-center justify-center text-slate-300 hover:text-amber-500 transition-all duration-200 hover:bg-slate-800 rounded-lg"
-              aria-label="Wishlist"
+            <button
+              onClick={() => router.push("/wishlist")}
+              className="cursor-pointer relative flex h-9 w-9 items-center justify-center text-white hover:text-[#c9a84c]"
             >
               <Heart className="h-5 w-5" />
-              {wishlistCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-slate-900 text-xs font-bold">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#c9a84c] text-[9px] font-bold text-black">
+                {wishlistCount}
+              </span>
+            </button>
 
-            {/* Cart */}
-            <Link
-              href="/cart"
-              className="relative flex h-10 w-10 items-center justify-center text-slate-300 hover:text-amber-500 transition-all duration-200 hover:bg-slate-800 rounded-lg"
-              aria-label="Shopping cart"
+            <button
+              onClick={() => router.push("/cart")}
+              className="cursor-pointer relative flex h-9 w-9 items-center justify-center text-white hover:text-[#c9a84c]"
             >
               <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-slate-900 text-xs font-bold">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#c9a84c] text-[9px] font-bold text-black">
+                {cartCount}
+              </span>
+            </button>
 
             {/* Auth */}
             {user ? (

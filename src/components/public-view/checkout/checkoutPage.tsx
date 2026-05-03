@@ -23,6 +23,7 @@ import { useApplyCouponMutation } from "@/redux/features/coupon/coupon.api";
 import { useCreateOrderMutation } from "@/lib/hooks";
 import { useGetMeQuery } from "@/redux/features/user/user.api";
 import { useRouter } from "next/navigation";
+import EmptyCartList from "../cart/EmptyCart";
 
 const formSchema = z.object({
   fullName: z.string().min(3),
@@ -59,16 +60,13 @@ export default function CheckoutPage() {
 
   const [applyCoupon, { isLoading: isApplying }] = useApplyCouponMutation();
 
-  const [createOrder, { isLoading: isCreatingOrder }] =
-    useCreateOrderMutation();
-  // const subtotal = cartList.reduce(
-  //   (total, item) => total + item.price * item.quantity,
-  //   0,
-  // );
+  const [createOrder, { isLoading: isCreatingOrder }] = useCreateOrderMutation();
 
   const cartTotal = useMemo(() => {
     return cartList.reduce((sum, item) => {
-      return sum + (item.discountPrice || 0) * item.quantity;
+      const unitPrice = item?.discountPrice && item.discountPrice > 0 ? item.discountPrice : item.price;
+      return sum + unitPrice * item?.quantity;
+      // return sum + (item.discountPrice || 0) * item.quantity;
     }, 0);
   }, [cartList]);
 
@@ -150,7 +148,13 @@ export default function CheckoutPage() {
     } catch (error: any) {
       toast.error(error?.data?.message || "Checkout failed");
     }
-  };
+  };  
+
+
+
+  if (cartList.length === 0) {
+    return <EmptyCartList />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -264,7 +268,13 @@ export default function CheckoutPage() {
                     </p>
                   </div>
 
-                  <div>৳ {(item.price * item.quantity).toLocaleString()}</div>
+                  <div>৳ 
+                    {(
+                          (item?.discountPrice && item.discountPrice > 0
+                            ? item.discountPrice
+                            : item.price) * item.quantity
+                        ).toLocaleString()}
+                  </div>
                 </div>
               ))
             ) : (

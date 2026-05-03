@@ -45,7 +45,7 @@ const socials = [
 
 export default function FarinFusionFooter() {
   return (
-    <footer className="bg-[#1f262c] text-white">
+    <footer className="primaryDark text-white">
       <div className="container mx-auto border-b px-4 border-white/10">
         <FooterServiceStrip />
       </div>
