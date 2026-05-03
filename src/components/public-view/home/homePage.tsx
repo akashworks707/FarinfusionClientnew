@@ -3,6 +3,8 @@ import CategoryList from "@/components/public-view/category/CategoryList";
 import ProductList from "@/components/public-view/product/ProductList";
 import HeroSection from '@/components/home/HeroSection';
 import CustomerFavorites from '../customerFavoriteProducts/CustomerFavorites';
+import OfferProduct from "@/components/public-view/home/OfferProduct";
+import ProductBlog from './ProductBlog';
 
 const HomePage = () => {
     return (
@@ -12,6 +14,8 @@ const HomePage = () => {
                 <CategoryList />
                 <CustomerFavorites />
                 <ProductList />
+                <OfferProduct />
+                <ProductBlog />
             </div>
         </div>
     );

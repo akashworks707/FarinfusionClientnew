@@ -1,6 +1,6 @@
 "use client"
 
-import { usePathname } from "next/navigation"
+import { usePathname , useRouter} from "next/navigation"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,13 +11,14 @@ import {
 } from "@/components/ui/breadcrumb"
 
 export function CartBreadcrumb() {
+  const router = useRouter()
   const pathname = usePathname()
 
   const isCart = pathname === "/cart"
   const isCheckout = pathname === "/checkout"
   const isComplete = pathname === "/order-complete"
 
-  const baseStyle = "px-2 py-1 text-gray-300 transition-all duration-300"
+  const baseStyle = "cursor-pointer px-2 py-1 text-gray-300 transition-all duration-300"
 
   const activeStyle =
     "text-white font-semibold border-b-3 border-amber-400 hover:text-amber-400"
@@ -31,7 +32,7 @@ export function CartBreadcrumb() {
         {/* CART */}
         <BreadcrumbItem>
           <BreadcrumbLink
-            href="/cart"
+            onClick={() => router.push("/cart")}
             className={`${baseStyle} ${isCart ? activeStyle : hoverStyle}`}
           >
             SHOPPING
@@ -43,7 +44,7 @@ export function CartBreadcrumb() {
         {/* CHECKOUT */}
         <BreadcrumbItem>
           <BreadcrumbLink
-            href="/checkout"
+            // onClick={() => router.push("/checkout")}
             className={`${baseStyle} ${isCheckout ? activeStyle : hoverStyle}`}
           >
             CHECKOUT

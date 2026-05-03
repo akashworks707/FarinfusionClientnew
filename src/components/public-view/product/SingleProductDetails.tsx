@@ -70,6 +70,9 @@ const SingleProductDetails = () => {
   );
 
   const availableStock = product?.availableStock || 0;
+  const isOutOfStock = !product?.availableStock || product?.availableStock <= 0;
+  const isMaxQtyReached = cartItem && cartItem.quantity >= availableStock;
+  
 
   if (isLoading) {
     return <SingleProductSkeleton />;
@@ -247,19 +250,49 @@ const SingleProductDetails = () => {
                     </button>
                   </div>
 
-                  {/* ADD */}
-                  <button
-                    onClick={handleAddToCart}
-                    className="cursor-pointer flex-1 min-w-40 h-10 bg-[#c9a227] font-bold rounded-md"
-                  >
-                    Add To Cart
-                  </button>
-                  <button
-                    onClick={() => router.push("/checkout")}
-                    className="cursor-pointer flex-1 min-w-40 h-10 bg-[#c9a227] font-bold rounded-md"
-                  >
-                    Buy Now
-                  </button>
+                  {isOutOfStock ? (
+                    <>
+                      <button
+                        disabled
+                        className="
+                            min-w-40 h-10
+                            rounded-md
+                            bg-red-100
+                            border border-red-300
+                            text-red-500
+                            text-sm font-semibold tracking-wide
+                            cursor-not-allowed
+                            flex items-center justify-center
+                            transition-all duration-300
+                        "
+                      >
+                        Out of Stock
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {/* ADD */}
+                      <button
+                        onClick={handleAddToCart}
+                        className="cursor-pointer text-white flex-1 min-w-40 h-10 bg-[#c9a227] font-semibold rounded-md"
+                      >
+                        Add To Cart
+                      </button>
+                      <button
+                        onClick={() => {
+                        if (isMaxQtyReached) {
+                          router.push("/checkout");
+                        } else {
+                          handleAddToCart();
+                          router.push("/checkout");
+                        }
+                      }}  
+                        className="cursor-pointer flex-1 min-w-40 h-10 text-white bg-[#c9a227] font-bold rounded-md"
+                      >
+                        Buy Now
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 {/* watching */}

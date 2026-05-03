@@ -335,6 +335,7 @@ export function OrderTable({
       </div>
     );
   }
+  
 
   return (
     <div className="overflow-x-auto rounded-lg border">

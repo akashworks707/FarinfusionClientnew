@@ -41,6 +41,7 @@ const cartSlice = createSlice({
                     quantity: action.payload.quantity,
                 });
             }
+            saveCart(state.items);
         },
 
         removeFromCart: (state, action: PayloadAction<string>) => {
