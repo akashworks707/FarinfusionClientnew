@@ -134,14 +134,19 @@ const SORT_OPTIONS = [
   { value: "createdAt", label: "Oldest first" },
   { value: "-price", label: "Price: High → Low" },
   { value: "price", label: "Price: Low → High" },
-  { value: "-totalSold", label: "Best selling" },
-  { value: "-availableStock", label: "Most stock" },
+  { value: "-totalRevenue", label: "Best selling" },
 ];
 
 const STATUS_OPTIONS = [
-  { value: "", label: "All Status" },
+  { value: "all", label: "All Status" },
   { value: "ACTIVE", label: "Active" },
   { value: "INACTIVE", label: "Inactive" },
+];
+
+const STOCK_FILTER_OPTIONS = [
+  { value: "all", label: "All Stock" },
+  { value: "outOfStock", label: "Out of Stock" },
+  { value: "lowStock", label: "Low Stock (0-10)" },
 ];
 
 function formatDateLabel(from?: Date, to?: Date) {
@@ -286,6 +291,7 @@ export default function ProductManagement() {
   const [localSearch, setLocalSearch] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [stockFilter, setStockFilter] = useState("");
   const [sort, setSort] = useState("-createdAt");
   const [page, setPage] = useState(1);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -318,7 +324,6 @@ export default function ProductManagement() {
     limit: LIMIT,
   });
 
-
   const { data: allPro } = useGetAllProductsQuery({ limit: allProductLimit });
 
   const allProducts = allPro?.data ?? [];
@@ -333,8 +338,33 @@ export default function ProductManagement() {
   ).length;
   const totalSold = allProducts.reduce((s, p) => s + (p.totalSold ?? 0), 0);
 
-  const products = clientSort
-    ? [...rawProducts].sort((a, b) => {
+  // Apply stock filter to raw products
+  const filteredByStock = rawProducts.filter((product) => {
+    if (!stockFilter) return true;
+    const stock = product.availableStock ?? 0;
+    if (stockFilter === "outOfStock") return stock === 0;
+    if (stockFilter === "lowStock") return stock > 0 && stock <= 10;
+    if (stockFilter === "inStock") return stock > 10;
+    return true;
+  });
+
+  // Apply sorting - handle special stock sorts client-side
+  let products = [...filteredByStock];
+
+  if (sort === "stock-low") {
+    // Sort by stock level ascending (lowest first)
+    products.sort((a, b) => (a.availableStock ?? 0) - (b.availableStock ?? 0));
+  } else if (sort === "stock-out") {
+    // Sort out of stock items first, then by stock level
+    products.sort((a, b) => {
+      const aZero = (a.availableStock ?? 0) === 0 ? -1 : 1;
+      const bZero = (b.availableStock ?? 0) === 0 ? -1 : 1;
+      if (aZero !== bZero) return aZero - bZero;
+      return (a.availableStock ?? 0) - (b.availableStock ?? 0);
+    });
+  } else if (clientSort) {
+    // Handle client-side sorting for column headers
+    products = products.sort((a, b) => {
       const av = (a as any)[clientSort.key] ?? 0;
       const bv = (b as any)[clientSort.key] ?? 0;
       if (typeof av === "string")
@@ -342,8 +372,8 @@ export default function ProductManagement() {
           ? av.localeCompare(bv)
           : bv.localeCompare(av);
       return clientSort.dir === "asc" ? av - bv : bv - av;
-    })
-    : rawProducts;
+    });
+  }
 
   const handleClientSort = (key: string) => {
     setClientSort((prev) =>
@@ -403,11 +433,11 @@ export default function ProductManagement() {
   };
 
   const handleReset = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
     setLocalSearch("");
     setSearch("");
-    setStatus("");
     setSort("-createdAt");
+    setStatus("");
+    setStockFilter("");
     setClientSort(null);
     setCalRange(undefined);
     setDateFrom(undefined);
@@ -563,6 +593,30 @@ export default function ProductManagement() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Stock Filter */}
+          <Select
+            value={stockFilter}
+            onValueChange={(v) => {
+              setStockFilter(v);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="h-10 w-40 rounded-xl border-gray-200 bg-gray-50/60 text-sm focus:border-amber-400 dark:border-gray-700 dark:bg-gray-800/60 dark:focus:border-amber-500 transition-colors">
+              <SelectValue placeholder="All Stock" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              {STOCK_FILTER_OPTIONS.map((opt) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="cursor-pointer text-sm"
+                >
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Sort */}
           <Select
@@ -884,13 +938,12 @@ export default function ProductManagement() {
                         className={cn(
                           "py-3 text-[10px] font-bold uppercase tracking-widest text-amber-700/60 dark:text-amber-500/60 px-3",
                           col.sortable &&
-                          col.key &&
-                          "cursor-pointer select-none hover:text-amber-700 dark:hover:text-amber-400 transition-colors",
+                            col.key &&
+                            "cursor-pointer select-none hover:text-amber-700 dark:hover:text-amber-400 transition-colors",
                           col.cls,
                         )}
                       >
-                        {
-                          col.label}
+                        {col.label}
                         {col.sortable && col.key && (
                           <SortIcon
                             active={clientSort?.key === col.key}
@@ -1140,7 +1193,7 @@ export default function ProductManagement() {
                       className={cn(
                         "cursor-pointer",
                         page === pageNum &&
-                        "border-amber-400 text-amber-700 bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:bg-amber-900/20",
+                          "border-amber-400 text-amber-700 bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:bg-amber-900/20",
                       )}
                     >
                       {pageNum}

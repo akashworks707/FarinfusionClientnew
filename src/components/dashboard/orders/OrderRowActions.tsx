@@ -399,6 +399,8 @@ import {
   User,
   PencilLine,
   Trash2,
+  RotateCcw,
+  AlertTriangle,
 } from "lucide-react";
 import type { Order } from "@/types/orders";
 import { Courier } from "@/types/courier";
@@ -421,6 +423,8 @@ interface OrderRowActionsProps {
   setDeleteTarget?: (order: Order) => void;
   setDeleteOpen?: (open: boolean) => void;
   onComplete?: (order: Order) => void;
+  onMarkDamage?: (order: Order) => void;
+  onMarkExchange?: (order: Order) => void;
 }
 
 export function OrderRowActions({
@@ -432,6 +436,8 @@ export function OrderRowActions({
   onAssignCourier,
   setDeleteOpen,
   setDeleteTarget,
+  onMarkDamage,
+  onMarkExchange,
   onComplete,
 }: OrderRowActionsProps) {
   const isPending = order.orderStatus === "PENDING";
@@ -626,6 +632,31 @@ export function OrderRowActions({
                 Order Completed
               </DropdownMenuItem>
             </>
+          )}
+
+          {/* Mark as Damage */}
+          {order.isPublished && hasAccess && isCompleted && onMarkDamage && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="gap-2 text-sm cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400"
+                onClick={() => onMarkDamage(order)}
+              >
+                <AlertTriangle className="h-3.5 w-3.5" />
+                Mark as Damage
+              </DropdownMenuItem>
+            </>
+          )}
+
+          {/* Mark as Exchange */}
+          {order.isPublished && hasAccess && isCompleted && onMarkExchange && (
+            <DropdownMenuItem
+              className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
+              onClick={() => onMarkExchange(order)}
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Mark as Exchange
+            </DropdownMenuItem>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
