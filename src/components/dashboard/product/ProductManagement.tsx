@@ -146,7 +146,7 @@ const STATUS_OPTIONS = [
 const STOCK_FILTER_OPTIONS = [
   { value: "all", label: "All Stock" },
   { value: "outOfStock", label: "Out of Stock" },
-  { value: "lowStock", label: "Low Stock (0-10)" },
+  { value: "lowStock", label: "Low Stock" },
 ];
 
 function formatDateLabel(from?: Date, to?: Date) {
