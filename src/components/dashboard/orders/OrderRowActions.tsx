@@ -363,12 +363,6 @@
 //   );
 // }
 
-
-
-
-
-
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -404,6 +398,7 @@ import {
   UserCog,
   User,
   PencilLine,
+  Trash2,
 } from "lucide-react";
 import type { Order } from "@/types/orders";
 import { Courier } from "@/types/courier";
@@ -423,6 +418,8 @@ interface OrderRowActionsProps {
   onConfirm?: (order: Order) => void;
   onView?: (order: Order) => void;
   onAssignCourier?: (order: Order) => void;
+  setDeleteTarget?: (order: Order) => void;
+  setDeleteOpen?: (open: boolean) => void;
   onComplete?: (order: Order) => void;
 }
 
@@ -433,6 +430,8 @@ export function OrderRowActions({
   onConfirm,
   onView,
   onAssignCourier,
+  setDeleteOpen,
+  setDeleteTarget,
   onComplete,
 }: OrderRowActionsProps) {
   const isPending = order.orderStatus === "PENDING";
@@ -585,6 +584,19 @@ export function OrderRowActions({
             </>
           )}
 
+          <DropdownMenuItem
+            disabled={userRole !== "ADMIN"}
+            className="gap-2 text-sm cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400"
+            onClick={() => {
+              if (!setDeleteTarget || !setDeleteOpen) return;
+              setDeleteTarget(order);
+              setDeleteOpen(true);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete
+          </DropdownMenuItem>
+
           {/* Mark as Completed */}
           {order.isPublished && hasAccess && canComplete && onComplete && (
             <>
@@ -683,11 +695,12 @@ export function OrderRowActions({
                           <div
                             className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white"
                             style={{
-                              background: `hsl(${[...u.name].reduce(
-                                (a, c) => a + c.charCodeAt(0),
-                                0,
-                              ) % 360
-                                },52%,50%)`,
+                              background: `hsl(${
+                                [...u.name].reduce(
+                                  (a, c) => a + c.charCodeAt(0),
+                                  0,
+                                ) % 360
+                              },52%,50%)`,
                             }}
                           >
                             {u.name?.[0]?.toUpperCase() ?? "?"}

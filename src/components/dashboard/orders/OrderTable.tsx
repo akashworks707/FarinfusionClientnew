@@ -245,8 +245,6 @@
 //   );
 // }
 
-
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -273,6 +271,8 @@ interface OrderTableProps {
   onConfirmOrder: (order: Order) => void;
   onViewOrder?: (order: Order) => void;
   onAssignCourier?: (order: Order) => void;
+  setDeleteTarget?: (order: Order) => void;
+  setDeleteOpen?: (open: boolean) => void;
   refetch: () => void;
   onCompleteOrder?: (order: Order) => void;
 }
@@ -284,6 +284,8 @@ export function OrderTable({
   onConfirmOrder,
   onAssignCourier,
   onViewOrder,
+  setDeleteTarget,
+  setDeleteOpen,
   onCompleteOrder,
   refetch,
 }: OrderTableProps) {
@@ -468,11 +470,14 @@ export function OrderTable({
                   <div className="flex flex-col gap-1.5">
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {order.createdAt
-                        ? new Date(order.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })
+                        ? new Date(order.createdAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )
                         : "—"}
                     </span>
                     {order.scheduledAt && (
@@ -491,6 +496,8 @@ export function OrderTable({
                     onConfirm={onConfirmOrder}
                     onView={onViewOrder}
                     onAssignCourier={onAssignCourier}
+                    setDeleteTarget={setDeleteTarget}
+                    setDeleteOpen={setDeleteOpen}
                     onComplete={onCompleteOrder}
                   />
                 </TableCell>
