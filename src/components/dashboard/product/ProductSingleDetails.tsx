@@ -49,7 +49,7 @@ export default function ProductSingleDetails() {
 
   const product: any = data?.data;
 
-  console.log(product);
+  // console.log(product);
 
   return (
     <div className="p-6 space-y-6">

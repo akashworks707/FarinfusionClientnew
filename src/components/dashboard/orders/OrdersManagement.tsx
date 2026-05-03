@@ -9,6 +9,7 @@ import {
   useConfirmOrderMutation,
   useCompleteOrderMutation,
   useGetAllScheduledOrdersQuery,
+  useDeleteOrderMutation,
 } from "@/redux/features/orders/ordersApi";
 import { useCreateCourierMutation } from "@/lib/hooks";
 import { OrderStats } from "./OrderStats";
@@ -22,7 +23,7 @@ import type { Order, OrderStatus } from "@/types/orders";
 import { toast } from "sonner";
 import { ModernPagination } from "./ModernPagination";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Trash2 } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -32,6 +33,16 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // const LIMIT = 10;
 
@@ -53,6 +64,9 @@ export default function OrdersManagement() {
   const [courierModalOpen, setCourierModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"instant" | "scheduled">(
     "instant",
@@ -101,6 +115,7 @@ export default function OrdersManagement() {
   const [completeOrder, { isLoading: isCompleting, error: completeError }] =
     useCompleteOrderMutation();
   const [createCourier] = useCreateCourierMutation();
+  const [deleteOrder] = useDeleteOrderMutation();
 
   const handleStatusChange = (val: OrderStatus | "") => {
     setStatus(val);
@@ -154,6 +169,22 @@ export default function OrdersManagement() {
       refetch();
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to assign courier");
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteOrder(deleteTarget?._id as string).unwrap();
+      toast.success(`"${deleteTarget.customOrderId}" has been deleted`);
+      setDeleteOpen(false);
+      setDeleteTarget(null);
+      refetch();
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to move to trash");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -213,7 +244,7 @@ export default function OrdersManagement() {
   const totalPages = meta?.totalPage ?? Math.ceil(totalCount / limit);
   // const allOrders = (allOrdersData?.data as Order[]) || [];
 
-  console.log(ordersData?.stats)
+  console.log(ordersData?.stats);
 
   return (
     <div className="min-h-screen space-y-6 bg-background p-4 md:p-8">
@@ -233,7 +264,7 @@ export default function OrdersManagement() {
       </div>
 
       {/* Stats */}
-      <OrderStats stats={(ordersData?.stats) as any}  />
+      <OrderStats stats={ordersData?.stats as any} />
 
       <OrderFilters
         statusFilter={status}
@@ -292,6 +323,8 @@ export default function OrdersManagement() {
             refetch={refetch}
             onViewOrder={handleViewClick}
             onAssignCourier={handleOpenCourierModal}
+            setDeleteTarget={setDeleteTarget} 
+            setDeleteOpen={setDeleteOpen}
             onCompleteOrder={handleCompleteClick}
           />
         </TabsContent>
@@ -305,6 +338,8 @@ export default function OrdersManagement() {
             onConfirmOrder={handleConfirmClick}
             refetch={refetch}
             onViewOrder={handleViewClick}
+            setDeleteTarget={setDeleteTarget}
+            setDeleteOpen={setDeleteOpen}
             onAssignCourier={handleOpenCourierModal}
             onCompleteOrder={handleCompleteClick}
           />
@@ -397,6 +432,46 @@ export default function OrdersManagement() {
           if (!open) setCompletingOrder(null);
         }}
       />
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent className="rounded-2xl border-gray-200/80 dark:border-gray-700/60 max-w-md">
+          <div className="h-1 w-full rounded-t-2xl bg-linear-to-r from-red-500 via-orange-400 to-red-500 -mt-6 mb-4" />
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-base font-bold">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50 dark:bg-red-900/20">
+                <Trash2 className="h-4 w-4 text-red-500" />
+              </div>
+              Are you delete this order?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="font-semibold text-gray-700 dark:text-gray-300">
+                &quot;{deleteTarget?.customOrderId}&quot;
+              </span>{" "}
+              will be delete. You cannot restore it later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="hover:cursor-pointer hover:scale-105 transition-transform transform ease-in-out duration-500 rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={confirmDelete}
+              className="hover:cursor-pointer hover:scale-105 transition-transform transform ease-in-out duration-500 rounded-xl bg-red-500 hover:bg-red-600 text-white gap-1.5"
+            >
+              {deleting ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  Deleting...
+                </span>
+              ) : (
+                <>
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete Order
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <OrderDetailsModal
         order={selectedOrder}

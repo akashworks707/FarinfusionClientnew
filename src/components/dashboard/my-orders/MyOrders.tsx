@@ -800,7 +800,6 @@
 //   );
 // }
 
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -859,13 +858,23 @@ import {
   useGetMyScheduledOrdersQuery,
 } from "@/redux/features/orders/myOrdersApi";
 import { useGetMeQuery } from "@/redux/features/user/user.api";
-import { useCreateCourierMutation } from "@/lib/hooks";
+import { useCreateCourierMutation, useDeleteOrderMutation } from "@/lib/hooks";
 import { AssignCourierModal } from "@/components/dashboard/orders/AssignCourierModal";
 import { MyOrdersTable, type UserRole } from "./MyOrdersTable";
 import { MyOrderDetailModal } from "./MyOrderDetailModal";
 import { MyOrderEditModal } from "./MyOrderEditModal";
 import type { Order, OrderStatus } from "@/types/orders";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const LIMIT = 10;
 
@@ -1014,6 +1023,8 @@ export default function MyOrders() {
   const [activeTab, setActiveTab] = useState<"instant" | "scheduled">(
     "instant",
   );
+  const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -1049,6 +1060,7 @@ export default function MyOrders() {
   });
 
   const [createCourier] = useCreateCourierMutation();
+  const [deleteOrder] = useDeleteOrderMutation();
 
   const orders: Order[] =
     activeTab === "instant"
@@ -1112,6 +1124,20 @@ export default function MyOrders() {
     setDateTo(to);
     setPage(1);
     setCalOpen(false);
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      await deleteOrder(deleteTarget._id as string).unwrap();
+      toast.success("Order deleted successfully");
+      setDeleteOpen(false);
+      setDeleteTarget(null);
+      refetch();
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Delete failed");
+    }
   };
 
   const handleCalSelect = (range: DateRange | undefined) => {
@@ -1520,6 +1546,8 @@ export default function MyOrders() {
         onEdit={handleEdit}
         onAssignCourier={handleAssignCourier}
         refetch={refetch}
+        setDeleteTarget={setDeleteTarget}
+        setDeleteOpen={setDeleteOpen}
       />
 
       {/* ── Pagination ── */}
@@ -1600,6 +1628,27 @@ export default function MyOrders() {
         }}
         onSuccess={refetch}
       />
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteOrder}
+              className="bg-red-600 hover:bg-red-700 hover:cursor-pointer"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AssignCourierModal
         open={courierOpen}

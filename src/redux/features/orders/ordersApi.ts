@@ -1,5 +1,5 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { IResponse } from "@/types";
 import { baseApi } from "../baseApi";
 import type {
   Order,
@@ -128,6 +128,14 @@ export const ordersApi = baseApi.injectEndpoints({
       ],
     }),
 
+    deleteOrder: builder.mutation<IResponse<{ id: string }>, string>({
+      query: (id) => ({
+        url: `/order/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ORDERS"],
+    }),
+
     updateDeliveryStatus: builder.mutation<
       OrderResponse,
       {
@@ -154,6 +162,7 @@ export const {
   useGetAllOrdersQuery,
   useGetSingleOrderQuery,
   useUpdateOrderMutation,
+  useDeleteOrderMutation,
   useConfirmOrderMutation,
   useGetAllScheduledOrdersQuery,
   useUpdateDeliveryStatusMutation,

@@ -1,5 +1,3 @@
-
-
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -32,6 +30,8 @@ import {
   AlertCircle,
   ShoppingBag,
   Package,
+  Trash,
+  Trash2,
 } from "lucide-react";
 import type { Order } from "@/types/orders";
 import { cn } from "@/lib/utils";
@@ -54,6 +54,8 @@ interface MyOrdersTableProps {
   onView: (order: Order) => void;
   onEdit: (order: Order) => void;
   onAssignCourier?: (order: Order) => void;
+  setDeleteTarget?: (order: Order) => void;
+  setDeleteOpen?: (open: boolean) => void;
   refetch: () => void;
 }
 
@@ -119,6 +121,8 @@ export function MyOrdersTable({
   onView,
   onEdit,
   onAssignCourier,
+  setDeleteTarget,
+  setDeleteOpen,
 }: MyOrdersTableProps) {
   // Role permissions
   const canEdit = ["ADMIN", "MODERATOR", "MANAGER", "TELLICELSS"].includes(
@@ -377,6 +381,19 @@ export function MyOrdersTable({
                         >
                           <FilePenLine className="h-3.5 w-3.5" />
                           Edit Order
+                        </DropdownMenuItem>
+                      )}
+
+                      {userRole === "ADMIN" && (
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setDeleteTarget?.(order);
+                            setDeleteOpen?.(true);
+                          }}
+                           className="gap-2 text-sm cursor-pointer text-rose-600 focus:text-rose-600 dark:text-rose-400"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Delete
                         </DropdownMenuItem>
                       )}
 
