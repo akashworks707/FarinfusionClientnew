@@ -25,6 +25,7 @@ import type { Order } from "@/types/orders";
 import type { IProduct } from "@/types";
 import { RotateCcw, Package, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useExchangeOrderMutation } from "@/redux/features/orders/ordersApi";
 import { useGetAllProductsQuery } from "@/redux/features/product/product.api";
 
 interface ExchangeOrderModalProps {
@@ -40,9 +41,7 @@ export function ExchangeOrderModal({
   onOpenChange,
   onSuccess,
 }: ExchangeOrderModalProps) {
-  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
-    null,
-  );
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,10 +50,10 @@ export function ExchangeOrderModal({
   const { data: productsData } = useGetAllProductsQuery({
     limit: 500,
   });
+  const [exchangeOrderItem] = useExchangeOrderMutation();
   const allProducts = productsData?.data || [];
 
-  const orderItem =
-    selectedItemIndex !== null ? order?.items?.[selectedItemIndex] : null;
+  const orderItem = selectedItemIndex !== null && order?.products ? (order?.products as any[])[selectedItemIndex] : null;
 
   const handleExchange = async () => {
     if (!order || selectedItemIndex === null || !selectedProduct) {
@@ -64,15 +63,14 @@ export function ExchangeOrderModal({
 
     setIsSubmitting(true);
     try {
-      // TODO: Call API to handle exchange
-      // const result = await exchangeOrderItem({
-      //   orderId: order._id,
-      //   itemIndex: selectedItemIndex,
-      //   newProductId: selectedProduct,
-      //   notes,
-      // }).unwrap();
+      await exchangeOrderItem({
+        orderId: order._id,
+        itemIndex: selectedItemIndex,
+        newProductId: selectedProduct,
+        note: notes,
+      }).unwrap();
 
-      toast.success("Exchange request created successfully");
+      toast.success("Product exchanged successfully");
       onOpenChange(false);
       setSelectedItemIndex(null);
       setSelectedProduct("");
@@ -111,12 +109,10 @@ export function ExchangeOrderModal({
         <div className="space-y-5 px-6 py-5">
           {/* Step 1: Select Item to Exchange */}
           <div className="space-y-3">
-            <Label className="text-sm font-semibold">
-              Select Item to Exchange
-            </Label>
+            <Label className="text-sm font-semibold">Select Item to Exchange</Label>
             <div className="space-y-2">
-              {order.items && order.items.length > 0 ? (
-                order.items.map((item: any, idx: number) => (
+              {order.products && order.products.length > 0 ? (
+                order.products.map((item: any, idx: number) => (
                   <Card
                     key={idx}
                     className={`cursor-pointer border-2 p-3 transition-all ${
@@ -134,12 +130,9 @@ export function ExchangeOrderModal({
                         <Package className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">
-                          {item.title || item.name}
-                        </p>
+                        <p className="font-medium text-sm">{item.title || item.name}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Qty: {item.quantity} × ৳
-                          {(item.price || 0).toLocaleString()}
+                          Qty: {item.quantity} × ৳{(item.price || 0).toLocaleString()}
                         </p>
                       </div>
                       {selectedItemIndex === idx && (
@@ -169,23 +162,17 @@ export function ExchangeOrderModal({
                   Current Item
                 </p>
                 <p className="mt-1.5 font-semibold text-sm">
-                  {orderItem?.productName || orderItem?.productId}
+                  {orderItem.title || orderItem.name}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Price: ৳{(orderItem.price || 0).toLocaleString()} ×{" "}
-                  {orderItem.quantity} units
+                  Price: ৳{(orderItem.price || 0).toLocaleString()} × {orderItem.quantity} units
                 </p>
               </Card>
 
               {/* Step 2: Select New Product */}
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">
-                  Select New Product
-                </Label>
-                <Select
-                  value={selectedProduct}
-                  onValueChange={setSelectedProduct}
-                >
+                <Label className="text-sm font-semibold">Select New Product</Label>
+                <Select value={selectedProduct} onValueChange={setSelectedProduct}>
                   <SelectTrigger className="h-10 rounded-lg border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <SelectValue placeholder="Choose a product to exchange with…" />
                   </SelectTrigger>
@@ -197,8 +184,8 @@ export function ExchangeOrderModal({
                     ) : (
                       allProducts.map((product: IProduct) => (
                         <SelectItem
-                          key={product._id ?? ""}
-                          value={product?._id ?? ""}
+                          key={product._id}
+                          value={product._id ?? ""}
                           className="cursor-pointer"
                         >
                           <div className="flex items-center gap-2">
