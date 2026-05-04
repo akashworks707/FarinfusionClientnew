@@ -688,13 +688,15 @@ export default function DashboardOverview() {
               icon={ShoppingBag}
               accent="bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
             />
-            <StatCard
-              label="Total Revenue"
-              value={`৳${data.totalRevenue}`}
-              icon={TrendingUp}
-              accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-              sub="All confirmed payments"
-            />
+            {isAdmin &&
+              <StatCard
+                label="Total Revenue"
+                value={`৳${data.totalRevenue}`}
+                icon={TrendingUp}
+                accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+                sub="All confirmed payments"
+              />
+            }
             {
 
               isModerator && <StatCard
