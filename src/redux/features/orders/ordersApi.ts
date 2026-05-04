@@ -55,6 +55,15 @@ export const ordersApi = baseApi.injectEndpoints({
       providesTags: ["ORDERS"],
     }),
 
+    getAllholdOrders: builder.query<GetAllOrdersResponse, GetQueryParams>({
+      query: (params) => ({
+        url: "/order/hold-orders",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["ORDERS"],
+    }),
+
     getSingleOrder: builder.query<OrderResponse, string>({
       query: (id) => ({
         url: `/order/${id}`,
@@ -168,4 +177,6 @@ export const {
   useUpdateDeliveryStatusMutation,
   useUpdateSellerMutation,
   useCompleteOrderMutation,
+
+  useGetAllholdOrdersQuery,
 } = ordersApi;

@@ -10,6 +10,7 @@ import {
   useCompleteOrderMutation,
   useGetAllScheduledOrdersQuery,
   useDeleteOrderMutation,
+  useGetAllholdOrdersQuery,
 } from "@/redux/features/orders/ordersApi";
 import { useCreateCourierMutation } from "@/lib/hooks";
 import { OrderStats } from "./OrderStats";
@@ -68,7 +69,7 @@ export default function OrdersManagement() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<"instant" | "scheduled">(
+  const [activeTab, setActiveTab] = useState<"instant" | "scheduled" | "hold">(
     "instant",
   );
 
@@ -96,6 +97,10 @@ export default function OrdersManagement() {
       skip: activeTab !== "scheduled",
     });
 
+    const { data: HoldOrdersData, isLoading: isHoldLoading } =
+    useGetAllholdOrdersQuery(queryArgs, {
+      skip: activeTab !== "hold",
+    });
   // Stats — unfiltered
   // const { data: allOrdersData } = useGetAllOrdersQuery({
   //   page: 1,
@@ -233,8 +238,8 @@ export default function OrdersManagement() {
 
   const orders =
     activeTab === "instant"
-      ? (ordersData?.data as Order[]) || []
-      : (scheduledOrdersData?.data as Order[]) || [];
+      ? (ordersData?.data as Order[]) || [] : activeTab === "scheduled"
+      ? (scheduledOrdersData?.data as Order[]) || [] : (HoldOrdersData?.data as Order[]) || [];
 
   const isLoadingFinal =
     activeTab === "instant" ? isLoading : isScheduledLoading;
@@ -244,7 +249,7 @@ export default function OrdersManagement() {
   const totalPages = meta?.totalPage ?? Math.ceil(totalCount / limit);
   // const allOrders = (allOrdersData?.data as Order[]) || [];
 
-  console.log(ordersData?.stats);
+  // console.log(ordersData?.stats);
 
   return (
     <div className="min-h-screen space-y-6 bg-background p-4 md:p-8">
@@ -310,6 +315,20 @@ export default function OrdersManagement() {
             >
               Scheduled Orders
             </button>
+            <button
+              onClick={() => {
+                setActiveTab("hold");
+                setPage(1);
+              }}
+              className={cn(
+                "px-4 py-2 text-sm font-semibold rounded-md transition",
+                activeTab === "hold"
+                  ? "bg-amber-500 text-white"
+                  : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
+              )}
+            >
+              Hold Orders
+            </button>
           </div>
         </TabsList>
 
@@ -334,6 +353,22 @@ export default function OrdersManagement() {
           <OrderTable
             orders={(scheduledOrdersData?.data as Order[]) || []}
             loading={isScheduledLoading}
+            error={null}
+            onConfirmOrder={handleConfirmClick}
+            refetch={refetch}
+            onViewOrder={handleViewClick}
+            setDeleteTarget={setDeleteTarget}
+            setDeleteOpen={setDeleteOpen}
+            onAssignCourier={handleOpenCourierModal}
+            onCompleteOrder={handleCompleteClick}
+          />
+        </TabsContent>
+
+        {/* Scheduled Orders */}
+        <TabsContent value="hold">
+          <OrderTable
+            orders={(HoldOrdersData?.data as Order[]) || []}
+            loading={isHoldLoading}
             error={null}
             onConfirmOrder={handleConfirmClick}
             refetch={refetch}

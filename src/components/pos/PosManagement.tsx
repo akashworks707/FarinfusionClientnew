@@ -24,7 +24,7 @@ export default function POSManagement() {
   const [cartItems, setCartItems] = useState<POSCartItem[]>([]);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [schedule, setSchedule] = useState<{
-    type: "INSTANT" | "SCHEDULED";
+    type: "INSTANT" | "SCHEDULED" | "HOLD";
     scheduledAt?: string;
   }>({
     type: "INSTANT",

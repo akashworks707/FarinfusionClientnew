@@ -17,11 +17,11 @@ interface POSCartSidebarProps {
   onItemQuantityChange: (productId: string, quantity: number) => void;
   onItemRemove: (productId: string) => void;
   schedule: {
-    type: "INSTANT" | "SCHEDULED";
+    type: "INSTANT" | "SCHEDULED" | "HOLD";
     scheduledAt?: string;
   };
   setSchedule: (val: {
-    type: "INSTANT" | "SCHEDULED";
+    type: "INSTANT" | "SCHEDULED" | "HOLD";
     scheduledAt?: string;
   }) => void;
   onCheckout: (

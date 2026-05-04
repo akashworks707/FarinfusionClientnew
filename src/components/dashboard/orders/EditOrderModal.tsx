@@ -139,11 +139,12 @@ export function EditOrderModal({
   const [cartProducts, setCartProducts] = useState<CartProduct[]>([]);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
 
   const { data: productsData, isFetching: isSearching } =
     useGetAllProductsQuery(
       {
-        search: debouncedSearch || undefined,
+        searchTerm: debouncedSearch || undefined,
         limit: 500,
         page: 1,
       },
@@ -151,6 +152,7 @@ export function EditOrderModal({
         skip: false,
       },
     );
+   
   const availableProducts: IProduct[] = productsData?.data || [];
 
   useEffect(() => {

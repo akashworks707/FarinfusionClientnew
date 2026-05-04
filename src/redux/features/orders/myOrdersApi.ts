@@ -46,9 +46,17 @@ export const myOrdersApi = baseApi.injectEndpoints({
       }),
       providesTags: ["ORDERS"],
     }),
+    getMyHoldOrders: builder.query<MyOrdersResponse, MyOrdersQueryParams>({
+      query: (params) => ({
+        url: "/order/my-hold-orders",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["ORDERS"],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetMyOrdersQuery, useGetMyScheduledOrdersQuery } =
+export const { useGetMyOrdersQuery, useGetMyScheduledOrdersQuery, useGetMyHoldOrdersQuery } =
   myOrdersApi;
