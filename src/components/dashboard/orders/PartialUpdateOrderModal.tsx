@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -63,7 +64,7 @@ export function PartialUpdateOrderModal({
     let total = order?.total || 0;
 
     removeItems.forEach(({ itemIndex, quantity }) => {
-      const item = (order?.products as any[])?.[itemIndex];
+      const item = (order?.products as unknown as any[])?.[itemIndex];
       if (item) {
         total -= (item.price || 0) * quantity;
       }

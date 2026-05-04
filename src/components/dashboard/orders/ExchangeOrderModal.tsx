@@ -41,7 +41,9 @@ export function ExchangeOrderModal({
   onOpenChange,
   onSuccess,
 }: ExchangeOrderModalProps) {
-  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
+    null,
+  );
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,7 +55,10 @@ export function ExchangeOrderModal({
   const [exchangeOrderItem] = useExchangeOrderMutation();
   const allProducts = productsData?.data || [];
 
-  const orderItem = selectedItemIndex !== null && order?.products ? (order?.products as any[])[selectedItemIndex] : null;
+  const orderItem =
+    selectedItemIndex !== null && order?.products
+      ? (order?.products as unknown as any[])[selectedItemIndex]
+      : null;
 
   const handleExchange = async () => {
     if (!order || selectedItemIndex === null || !selectedProduct) {
@@ -109,7 +114,9 @@ export function ExchangeOrderModal({
         <div className="space-y-5 px-6 py-5">
           {/* Step 1: Select Item to Exchange */}
           <div className="space-y-3">
-            <Label className="text-sm font-semibold">Select Item to Exchange</Label>
+            <Label className="text-sm font-semibold">
+              Select Item to Exchange
+            </Label>
             <div className="space-y-2">
               {order.products && order.products.length > 0 ? (
                 order.products.map((item: any, idx: number) => (
@@ -130,9 +137,12 @@ export function ExchangeOrderModal({
                         <Package className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">{item.title || item.name}</p>
+                        <p className="font-medium text-sm">
+                          {item.title || item.name}
+                        </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Qty: {item.quantity} × ৳{(item.price || 0).toLocaleString()}
+                          Qty: {item.quantity} × ৳
+                          {(item.price || 0).toLocaleString()}
                         </p>
                       </div>
                       {selectedItemIndex === idx && (
@@ -165,14 +175,20 @@ export function ExchangeOrderModal({
                   {orderItem.title || orderItem.name}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Price: ৳{(orderItem.price || 0).toLocaleString()} × {orderItem.quantity} units
+                  Price: ৳{(orderItem.price || 0).toLocaleString()} ×{" "}
+                  {orderItem.quantity} units
                 </p>
               </Card>
 
               {/* Step 2: Select New Product */}
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">Select New Product</Label>
-                <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+                <Label className="text-sm font-semibold">
+                  Select New Product
+                </Label>
+                <Select
+                  value={selectedProduct}
+                  onValueChange={setSelectedProduct}
+                >
                   <SelectTrigger className="h-10 rounded-lg border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <SelectValue placeholder="Choose a product to exchange with…" />
                   </SelectTrigger>
