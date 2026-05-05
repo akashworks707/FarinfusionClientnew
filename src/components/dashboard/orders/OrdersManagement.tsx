@@ -10,6 +10,7 @@ import {
   useCompleteOrderMutation,
   useGetAllScheduledOrdersQuery,
   useDeleteOrderMutation,
+  useGetAllholdOrdersQuery,
   usePartialUpdateOrderMutation,
   useExchangeOrderMutation,
   useMarkDamageMutation,
@@ -70,6 +71,7 @@ export default function OrdersManagement() {
   const [partialUpdateOrder, setPartialUpdateOrder] = useState<Order | null>(
     null,
   );
+
   const [partialUpdateOpen, setPartialUpdateOpen] = useState(false);
   const [exchangeOrder, setExchangeOrder] = useState<Order | null>(null);
   const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
@@ -79,7 +81,7 @@ export default function OrdersManagement() {
   const [damageModalOpen, setDamageModalOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
-    "instant" | "scheduled" | "damaged"
+    "instant" | "scheduled" | "hold" | "damaged"
   >("instant");
 
   const [doPartialUpdate] = usePartialUpdateOrderMutation();
@@ -95,6 +97,7 @@ export default function OrdersManagement() {
   const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  
 
   const queryArgs = {
     page,
@@ -120,11 +123,18 @@ export default function OrdersManagement() {
       skip: activeTab !== "scheduled",
     });
 
+    
+
+    const { data: HoldOrdersData, isLoading: isHoldLoading } =
+    useGetAllholdOrdersQuery(queryArgs, {
+      skip: activeTab !== "hold",
+    });
   // Stats — unfiltered
   // const { data: allOrdersData } = useGetAllOrdersQuery({
   //   page: 1,
   //   limit: 1000,
   // });
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -308,8 +318,8 @@ export default function OrdersManagement() {
 
   const orders =
     activeTab === "instant"
-      ? (ordersData?.data as Order[]) || []
-      : (scheduledOrdersData?.data as Order[]) || [];
+      ? (ordersData?.data as Order[]) || [] : activeTab === "scheduled"
+      ? (scheduledOrdersData?.data as Order[]) || [] : (HoldOrdersData?.data as Order[]) || [];
 
   const isLoadingFinal =
     activeTab === "instant" ? isLoading : isScheduledLoading;
@@ -385,6 +395,34 @@ export default function OrdersManagement() {
             >
               Scheduled Orders
             </button>
+            <button
+              onClick={() => {
+                setActiveTab("hold");
+                setPage(1);
+              }}
+              className={cn(
+                "px-4 py-2 text-sm font-semibold rounded-md transition",
+                activeTab === "hold"
+                  ? "bg-amber-500 text-white"
+                  : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
+              )}
+            >
+              Hold Orders
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("damaged");
+                setPage(1);
+              }}
+              className={cn(
+                "px-4 py-2 text-sm font-semibold rounded-md transition",
+                activeTab === "damaged"
+                  ? "bg-amber-500 text-white"
+                  : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
+              )}
+            >
+              Damaged Products
+            </button>
             {userRole === "ADMIN" && (
               <button
                 onClick={() => {
@@ -442,6 +480,23 @@ export default function OrdersManagement() {
           />
         </TabsContent>
 
+        {/* HOld Orders */}
+        <TabsContent value="hold">
+          <OrderTable
+            orders={(HoldOrdersData?.data as Order[]) || []}
+            loading={isHoldLoading}
+            error={null}
+            onConfirmOrder={handleConfirmClick}
+            refetch={refetch}
+            onViewOrder={handleViewClick}
+            setDeleteTarget={setDeleteTarget}
+            setDeleteOpen={setDeleteOpen}
+            onAssignCourier={handleOpenCourierModal}
+            onCompleteOrder={handleCompleteClick}
+          />
+        </TabsContent>
+        
+        {/* ----------  */}
         {userRole === "ADMIN" && (
           <TabsContent value="damaged" className="space-y-6">
             <DamagedProductsSection

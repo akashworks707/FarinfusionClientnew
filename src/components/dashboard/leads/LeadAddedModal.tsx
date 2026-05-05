@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -27,19 +27,33 @@ import {
   StickyNote,
   UserPlus,
   Plus,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
+
+
+const leadSources = [
+  "facebook",
+  "instagram",
+  "linkedin",
+  "youtube",
+  "tiktok", 
+];
+
 const LeadSchema = z.object({
   name: z.string().min(2, "Name is required"),
   email: z.string().min(5, "Please enter a valid email address"),
-  phone: z.string().min(11, "Please enter a valid phone number"),
+  phone: z.string().length(11, "Phone number must be exactly 11 digits"),
   address: z.string().min(5, "Address must be at least 5 characters"),
+  social: z.string().min(1, "Please select a social source"), 
   notes: z.string().optional(),
 });
 
@@ -91,6 +105,7 @@ const LeadAddedModal = ({ open, onOpenChange }: Props) => {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<LeadFormData>({
     resolver: zodResolver(LeadSchema),
@@ -99,11 +114,13 @@ const LeadAddedModal = ({ open, onOpenChange }: Props) => {
       email: "",
       phone: "",
       address: "",
+      social: "",
       notes: "",
     },
   });
 
   const onSubmit = async (formData: LeadFormData) => {
+    console.log(formData);
     try {
       
       await createLead({
@@ -122,6 +139,8 @@ const LeadAddedModal = ({ open, onOpenChange }: Props) => {
       toast.error(error?.data?.message || "Something went wrong");
     }
   };
+
+  
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -230,6 +249,41 @@ const LeadAddedModal = ({ open, onOpenChange }: Props) => {
                 rows={3}
                 className={cn(inputCls, "h-auto resize-none leading-relaxed")}
                 {...register("notes")}
+              />
+            </FormField>
+
+
+             {/* Lead From */}
+            <FormField
+              icon={Globe}
+              label="Social Media"
+              htmlFor="social"
+              required
+              error={errors.social?.message}
+            >
+              <Controller
+                name="social"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value|| ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger className={inputCls}>
+                      <SelectValue placeholder="Select lead source" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {leadSources.map((source) => (
+                        <SelectItem key={source} value={source}>
+                          <div className="flex items-center gap-2">
+                            <span>{source}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               />
             </FormField>
 

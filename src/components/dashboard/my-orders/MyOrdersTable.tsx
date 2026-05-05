@@ -32,6 +32,7 @@ import {
   Package,
   Trash,
   Trash2,
+  TimerReset,
 } from "lucide-react";
 import type { Order } from "@/types/orders";
 import { cn } from "@/lib/utils";
@@ -53,6 +54,7 @@ interface MyOrdersTableProps {
   userRole: UserRole;
   onView: (order: Order) => void;
   onEdit: (order: Order) => void;
+  onOrderTiming: (order: Order) => void;
   onAssignCourier?: (order: Order) => void;
   setDeleteTarget?: (order: Order) => void;
   setDeleteOpen?: (open: boolean) => void;
@@ -120,6 +122,7 @@ export function MyOrdersTable({
   userRole,
   onView,
   onEdit,
+  onOrderTiming,
   onAssignCourier,
   setDeleteTarget,
   setDeleteOpen,
@@ -212,6 +215,7 @@ export function MyOrdersTable({
               ORDER_STATUS.PENDING;
             const StatusIcon = status.icon;
             const isConfirmed = order.orderStatus === "CONFIRMED";
+            const isDelivered = order.orderStatus === "COMPLETED";
             const moderatorEdit =
               ["MODERATOR"].includes(userRole) && !isConfirmed;
             const canEditOrder =
@@ -373,6 +377,19 @@ export function MyOrdersTable({
                         <Eye className="h-3.5 w-3.5 text-gray-500" />
                         View Details
                       </DropdownMenuItem>
+
+                     {
+                      !(isConfirmed || isDelivered) && (
+                        <DropdownMenuItem
+                            className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
+                            onClick={() => onOrderTiming(order)}
+                          >
+                            <TimerReset className="h-3.5 w-3.5" />
+                              Order Timing
+                        </DropdownMenuItem>
+                      )
+                     }
+                      
 
                       {canEditOrder && (
                         <DropdownMenuItem

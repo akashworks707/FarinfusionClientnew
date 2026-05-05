@@ -409,7 +409,7 @@ export function OrderTable({
                       {order.billingDetails?.fullName}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {order.billingDetails?.email}
+                      {order.billingDetails?.phone}
                     </span>
                   </div>
                 </TableCell>

@@ -22,6 +22,7 @@ import {
   StickyNote,
   Flag,
   Activity,
+  Globe,
 } from "lucide-react";
 import { useGetSingleLeadQuery } from "@/redux/features/lead/lead.api";
 import LeadDetailSkeleton from "@/components/dashboard/leads/LeadDetailSkeleton";
@@ -30,10 +31,54 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaLinkedinIn,
+  FaYoutube,
+  FaWhatsapp,
+  FaTiktok,
+} from "react-icons/fa";
+
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   leadId: string | null;
+};
+
+
+const SOCIAL_MAP: Record<string, { label: string; icon: React.ReactNode; cls: string }> = {
+  Facebook: {
+    label: "Facebook",
+    icon: <FaFacebookF className="h-3.5 w-3.5 text-blue-600" />,
+    cls: "bg-blue-50 text-blue-600",
+  },
+  Instagram: {
+    label: "Instagram",
+    icon: <FaInstagram className="h-3.5 w-3.5 text-pink-500" />,
+    cls: "bg-pink-50 text-pink-600",
+  },
+  Linkedin: {
+    label: "LinkedIn",
+    icon: <FaLinkedinIn className="h-3.5 w-3.5 text-sky-600" />,
+    cls: "bg-sky-50 text-sky-600",
+  },
+  Youtube: {
+    label: "YouTube",
+    icon: <FaYoutube className="h-3.5 w-3.5 text-red-500" />,
+    cls: "bg-red-50 text-red-600",
+  },
+  Whatsapp: {
+    label: "WhatsApp",
+    icon: <FaWhatsapp className="h-3.5 w-3.5 text-green-600" />,
+    cls: "bg-green-50 text-green-600",
+  },
+  Tiktok: {
+    label: "TikTok",
+    icon: <FaTiktok className="h-3.5 w-3.5 text-black" />,
+    cls: "bg-gray-100 text-black",
+  },
 };
 
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
@@ -132,6 +177,7 @@ export function LeadDetailModal({ open, onOpenChange, leadId }: Props) {
 
   const lead = data?.data;
 
+   const social = SOCIAL_MAP[lead?.social ?? ""];
   const status = STATUS_MAP[lead?.status ?? "NEW"] ?? STATUS_MAP.NEW;
   const priority = PRIORITY_MAP[lead?.priority ?? "LOW"] ?? PRIORITY_MAP.LOW;
 
@@ -269,6 +315,23 @@ export function LeadDetailModal({ open, onOpenChange, leadId }: Props) {
                     })}
                   />
                 )}
+                {/* SOCIAL */}
+                <InfoRow
+                  icon={Globe}
+                  label="Source"
+                  value={
+                    social ? (
+                      <div className={`inline-flex items-center gap-2 px-2 py-1 rounded ${social.cls}`}>
+                        {social.icon}
+                        {social.label}
+                      </div>
+                    ) : (
+                      <>
+                        {lead?.social}
+                      </>
+                    )
+                  }
+                />
               </div>
             </div>
           ) : null}

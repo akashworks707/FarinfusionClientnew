@@ -854,11 +854,12 @@ import {
 } from "@/components/ui/pagination";
 import type { DateRange } from "react-day-picker";
 import {
+  useGetMyHoldOrdersQuery,
   useGetMyOrdersQuery,
   useGetMyScheduledOrdersQuery,
 } from "@/redux/features/orders/myOrdersApi";
 import { useGetMeQuery } from "@/redux/features/user/user.api";
-import { useCreateCourierMutation, useDeleteOrderMutation } from "@/lib/hooks";
+import { useCreateCourierMutation, useDeleteOrderMutation, } from "@/lib/hooks";
 import { AssignCourierModal } from "@/components/dashboard/orders/AssignCourierModal";
 import { MyOrdersTable, type UserRole } from "./MyOrdersTable";
 import { MyOrderDetailModal } from "./MyOrderDetailModal";
@@ -875,6 +876,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { OrderModeChangeModal } from "@/components/shared/OrderModeChangeModal";
 
 const LIMIT = 10;
 
@@ -1018,9 +1020,11 @@ export default function MyOrders() {
   const [editOrder, setEditOrder] = useState<Order | null>(null);
   const [courierOrder, setCourierOrder] = useState<Order | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [timingOrder, setTimingOrder] = useState<Order | null>(null);
+  const [orderTimingOpen, setOrderTimingOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [courierOpen, setCourierOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"instant" | "scheduled">(
+  const [activeTab, setActiveTab] = useState<"instant" | "scheduled" | "hold">(
     "instant",
   );
   const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
@@ -1059,24 +1063,35 @@ export default function MyOrders() {
     limit: LIMIT,
   });
 
+  const {
+    data : holdOrdersData,
+    isLoading : holdLoading,
+    error : holdError,
+    refetch : refetchHold
+  } = useGetMyHoldOrdersQuery({
+    page, limit : LIMIT
+  });
+
+  
+
   const [createCourier] = useCreateCourierMutation();
   const [deleteOrder] = useDeleteOrderMutation();
 
   const orders: Order[] =
     activeTab === "instant"
-      ? (instantOrdersData?.data as Order[]) || []
-      : (scheduledOrdersData?.data as Order[]) || [];
+      ? (instantOrdersData?.data as Order[]) || [] : activeTab === "scheduled" 
+      ? (scheduledOrdersData?.data as Order[]) || [] : (holdOrdersData?.data as Order[]) || [];
 
   const meta =
     activeTab === "instant"
       ? instantOrdersData?.meta
       : scheduledOrdersData?.meta;
 
-  const isLoading = activeTab === "instant" ? instantLoading : scheduledLoading;
+  const isLoading = activeTab === "instant" ? instantLoading : activeTab === "scheduled" ? scheduledLoading : holdLoading;
 
-  const error = activeTab === "instant" ? instantError : scheduledError;
+  const error = activeTab === "instant" ? instantError : activeTab === "scheduled" ? scheduledError : holdError;
 
-  const refetch = activeTab === "instant" ? refetchInstant : refetchScheduled;
+  const refetch = activeTab === "instant" ? refetchInstant : activeTab === "scheduled" ? refetchScheduled : refetchHold;
   // const totalCount = meta?.total ?? 0;
 
   // const pendingCount = orders.filter((o) => o.orderStatus === "PENDING").length;
@@ -1183,6 +1198,13 @@ export default function MyOrders() {
     setEditOrder(order);
     setEditOpen(true);
   };
+  
+
+  const handleOrderTiming = (order: Order) => {
+  setTimingOrder(order);
+  setOrderTimingOpen(true);
+};
+
   const handleAssignCourier = (order: Order) => {
     setCourierOrder(order);
     setCourierOpen(true);
@@ -1534,6 +1556,21 @@ export default function MyOrders() {
         >
           Scheduled Orders
         </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("hold");
+            setPage(1);
+          }}
+          className={cn(
+            "px-4 py-2 text-sm font-semibold rounded-md transition",
+            activeTab === "hold"
+              ? "bg-amber-500 text-white"
+              : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
+          )}
+        >
+          Hold Orders
+        </button>
       </div>
 
       {/* ── Table ── */}
@@ -1544,6 +1581,7 @@ export default function MyOrders() {
         userRole={userRole}
         onView={handleView}
         onEdit={handleEdit}
+        onOrderTiming={handleOrderTiming}
         onAssignCourier={handleAssignCourier}
         refetch={refetch}
         setDeleteTarget={setDeleteTarget}
@@ -1617,6 +1655,13 @@ export default function MyOrders() {
             setEditOpen(true);
           }
         }}
+      />
+
+      <OrderModeChangeModal 
+        open={orderTimingOpen}
+        order={timingOrder}
+        onOpenChange={setOrderTimingOpen}
+        onSuccess={refetch}
       />
 
       <MyOrderEditModal

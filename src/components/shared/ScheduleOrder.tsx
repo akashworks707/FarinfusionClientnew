@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { CalendarClock, Zap, Calendar, Clock } from "lucide-react";
+import { CalendarClock, Zap, Calendar, Clock, PauseCircle, Clock3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -13,7 +13,7 @@ import {
 import { format, parse } from "date-fns";
 import { cn } from "@/lib/utils";
 
-export type ScheduleType = "INSTANT" | "SCHEDULED";
+export type ScheduleType = "INSTANT" | "SCHEDULED" | "HOLD";
 
 interface ScheduleOrderProps {
   value: {
@@ -25,6 +25,8 @@ interface ScheduleOrderProps {
 
 export function ScheduleOrder({ value, onChange }: ScheduleOrderProps) {
   const isScheduled = value.type === "SCHEDULED";
+  const isInstant = value.type === "INSTANT";
+  const isHold = value.type === "HOLD"
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     value.scheduledAt
@@ -82,13 +84,13 @@ export function ScheduleOrder({ value, onChange }: ScheduleOrderProps) {
       </p>
 
       {/* Toggle buttons */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           type="button"
           onClick={() => onChange({ type: "INSTANT" })}
           className={cn(
             "flex-1 rounded-lg text-xs font-semibold transition-all duration-200",
-            !isScheduled
+            isInstant
               ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
               : "bg-gray-100 text-gray-600 hover:bg-gray-150 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700",
           )}
@@ -115,6 +117,20 @@ export function ScheduleOrder({ value, onChange }: ScheduleOrderProps) {
         >
           <CalendarClock className="h-3.5 w-3.5 mr-1.5" />
           Schedule Order
+        </Button>
+
+        <Button
+          type="button"
+          onClick={() => onChange({ type: "HOLD" })}
+          className={cn(
+            "flex-1 max-w-43 rounded-lg text-xs font-semibold transition-all duration-200",
+            isHold
+              ? "bg-amber-600 hover:bg-amber-700 text-white shadow-sm"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-150 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700",
+          )}
+        >
+          <PauseCircle className="h-3.5 w-3.5 mr-1.5" />
+          Hold Orders
         </Button>
       </div>
 
