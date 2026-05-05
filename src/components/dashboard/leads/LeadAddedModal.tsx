@@ -29,7 +29,6 @@ import {
   Plus,
   Globe,
 } from "lucide-react";
-import { FaFacebookF, FaInstagram ,FaLinkedinIn ,FaYoutube, FaTiktok  } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -42,28 +41,19 @@ type Props = {
 
 
 const leadSources = [
-  "Facebook",
-  "Instagram",
-  "Linkedin",
-  "Youtube",
-  "Tiktok", 
+  "facebook",
+  "instagram",
+  "linkedin",
+  "youtube",
+  "tiktok", 
 ];
-
-const leadSourceIcons: Record<string, React.ReactNode> = {
-  Facebook: <FaFacebookF className="w-4 h-4 text-blue-600" />,
-  Instagram: <FaInstagram className="w-4 h-4 text-pink-500" />,
-  Linkedin: <FaLinkedinIn  className="w-4 h-4 text-blue-500" />,
-  Youtube: <FaYoutube  className="w-4 h-4 text-red-500" />,
-  Website: <Globe className="w-4 h-4 text-green-600" />,
-  Tiktok: <FaTiktok className="w-4 h-4 text-gray-500" />,
-};
 
 const LeadSchema = z.object({
   name: z.string().min(2, "Name is required"),
   email: z.string().min(5, "Please enter a valid email address"),
-  phone: z.string().min(11, "Please enter a valid phone number"),
+  phone: z.string().length(11, "Phone number must be exactly 11 digits"),
   address: z.string().min(5, "Address must be at least 5 characters"),
-  social: z.string().min(1, "Please select a social source"),
+  social: z.string().min(1, "Please select a social source"), 
   notes: z.string().optional(),
 });
 
@@ -130,6 +120,7 @@ const LeadAddedModal = ({ open, onOpenChange }: Props) => {
   });
 
   const onSubmit = async (formData: LeadFormData) => {
+    console.log(formData);
     try {
       
       await createLead({
@@ -148,6 +139,8 @@ const LeadAddedModal = ({ open, onOpenChange }: Props) => {
       toast.error(error?.data?.message || "Something went wrong");
     }
   };
+
+  
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -273,7 +266,7 @@ const LeadAddedModal = ({ open, onOpenChange }: Props) => {
                 control={control}
                 render={({ field }) => (
                   <Select
-                    value={field.value}
+                    value={field.value|| ""}
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger className={inputCls}>
@@ -284,8 +277,6 @@ const LeadAddedModal = ({ open, onOpenChange }: Props) => {
                       {leadSources.map((source) => (
                         <SelectItem key={source} value={source}>
                           <div className="flex items-center gap-2">
-                            {leadSourceIcons[source]}
-
                             <span>{source}</span>
                           </div>
                         </SelectItem>

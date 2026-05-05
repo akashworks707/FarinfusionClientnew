@@ -176,10 +176,11 @@ export function OrderModeChangeModal({
       }
 
       if (isScheduled) {
-        if (!state.scheduledAt) {
+        if (!state.selectedDate || !state.scheduledAt) {
           toast.error("Please select schedule date & time");
           return;
         }
+
         payload = {
           scheduleType: "SCHEDULED",
           isPublished: false,
@@ -263,9 +264,9 @@ export function OrderModeChangeModal({
                 setState((prev) => ({
                   ...prev,
                   scheduleType: "SCHEDULED",
-                  scheduledAt:
-                    prev.scheduledAt ||
-                    format(new Date(), "yyyy-MM-dd'T'09:00"),
+                  scheduledAt: prev.selectedDate
+                    ? buildLocalDateTime(prev.selectedDate, prev.time)
+                    : undefined,
                 }))
               }
               className={cn(

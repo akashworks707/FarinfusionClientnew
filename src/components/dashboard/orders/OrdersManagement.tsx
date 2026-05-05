@@ -11,6 +11,9 @@ import {
   useGetAllScheduledOrdersQuery,
   useDeleteOrderMutation,
   useGetAllholdOrdersQuery,
+  usePartialUpdateOrderMutation,
+  useExchangeOrderMutation,
+  useMarkDamageMutation,
 } from "@/redux/features/orders/ordersApi";
 import { useCreateCourierMutation } from "@/lib/hooks";
 import { OrderStats } from "./OrderStats";
@@ -44,6 +47,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { DamagedProductsSection } from "./DamagedProductsSection";
+import { ExchangeOrderModal } from "./ExchangeOrderModal";
+import { PartialUpdateOrderModal } from "./PartialUpdateOrderModal";
 
 // const LIMIT = 10;
 
@@ -59,6 +65,24 @@ export default function OrdersManagement() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [confirmingOrder, setConfirmingOrder] = useState<Order | null>(null);
   const [completingOrder, setCompletingOrder] = useState<Order | null>(null);
+  const [partialUpdateOrder, setPartialUpdateOrder] = useState<Order | null>(
+    null,
+  );
+
+  const [partialUpdateOpen, setPartialUpdateOpen] = useState(false);
+  const [exchangeOrder, setExchangeOrder] = useState<Order | null>(null);
+  const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
+  const [damageOrder, setDamageOrder] = useState<Order | null>(null);
+  const [damageModalOpen, setDamageModalOpen] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<
+    "instant" | "scheduled" | "hold" | "damaged"
+  >("instant");
+  
+  const [doPartialUpdate] = usePartialUpdateOrderMutation();
+  const [doExchange] = useExchangeOrderMutation();
+  const [doDamage] = useMarkDamageMutation();
+  
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
@@ -68,10 +92,7 @@ export default function OrdersManagement() {
   const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  const [activeTab, setActiveTab] = useState<"instant" | "scheduled" | "hold">(
-    "instant",
-  );
+  
 
   const queryArgs = {
     page,
@@ -97,6 +118,8 @@ export default function OrdersManagement() {
       skip: activeTab !== "scheduled",
     });
 
+    
+
     const { data: HoldOrdersData, isLoading: isHoldLoading } =
     useGetAllholdOrdersQuery(queryArgs, {
       skip: activeTab !== "hold",
@@ -106,6 +129,7 @@ export default function OrdersManagement() {
   //   page: 1,
   //   limit: 1000,
   // });
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -117,10 +141,64 @@ export default function OrdersManagement() {
 
   const [confirmOrder, { isLoading: isConfirming, error: confirmError }] =
     useConfirmOrderMutation();
+    
   const [completeOrder, { isLoading: isCompleting, error: completeError }] =
     useCompleteOrderMutation();
   const [createCourier] = useCreateCourierMutation();
   const [deleteOrder] = useDeleteOrderMutation();
+
+  const handleReset = () => {
+    setStatus("");
+    setDateFilter({ from: undefined, to: undefined });
+    setPage(1);
+  };
+
+  const handlePartialUpdate = (order: Order) => {
+    setPartialUpdateOrder(order);
+    setPartialUpdateOpen(true);
+  };
+
+  const handlePartialUpdateSubmit = async (data: any) => {
+    try {
+      await doPartialUpdate(data).unwrap();
+      toast.success("Order updated successfully");
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update order");
+      throw error;
+    }
+  };
+
+  const handleExchange = (order: Order) => {
+    setExchangeOrder(order);
+    setExchangeModalOpen(true);
+  };
+
+  const handleExchangeSubmit = async () => {
+    try {
+      refetch();
+      toast.success("Exchange processed successfully");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to process exchange");
+      throw error;
+    }
+  };
+
+  const handleMarkDamage = (order: Order) => {
+    setDamageOrder(order);
+    setDamageModalOpen(true);
+  };
+
+  const handleDamageSubmit = async (data: any) => {
+    try {
+      await doDamage(data).unwrap();
+      toast.success("Order marked as damaged");
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to mark as damaged");
+      throw error;
+    }
+  };
 
   const handleStatusChange = (val: OrderStatus | "") => {
     setStatus(val);
@@ -134,13 +212,6 @@ export default function OrdersManagement() {
 
   const handleDateChange = (date: DateFilter) => {
     setDateFilter(date);
-    setPage(1);
-  };
-
-  const handleReset = () => {
-    setSearchTerm("");
-    setStatus("");
-    setDateFilter({ from: undefined, to: undefined });
     setPage(1);
   };
 
@@ -329,6 +400,20 @@ export default function OrdersManagement() {
             >
               Hold Orders
             </button>
+            <button
+              onClick={() => {
+                setActiveTab("damaged");
+                setPage(1);
+              }}
+              className={cn(
+                "px-4 py-2 text-sm font-semibold rounded-md transition",
+                activeTab === "damaged"
+                  ? "bg-amber-500 text-white"
+                  : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
+              )}
+            >
+              Damaged Products
+            </button>
           </div>
         </TabsList>
 
@@ -340,9 +425,12 @@ export default function OrdersManagement() {
             error={error ? "Failed to load orders" : null}
             onConfirmOrder={handleConfirmClick}
             refetch={refetch}
+            onPartialUpdate={handlePartialUpdate}
+            onExchange={handleExchange}
+            onMarkDamage={handleMarkDamage}
             onViewOrder={handleViewClick}
             onAssignCourier={handleOpenCourierModal}
-            setDeleteTarget={setDeleteTarget} 
+            setDeleteTarget={setDeleteTarget}
             setDeleteOpen={setDeleteOpen}
             onCompleteOrder={handleCompleteClick}
           />
@@ -356,6 +444,9 @@ export default function OrdersManagement() {
             error={null}
             onConfirmOrder={handleConfirmClick}
             refetch={refetch}
+            onPartialUpdate={handlePartialUpdate}
+            onExchange={handleExchange}
+            onMarkDamage={handleMarkDamage}
             onViewOrder={handleViewClick}
             setDeleteTarget={setDeleteTarget}
             setDeleteOpen={setDeleteOpen}
@@ -364,7 +455,7 @@ export default function OrdersManagement() {
           />
         </TabsContent>
 
-        {/* Scheduled Orders */}
+        {/* HOld Orders */}
         <TabsContent value="hold">
           <OrderTable
             orders={(HoldOrdersData?.data as Order[]) || []}
@@ -377,6 +468,14 @@ export default function OrdersManagement() {
             setDeleteOpen={setDeleteOpen}
             onAssignCourier={handleOpenCourierModal}
             onCompleteOrder={handleCompleteClick}
+          />
+        </TabsContent>
+        
+        {/* ----------  */}
+        <TabsContent value="damaged" className="space-y-6">
+          <DamagedProductsSection
+            orders={ordersData?.data || []}
+            isLoading={isLoading}
           />
         </TabsContent>
       </Tabs>
@@ -486,7 +585,9 @@ export default function OrdersManagement() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="hover:cursor-pointer hover:scale-105 transition-transform transform ease-in-out duration-500 rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="hover:cursor-pointer hover:scale-105 transition-transform transform ease-in-out duration-500 rounded-xl">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               disabled={deleting}
               onClick={confirmDelete}
@@ -507,6 +608,55 @@ export default function OrdersManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Partial Update Modal */}
+      <PartialUpdateOrderModal
+        open={partialUpdateOpen}
+        onOpenChange={setPartialUpdateOpen}
+        order={partialUpdateOrder}
+        onSubmit={handlePartialUpdateSubmit}
+      />
+
+      {/* Exchange Modal */}
+      <ExchangeOrderModal
+        open={exchangeModalOpen}
+        onOpenChange={setExchangeModalOpen}
+        order={exchangeOrder}
+        onSuccess={handleExchangeSubmit}
+      />
+
+      {/* Damage Modal */}
+      {damageOrder && (
+        <AlertDialog open={damageModalOpen} onOpenChange={setDamageModalOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Mark Order as Damaged</AlertDialogTitle>
+              <AlertDialogDescription>
+                Order #{damageOrder.customOrderId}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Are you sure you want to mark this order as damaged? This will be
+              logged in the system.
+            </p>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  handleDamageSubmit({
+                    orderId: damageOrder._id,
+                    note: "Order marked as damaged",
+                  });
+                  setDamageModalOpen(false);
+                }}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Mark as Damaged
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
 
       <OrderDetailsModal
         order={selectedOrder}

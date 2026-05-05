@@ -26,7 +26,7 @@ export type CreateOrderPayload = {
   total: number;
   couponCode: string;
   discount: number;
-  scheduleType?: "INSTANT" | "SCHEDULED";
+  scheduleType?: "INSTANT" | "SCHEDULED" | "HOLD";
   scheduledAt?: Date;
   products: {
     product: string;
@@ -59,7 +59,7 @@ export interface Order {
   couponCode?: string;
   orderType: "POS" | "ONLINE" | "DELIVERY";
   transactionId?: string;
-  scheduleType?: "INSTANT" | "SCHEDULED";
+  scheduleType?: "INSTANT" | "SCHEDULED" | "HOLD";
   scheduledAt?: Date;
   paymentMethod?:
     | "COD"

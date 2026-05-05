@@ -39,6 +39,7 @@ import {
   PencilLine,
   Check,
   Flag,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +56,14 @@ enum LeadPriority {
   LOW = "LOW",
   MEDIUM = "MEDIUM",
   HIGH = "HIGH",
+}
+
+enum SocialStatus {
+  FACEBOOK = "facebook",
+  INSTAGRAM = "instagram",
+  LINKEDIN = "linkedin",
+  YOUTUBE = "youtube",
+  TIKTOK = "tiktok",
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -91,8 +100,9 @@ const PRIORITY_CONFIG: Record<
 const LeadUpdateSchema = z.object({
   name: z.string().min(2, "Name is required"),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(11, "Please enter a valid phone number"),
+  phone: z.string().length(11, "Phone number must be exactly 11 digits"),
   address: z.string().min(5, "Address must be at least 5 characters"),
+  social: z.string(),
   status: z.string().optional(),
   priority: z.string().optional(),
   notes: z.string().optional(),
@@ -105,6 +115,8 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   leadId: string | null;
 };
+
+
 
 function FormField({
   icon: Icon,
@@ -157,7 +169,12 @@ const LeadUpdateModal = ({ open, onOpenChange, leadId }: Props) => {
     formState: { errors, isDirty },
   } = useForm<LeadFormData>({
     resolver: zodResolver(LeadUpdateSchema),
+    defaultValues: {
+    social: "",
+  },
   });
+
+
 
   useEffect(() => {
     if (data?.data) {
@@ -166,6 +183,7 @@ const LeadUpdateModal = ({ open, onOpenChange, leadId }: Props) => {
         email: data.data.email || "",
         phone: data.data.phone || "",
         address: data.data.address || "",
+        social: data.data.social || "",
         notes: data.data.notes || "",
         status: data.data.status || "",
         priority: data.data.priority || "MEDIUM",
@@ -400,6 +418,43 @@ const LeadUpdateModal = ({ open, onOpenChange, leadId }: Props) => {
                     )}
                   />
                 </FormField>
+
+                {/* social media */}
+                <FormField
+                  icon={Globe}
+                  label="Social Source"
+                  htmlFor="social"
+                  error={errors.social?.message}
+                >
+                  <Controller
+                    name="social"
+                    control={control}
+                    defaultValue="facebook"
+                    render={({ field }) => (
+                      <Select
+                        key={field.value}
+                        value={field.value}
+                        onValueChange={(value) => field.onChange(value)}
+                      >
+                        <SelectTrigger
+                          id="social"
+                          className={cn(inputCls, "w-full")}
+                        >
+                          <SelectValue placeholder="Select social platform" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {Object.values(SocialStatus).map((social) => (
+                            <SelectItem key={social} value={social}>
+                              {social.charAt(0).toUpperCase() + social.slice(1)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </FormField>
+
               </div>
 
               {/* Notes */}

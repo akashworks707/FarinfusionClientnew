@@ -23,6 +23,7 @@ export type LeadInput = {
   email: string;
   phone: string;
   address: string;
+  social : string;
   notes?: string;
 };
 
@@ -32,6 +33,7 @@ export interface ILeadResponse {
   email: string;
   phone: string;
   address: string;
+  social: string;
   status: string;
   priority: string;
   assignedBy: string;
