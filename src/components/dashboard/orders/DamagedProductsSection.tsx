@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Card } from "@/components/ui/card";
@@ -13,7 +12,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import type { Order } from "@/types/orders";
 
 interface DamagedProduct {
   orderId: string;
@@ -29,32 +27,15 @@ interface DamagedProduct {
 }
 
 interface DamagedProductsSectionProps {
-  orders: Order[];
+  damagedProducts: DamagedProduct[];
   isLoading?: boolean;
 }
 
 export function DamagedProductsSection({
-  orders,
+  damagedProducts,
   isLoading = false,
 }: DamagedProductsSectionProps) {
-  // Extract damaged products from orders with DAMAGE status
-  const damagedProducts: DamagedProduct[] = orders
-    .filter((order) => order.orderStatus === "DAMAGE")
-    .flatMap((order) =>
-      (order.items || []).map((item: any) => ({
-        orderId: order._id,
-        customOrderId: order.customOrderId || order._id?.slice(0, 10),
-        productId: item.productId,
-        productTitle: item.title || item.name,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        totalPrice: (item.price || 0) * (item.quantity || 1),
-        customerName: order.billingDetails?.fullName || "Unknown",
-        markedAt: order.updatedAt || new Date().toISOString(),
-        notes: order.damageNotes,
-      })),
-    );
-
+  // console.log(damagedProducts);
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -139,7 +120,7 @@ export function DamagedProductsSection({
       </div>
 
       {/* Table */}
-      <Card>
+      <Card className="p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>

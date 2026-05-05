@@ -13,6 +13,7 @@ import {
   usePartialUpdateOrderMutation,
   useExchangeOrderMutation,
   useMarkDamageMutation,
+  useGetAllDamagedProductsQuery,
 } from "@/redux/features/orders/ordersApi";
 import { useCreateCourierMutation } from "@/lib/hooks";
 import { OrderStats } from "./OrderStats";
@@ -49,6 +50,8 @@ import {
 import { DamagedProductsSection } from "./DamagedProductsSection";
 import { ExchangeOrderModal } from "./ExchangeOrderModal";
 import { PartialUpdateOrderModal } from "./PartialUpdateOrderModal";
+import { DamageOrderModal } from "./DamageOrderModal";
+import { useUser } from "@/context/UserContext";
 
 // const LIMIT = 10;
 
@@ -71,16 +74,18 @@ export default function OrdersManagement() {
   const [exchangeOrder, setExchangeOrder] = useState<Order | null>(null);
   const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
   const [damageOrder, setDamageOrder] = useState<Order | null>(null);
+  const { user } = useUser();
+  const userRole = user?.role;
   const [damageModalOpen, setDamageModalOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
     "instant" | "scheduled" | "damaged"
   >("instant");
-  
+
   const [doPartialUpdate] = usePartialUpdateOrderMutation();
   const [doExchange] = useExchangeOrderMutation();
   const [doDamage] = useMarkDamageMutation();
-  
+
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
@@ -131,11 +136,15 @@ export default function OrdersManagement() {
 
   const [confirmOrder, { isLoading: isConfirming, error: confirmError }] =
     useConfirmOrderMutation();
-    
+
   const [completeOrder, { isLoading: isCompleting, error: completeError }] =
     useCompleteOrderMutation();
   const [createCourier] = useCreateCourierMutation();
   const [deleteOrder] = useDeleteOrderMutation();
+  const { data: damagedData, isLoading: damagedLoading } =
+    useGetAllDamagedProductsQuery(undefined, {
+      skip: activeTab !== "damaged",
+    });
 
   const handleReset = () => {
     setStatus("");
@@ -376,20 +385,22 @@ export default function OrdersManagement() {
             >
               Scheduled Orders
             </button>
-            <button
-              onClick={() => {
-                setActiveTab("damaged");
-                setPage(1);
-              }}
-              className={cn(
-                "px-4 py-2 text-sm font-semibold rounded-md transition",
-                activeTab === "damaged"
-                  ? "bg-yellow-500 text-white"
-                  : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
-              )}
-            >
-              Damaged Products
-            </button>
+            {userRole === "ADMIN" && (
+              <button
+                onClick={() => {
+                  setActiveTab("damaged");
+                  setPage(1);
+                }}
+                className={cn(
+                  "px-4 py-2 text-sm font-semibold rounded-md transition",
+                  activeTab === "damaged"
+                    ? "bg-yellow-500 text-white"
+                    : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
+                )}
+              >
+                Damaged Products
+              </button>
+            )}
           </div>
         </TabsList>
 
@@ -431,12 +442,14 @@ export default function OrdersManagement() {
           />
         </TabsContent>
 
-        <TabsContent value="damaged" className="space-y-6">
-          <DamagedProductsSection
-            orders={ordersData?.data || []}
-            isLoading={isLoading}
-          />
-        </TabsContent>
+        {userRole === "ADMIN" && (
+          <TabsContent value="damaged" className="space-y-6">
+            <DamagedProductsSection
+              damagedProducts={damagedData?.data || []}
+              isLoading={damagedLoading}
+            />
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Modern Pagination */}
@@ -586,35 +599,12 @@ export default function OrdersManagement() {
 
       {/* Damage Modal */}
       {damageOrder && (
-        <AlertDialog open={damageModalOpen} onOpenChange={setDamageModalOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Mark Order as Damaged</AlertDialogTitle>
-              <AlertDialogDescription>
-                Order #{damageOrder.customOrderId}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Are you sure you want to mark this order as damaged? This will be
-              logged in the system.
-            </p>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  handleDamageSubmit({
-                    orderId: damageOrder._id,
-                    note: "Order marked as damaged",
-                  });
-                  setDamageModalOpen(false);
-                }}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                Mark as Damaged
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <DamageOrderModal
+          onOpenChange={setDamageModalOpen}
+          open={damageModalOpen}
+          order={damageOrder}
+          onSubmit={handleDamageSubmit}
+        />
       )}
 
       <OrderDetailsModal
