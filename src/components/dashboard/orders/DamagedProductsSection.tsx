@@ -39,7 +39,7 @@ export function DamagedProductsSection({
 }: DamagedProductsSectionProps) {
   // Extract damaged products from orders with DAMAGE status
   const damagedProducts: DamagedProduct[] = orders
-    .filter((order) => order?.orderStatus === "DAMAGE")
+    .filter((order) => order.orderStatus === "DAMAGE")
     .flatMap((order) =>
       (order.items || []).map((item: any) => ({
         orderId: order._id,
@@ -51,7 +51,7 @@ export function DamagedProductsSection({
         totalPrice: (item.price || 0) * (item.quantity || 1),
         customerName: order.billingDetails?.fullName || "Unknown",
         markedAt: order.updatedAt || new Date().toISOString(),
-        notes: order?.damageNotes,
+        notes: order.damageNotes,
       })),
     );
 
