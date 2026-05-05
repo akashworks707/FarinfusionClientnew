@@ -273,6 +273,9 @@ interface OrderTableProps {
   onAssignCourier?: (order: Order) => void;
   setDeleteTarget?: (order: Order) => void;
   setDeleteOpen?: (open: boolean) => void;
+  onPartialUpdate?: (order: Order) => void;
+  onExchange?: (order: Order) => void;
+  onMarkDamage?: (order: Order) => void;
   refetch: () => void;
   onCompleteOrder?: (order: Order) => void;
 }
@@ -284,6 +287,9 @@ export function OrderTable({
   onConfirmOrder,
   onAssignCourier,
   onViewOrder,
+  onPartialUpdate,
+  onExchange,
+  onMarkDamage,
   setDeleteTarget,
   setDeleteOpen,
   onCompleteOrder,
@@ -337,7 +343,6 @@ export function OrderTable({
       </div>
     );
   }
-  
 
   return (
     <div className="overflow-x-auto rounded-lg border">
@@ -497,6 +502,9 @@ export function OrderTable({
                     onConfirm={onConfirmOrder}
                     onView={onViewOrder}
                     onAssignCourier={onAssignCourier}
+                    onPartialUpdate={onPartialUpdate}
+                    onMarkExchange={onExchange}
+                    onMarkDamage={onMarkDamage}
                     setDeleteTarget={setDeleteTarget}
                     setDeleteOpen={setDeleteOpen}
                     onComplete={onCompleteOrder}
