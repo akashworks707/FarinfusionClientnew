@@ -425,6 +425,7 @@ interface OrderRowActionsProps {
   onComplete?: (order: Order) => void;
   onMarkDamage?: (order: Order) => void;
   onMarkExchange?: (order: Order) => void;
+  onPartialUpdate?: (order: Order) => void;
 }
 
 export function OrderRowActions({
@@ -432,6 +433,7 @@ export function OrderRowActions({
   courier,
   refetch,
   onConfirm,
+  onPartialUpdate,
   onView,
   onAssignCourier,
   setDeleteOpen,
@@ -559,6 +561,16 @@ export function OrderRowActions({
                 )}
               </DropdownMenuItem>
             </>
+          )}
+
+          {userRole === "ADMIN" && (
+            <DropdownMenuItem
+              className="gap-2 text-sm cursor-pointer"
+              onClick={() => onPartialUpdate?.(order)}
+            >
+              <UserCog className="h-3.5 w-3.5 text-gray-500" />
+              <span>Partial Update</span>
+            </DropdownMenuItem>
           )}
 
           {/* Confirm */}
