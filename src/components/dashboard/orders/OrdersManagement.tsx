@@ -129,7 +129,6 @@ export default function OrdersManagement() {
     useGetAllholdOrdersQuery(queryArgs, {
       skip: activeTab !== "hold",
     });
-  // Stats — unfiltered
   // const { data: allOrdersData } = useGetAllOrdersQuery({
   //   page: 1,
   //   limit: 1000,
