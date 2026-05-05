@@ -960,6 +960,8 @@ export default function ProductManagement() {
               </thead>
               <tbody>
                 {products.map((product, idx) => {
+
+                  console.log(product)
                   // const sellPrice = product.discountPrice ?? product.price;
                   const sellPrice =
                     product.discountPrice && product.discountPrice > 0
