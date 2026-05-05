@@ -128,6 +128,33 @@ export const ordersApi = baseApi.injectEndpoints({
       ],
     }),
 
+    partialUpdateOrder: builder.mutation({
+      query: (data) => ({
+        url: "/orders/partial-update",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ORDERS"],
+    }),
+
+    exchangeOrder: builder.mutation({
+      query: (data) => ({
+        url: "/orders/exchange",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ORDERS"],
+    }),
+
+    markDamage: builder.mutation({
+      query: (data) => ({
+        url: "/orders/damage",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ORDERS"],
+    }),
+
     deleteOrder: builder.mutation<IResponse<{ id: string }>, string>({
       query: (id) => ({
         url: `/order/${id}`,
@@ -166,6 +193,9 @@ export const {
   useConfirmOrderMutation,
   useGetAllScheduledOrdersQuery,
   useUpdateDeliveryStatusMutation,
+  usePartialUpdateOrderMutation,
+  useExchangeOrderMutation,
+  useMarkDamageMutation,
   useUpdateSellerMutation,
   useCompleteOrderMutation,
 } = ordersApi;
