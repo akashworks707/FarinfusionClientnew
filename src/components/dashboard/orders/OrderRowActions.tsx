@@ -37,6 +37,7 @@ import {
   RotateCcw,
   AlertTriangle,
   TimerReset,
+  Plus,
 } from "lucide-react";
 import type { Order } from "@/types/orders";
 import { Courier } from "@/types/courier";
@@ -213,14 +214,18 @@ export function OrderRowActions({
             </>
           )}
 
-          {userRole === "ADMIN" && (
-            <DropdownMenuItem
-              className="gap-2 text-sm cursor-pointer"
-              onClick={() => onPartialUpdate?.(order)}
-            >
-              <UserCog className="h-3.5 w-3.5 text-gray-500" />
-              <span>Partial Update</span>
-            </DropdownMenuItem>
+          {/* Partial Update - Only for ADMIN and when order is CONFIRMED */}
+          {isAdmin && isConfirmed && onPartialUpdate && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="gap-2 text-sm cursor-pointer text-blue-600 focus:text-blue-600 dark:text-blue-400"
+                onClick={() => onPartialUpdate(order)}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Partial Update</span>
+              </DropdownMenuItem>
+            </>
           )}
 
           {/* Confirm */}
@@ -237,19 +242,33 @@ export function OrderRowActions({
             </>
           )}
 
-          {/* Assign Courier */}
-          {order.isPublished && hasAccess && isConfirmed && onAssignCourier && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="gap-2 text-sm cursor-pointer text-blue-600 focus:text-blue-600 dark:text-blue-400"
-                onClick={() => onAssignCourier(order)}
-                disabled={hasCourier && !isAdmin}
-              >
-                <Truck className="h-3.5 w-3.5" />
-                Assign Courier
-              </DropdownMenuItem>
-            </>
+          {/* Assign Courier - For confirmed orders without courier */}
+          {order.isPublished &&
+            hasAccess &&
+            isConfirmed &&
+            !hasCourier &&
+            onAssignCourier && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="gap-2 text-sm cursor-pointer text-blue-600 focus:text-blue-600 dark:text-blue-400"
+                  onClick={() => onAssignCourier(order)}
+                >
+                  <Truck className="h-3.5 w-3.5" />
+                  Assign Courier
+                </DropdownMenuItem>
+              </>
+            )}
+
+          {/* Reassign Courier - For ADMIN only when courier is already assigned */}
+          {isAdmin && isConfirmed && hasCourier && onAssignCourier && (
+            <DropdownMenuItem
+              className="gap-2 text-sm cursor-pointer text-purple-600 focus:text-purple-600 dark:text-purple-400"
+              onClick={() => onAssignCourier(order)}
+            >
+              <Truck className="h-3.5 w-3.5" />
+              Reassign Courier
+            </DropdownMenuItem>
           )}
 
           {isAdmin && (
@@ -299,7 +318,7 @@ export function OrderRowActions({
           )}
 
           {/* Mark as Damage */}
-          {order.isPublished && hasAccess && isCompleted && onMarkDamage && (
+          {order.isPublished && userRole === "ADMIN" && isCompleted && onMarkDamage && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -313,7 +332,7 @@ export function OrderRowActions({
           )}
 
           {/* Mark as Exchange */}
-          {order.isPublished && hasAccess && isCompleted && onMarkExchange && (
+          {order.isPublished && userRole === "ADMIN" && isCompleted && onMarkExchange && (
             <DropdownMenuItem
               className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
               onClick={() => onMarkExchange(order)}

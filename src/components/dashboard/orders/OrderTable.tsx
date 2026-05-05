@@ -377,6 +377,7 @@ export function OrderTable({
         <TableBody>
           {orders.map((order) => {
             const courier = courierMap.get(order._id);
+            console.log(courier);
 
             return (
               <TableRow key={order._id} className="hover:bg-muted/50">
@@ -420,12 +421,7 @@ export function OrderTable({
                   <OrderStatusBadge status={order.orderStatus} type="order" />
                 </TableCell>
                 <TableCell>
-                  {order.orderStatus === "CONFIRMED" && !courier ? (
-                    <div className="flex items-center gap-1.5 bg-yellow-50 dark:bg-yellow-900/20 px-2.5 py-1.5 rounded-lg text-xs font-medium text-yellow-700 dark:text-yellow-300 w-fit">
-                      <Truck size={13} className="animate-pulse" />
-                      Not Assigned...
-                    </div>
-                  ) : order?.deliveryStatus ? (
+                 {order?.deliveryStatus ? (
                     <div className="space-y-1">
                       <OrderStatusBadge
                         status={order?.deliveryStatus}
@@ -445,7 +441,7 @@ export function OrderTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  {courier?.courierName ? (
+                  {courier?._id ? (
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1.5 rounded-lg">
                         <Truck

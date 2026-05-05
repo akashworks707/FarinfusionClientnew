@@ -139,27 +139,27 @@ export const ordersApi = baseApi.injectEndpoints({
 
     partialUpdateOrder: builder.mutation({
       query: (data) => ({
-        url: "/orders/partial-update",
+        url: "/order/partial-update",
         method: "POST",
-        body: data,
+        data,
       }),
       invalidatesTags: ["ORDERS"],
     }),
 
     exchangeOrder: builder.mutation({
       query: (data) => ({
-        url: "/orders/exchange",
+        url: "/order/exchange",
         method: "POST",
-        body: data,
+        data,
       }),
       invalidatesTags: ["ORDERS"],
     }),
 
     markDamage: builder.mutation({
       query: (data) => ({
-        url: "/orders/damage",
+        url: "/order/damage",
         method: "POST",
-        body: data,
+        data,
       }),
       invalidatesTags: ["ORDERS"],
     }),
@@ -172,6 +172,13 @@ export const ordersApi = baseApi.injectEndpoints({
       invalidatesTags: ["ORDERS"],
     }),
 
+    getAllDamagedProducts: builder.query({
+      query: () => ({
+        url: "/order/damaged-products",
+        method: "GET",
+      }),
+    }),
+
     updateDeliveryStatus: builder.mutation<
       OrderResponse,
       {
@@ -182,7 +189,7 @@ export const ordersApi = baseApi.injectEndpoints({
       query: ({ _id, deliveryStatus }) => ({
         url: `/order/${_id}`,
         method: "PATCH",
-        body: { deliveryStatus },
+        data: { deliveryStatus },
       }),
       invalidatesTags: (_result, _error, { _id }) => [
         { type: "ORDER", id: _id },
@@ -201,6 +208,7 @@ export const {
   useDeleteOrderMutation,
   useConfirmOrderMutation,
   useGetAllScheduledOrdersQuery,
+  useGetAllDamagedProductsQuery,
   useUpdateDeliveryStatusMutation,
   usePartialUpdateOrderMutation,
   useExchangeOrderMutation,
