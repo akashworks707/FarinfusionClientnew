@@ -290,7 +290,6 @@ export function InvoiceDialog({
             <DialogTitle>Invoice</DialogTitle>
           </DialogHeader>
 
-          {/* Action Buttons */}
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b border-border p-4 print:hidden">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
