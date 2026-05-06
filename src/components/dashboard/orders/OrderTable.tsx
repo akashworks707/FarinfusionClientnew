@@ -301,7 +301,7 @@ export function OrderTable({
   const courierMap = new Map<string, any>();
 
   courierRes?.data?.forEach((c: any) => {
-    courierMap.set(c.order, c);
+    courierMap.set(c.order?.toString(), c);
   });
 
   if (error) {
@@ -376,8 +376,8 @@ export function OrderTable({
         </TableHeader>
         <TableBody>
           {orders.map((order) => {
-            const courier = courierMap.get(order._id);
-            console.log(courier);
+            const courier = courierMap.get(order._id?.toString());
+            // console.log(courier);
 
             return (
               <TableRow key={order._id} className="hover:bg-muted/50">
@@ -421,7 +421,7 @@ export function OrderTable({
                   <OrderStatusBadge status={order.orderStatus} type="order" />
                 </TableCell>
                 <TableCell>
-                 {order?.deliveryStatus ? (
+                  {order?.deliveryStatus ? (
                     <div className="space-y-1">
                       <OrderStatusBadge
                         status={order?.deliveryStatus}
@@ -443,20 +443,22 @@ export function OrderTable({
                 <TableCell>
                   {courier?._id ? (
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1.5 rounded-lg">
-                        <Truck
-                          size={14}
-                          className="text-blue-600 dark:text-blue-400"
-                        />
-                        <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                          {courier.courierName}
-                        </span>
+                      <div className="flex gap-2 items-center flex-col">
+                        <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1.5 rounded-lg">
+                          <Truck
+                            size={14}
+                            className="text-blue-600 dark:text-blue-400"
+                          />
+                          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                            {courier.courierName}
+                          </span>
+                        </div>
+                        {courier.trackingCode && (
+                          <span className="text-[8px] text-gray-500 dark:text-gray-400 font-mono">
+                            T.Code:{courier.trackingCode}
+                          </span>
+                        )}
                       </div>
-                      {courier.trackingNumber && (
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">
-                          {courier.trackingNumber}
-                        </span>
-                      )}
                     </div>
                   ) : order.orderStatus === "CONFIRMED" ? (
                     <span className="inline-flex items-center gap-1.5 text-xs text-yellow-600 dark:text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 px-2.5 py-1.5 rounded-lg font-medium">
