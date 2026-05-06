@@ -59,6 +59,9 @@ enum LeadPriority {
 }
 
 enum SocialStatus {
+  BYPHONE = "by phone",
+  OFLINE = "ofline",
+  WHATSAPP = "whatsapp",
   FACEBOOK = "facebook",
   INSTAGRAM = "instagram",
   LINKEDIN = "linkedin",
@@ -422,14 +425,13 @@ const LeadUpdateModal = ({ open, onOpenChange, leadId }: Props) => {
                 {/* social media */}
                 <FormField
                   icon={Globe}
-                  label="Social Source"
+                  label="Lead Source"
                   htmlFor="social"
                   error={errors.social?.message}
                 >
                   <Controller
                     name="social"
                     control={control}
-                    defaultValue="facebook"
                     render={({ field }) => (
                       <Select
                         key={field.value}
@@ -438,14 +440,14 @@ const LeadUpdateModal = ({ open, onOpenChange, leadId }: Props) => {
                       >
                         <SelectTrigger
                           id="social"
-                          className={cn(inputCls, "w-full")}
+                          className={cn(inputCls, "w-full cursor-pointer")}
                         >
                           <SelectValue placeholder="Select social platform" />
                         </SelectTrigger>
 
-                        <SelectContent>
+                        <SelectContent className="py-2">
                           {Object.values(SocialStatus).map((social) => (
-                            <SelectItem key={social} value={social}>
+                            <SelectItem className="px-4" key={social} value={social}>
                               {social.charAt(0).toUpperCase() + social.slice(1)}
                             </SelectItem>
                           ))}

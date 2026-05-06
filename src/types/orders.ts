@@ -84,6 +84,10 @@ export interface Order {
     address: string;
     phone: string;
   };
+  advanceDetails: {
+    option: string,
+    amount: number,
+  },
   customerPhone: string;
   totalPrice: number;
   products: {
@@ -125,6 +129,10 @@ export interface UpdateOrderRequest {
     email: string;
     phone: string;
     address: string;
+  };
+  advanceDetails?: {
+    option?: string,
+    amount?: number,
   };
   paymentMethod?: string;
   shippingCost?: number;

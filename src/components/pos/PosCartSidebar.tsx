@@ -11,6 +11,14 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ScheduleOrder } from "../shared/ScheduleOrder";
 import { useUser } from "@/context/UserContext";
+import { ScrollArea } from "../ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface POSCartSidebarProps {
   items: POSCartItem[];
@@ -26,6 +34,7 @@ interface POSCartSidebarProps {
   }) => void;
   onCheckout: (
     customerData: CustomerData,
+    advanceDetails : AdvanceData,
     orderType: OrderType,
     totalAmount: number,
     discountAmount: number,
@@ -44,6 +53,22 @@ export interface CustomerData {
   notes?: string;
 }
 
+export interface AdvanceData {
+  option? : string;
+  amount? : number;
+}
+
+const PayOption = [
+  "bkash",
+  "nagad",
+  "rocket",
+  "upay",
+  "bank_transfer",
+  "visa",
+  "master_card",
+  "cash",
+];
+
 const DEFAULT_NOTES = `কাস্টমার পেমেন্ট ছাড়া পার্সেল খুলবেন না। খুললে ভিডিও বাধ্যতামূলক। ড্যামেজ বা প্রডাক্ট পরিবর্তন হলে দায় মার্চেন্ট নেবে না। রিটার্ন চেক করা হবে—সতর্ক থাকুন।`;
 
 export function POSCartSidebar({
@@ -56,7 +81,7 @@ export function POSCartSidebar({
   isProcessing = false,
 }: POSCartSidebarProps) {
   const searchParams = useSearchParams();
- const {user} = useUser()
+  const { user } = useUser();
   const isModerator = user?.role === "MODERATOR";
 
   // Default to DELIVERY for moderators, PICKUP for others
@@ -78,6 +103,14 @@ export function POSCartSidebar({
     zipCode: "",
     notes: DEFAULT_NOTES,
   });
+
+  const [advanceData, setAdvanceData] = useState<AdvanceData>({
+    option: undefined,
+    amount: 0,
+  })
+
+  console.log(advanceData)
+  
 
   useEffect(() => {
     if (searchParams.get("prefill") === "1") {
@@ -146,6 +179,7 @@ export function POSCartSidebar({
     if (isFormValid && items.length > 0 && !discountError) {
       onCheckout(
         customerData,
+        advanceData,
         orderType,
         totalAmount,
         discountCapped,
@@ -207,7 +241,7 @@ export function POSCartSidebar({
       </div>
 
       {/* ── SCROLLABLE middle ── */}
-      <div className="flex-1 overflow-y-auto">
+      <ScrollArea className=" flex-1 overflow-y-auto">
         {/* Cart items */}
         <div className="p-4 space-y-2.5">
           {items.length === 0 ? (
@@ -253,6 +287,56 @@ export function POSCartSidebar({
               className="text-sm"
             />
           </div>
+
+          {/* payment advance option */}
+          <div className="mt-4 space-y-3">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+              Advance Payment
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* Payment Method */}
+              <Select
+                value={advanceData.option || "none"}
+                onValueChange={(value) =>
+                  setAdvanceData((prev) => ({
+                    ...prev,
+                    option: value === "none" ? undefined : value,
+                  }))
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Payment method" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {PayOption.map((method) => (
+                    <SelectItem key={method} value={method}>
+                      <span className="capitalize">
+                        {method.replace("_", " ")}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Advance Amount */}
+              <Input
+                type="number"
+                min="0"
+                placeholder="Advance amount"
+                value={advanceData.amount || ""}
+                onChange={(e) =>
+                  setAdvanceData({
+                    ...advanceData,
+                    amount: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+          </div>
+
           {discountCapped > 0 && (
             <div className="flex justify-between text-xs text-emerald-600 dark:text-emerald-400">
               <span className="flex items-center gap-1">
@@ -435,7 +519,7 @@ export function POSCartSidebar({
           />
           <div className="h-2" />
         </div>
-      </div>
+      </ScrollArea>
 
       <ScheduleOrder value={schedule} onChange={setSchedule} />
 

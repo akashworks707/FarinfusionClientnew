@@ -3,7 +3,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -45,6 +45,8 @@ import {
   ShoppingCart,
   Image as ImageIcon,
   Tag,
+  Wallet,
+  Banknote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Order } from "@/types/orders";
@@ -60,6 +62,17 @@ interface CartProduct {
   availableStock?: number;
 }
 
+enum PayOption {
+  BKASH = "bkash",
+  NAGAD = "nagad",
+  ROCKET = "rocket",
+  UPAY = "upay",
+  BANK_TRANSFER = "bank_transfer",
+  VISA = "visa",
+  MASTER_CARD = "master_card",
+  CASH = "cash",
+}
+
 const schema = z.object({
   fullName: z.string().min(2, "Name is required"),
   email: z.string().email("Enter a valid email"),
@@ -69,6 +82,13 @@ const schema = z.object({
   shippingCost: z.coerce.number().min(0, "Must be 0 or more"),
   discount: z.coerce.number().min(0).optional(),
   note: z.string().optional(),
+
+  advanceDetails: z
+    .object({
+      option: z.string().optional(),
+      amount: z.coerce.number().optional(),
+    })
+    .optional(),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -140,7 +160,6 @@ export function EditOrderModal({
   const [cartProducts, setCartProducts] = useState<CartProduct[]>([]);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
 
   const { data: productsData, isFetching: isSearching } =
     useGetAllProductsQuery(
@@ -153,7 +172,7 @@ export function EditOrderModal({
         skip: false,
       },
     );
-   
+
   const availableProducts: IProduct[] = productsData?.data || [];
 
   useEffect(() => {
@@ -179,6 +198,7 @@ export function EditOrderModal({
     handleSubmit,
     reset,
     setValue,
+    control,
     watch,
     formState: { errors, isDirty },
   } = useForm<FormData>({
@@ -192,8 +212,13 @@ export function EditOrderModal({
       shippingCost: 0,
       discount: 0,
       note: "",
+      advanceDetails: {
+        option: "",
+        amount: 0,
+      },
     },
   });
+
 
   useEffect(() => {
     if (order && open) {
@@ -207,6 +232,11 @@ export function EditOrderModal({
         shippingCost: (order as any).shippingCost ?? 0,
         discount: (order as any).discount ?? 0,
         note: (order as any).note ?? "",
+
+        advanceDetails: {
+          option: order?.advanceDetails?.option || "",
+          amount: order?.advanceDetails?.amount || 0,
+        },
       });
 
       const existing: CartProduct[] = ((order as any).products || []).map(
@@ -304,6 +334,10 @@ export function EditOrderModal({
             email: formData.email,
             phone: formData.phone,
             address: formData.address,
+          },
+          advanceDetails: {
+            option: formData.advanceDetails?.option || "",
+            amount: Number(formData.advanceDetails?.amount || 0),
           },
           paymentMethod: formData.paymentMethod,
           shippingCost: formData.shippingCost ?? 0,
@@ -568,7 +602,6 @@ export function EditOrderModal({
                       </button>
                     </div>
                   ))}
-               
                 </div>
               )}
             </div>
@@ -711,6 +744,61 @@ export function EditOrderModal({
                     </div>
                   </FormField>
                 </div>
+              
+                      
+                {/* advance payment */}
+                <div className="space-y-4 border rounded-xl p-4 bg-gray-50 dark:bg-gray-900">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                    Advance Payment
+                  </h3>
+
+                  {/* Select Option */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2">
+                    <FormField
+                      icon={Wallet}
+                      label="Payment Option"
+                      htmlFor="payAdvance"
+                    >
+                      <Controller
+                        name="advanceDetails.option"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className={cn(inputCls, "w-full cursor-pointer")}>
+                              <SelectValue placeholder="Select payment option" />
+                            </SelectTrigger>
+
+                            <SelectContent className="py-2">
+                              {Object.values(PayOption).map((item) => (
+                                <SelectItem key={item} value={item}>
+                                  {item.charAt(0).toUpperCase() + item.slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </FormField>
+                    <FormField
+                      icon={Banknote}
+                      label="Advance Amount"
+                      htmlFor="advAmount"
+                    >
+                      <Input
+                      type="number"
+                      min={0}
+                      {...register("advanceDetails.amount")}
+                      placeholder="Enter advance amount"
+                      className="w-full h-10 rounded-md border px-3 text-sm bg-white dark:bg-gray-800"
+                    />
+                    </FormField>
+                  </div>
+                </div>
+
+                {/* notes */}
                 <FormField
                   icon={StickyNote}
                   label="Order Notes"
@@ -730,7 +818,9 @@ export function EditOrderModal({
                 </FormField>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl border border-amber-200/60 bg-amber-50/40 px-4 py-2.5 dark:border-amber-900/30 dark:bg-amber-900/10">
+              
+
+              <div className="flex mt-3 items-center justify-between rounded-xl border border-amber-200/60 bg-amber-50/40 px-4 py-2.5 dark:border-amber-900/30 dark:bg-amber-900/10">
                 <span className="text-xs font-semibold text-amber-700/70 dark:text-amber-500/70">
                   {cartProducts.reduce((s, p) => s + p.quantity, 0)} items
                   subtotal
@@ -748,7 +838,7 @@ export function EditOrderModal({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="flex gap-2 border-t border-gray-100 px-6 py-4 dark:border-gray-800">
+        <DialogFooter className="flex gap-2 mb-0 border-t border-gray-100 px-6 py-4 dark:border-gray-800">
           <Button
             variant="outline"
             size="sm"

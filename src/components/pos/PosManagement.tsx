@@ -7,7 +7,7 @@ import { Search, Filter, ShoppingCart, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { POSProductListCard } from "./PosProductListCard";
-import { POSCartSidebar, type CustomerData } from "./PosCartSidebar";
+import { AdvanceData, POSCartSidebar, type CustomerData } from "./PosCartSidebar";
 import { useGetAllProductsQuery } from "@/redux/features/product/product.api";
 import type { POSCartItem, OrderType } from "@/types/pos";
 import { IProduct } from "@/types";
@@ -115,6 +115,7 @@ export default function POSManagement() {
 
   const handleCheckout = async (
     customerData: CustomerData,
+    advanceDetails : AdvanceData,
     orderType: OrderType,
     totalAmount: number,
     discountAmount: number,
@@ -165,6 +166,7 @@ export default function POSManagement() {
         },
         note: customerData.notes ?? "",
         seller: user?.data?._id,
+        advanceDetails,
       }).unwrap();
 
       if (res) {

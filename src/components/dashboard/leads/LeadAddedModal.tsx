@@ -41,6 +41,9 @@ type Props = {
 
 
 const leadSources = [
+  "by phone",
+  "ofline",
+  "whatsapp",
   "facebook",
   "instagram",
   "linkedin",
@@ -96,7 +99,7 @@ function FormField({
 }
 
 const inputCls =
-  "h-9 rounded-lg border-gray-200 bg-gray-50/60 text-sm transition-colors placeholder:text-gray-400 focus:border-amber-400 focus:bg-white dark:border-gray-700 dark:bg-gray-800/60 dark:placeholder:text-gray-600 dark:focus:border-amber-500 dark:focus:bg-gray-800";
+  "h-9 cursor-pointer rounded-lg border-gray-200 bg-gray-50/60 text-sm transition-colors placeholder:text-gray-400 focus:border-amber-400 focus:bg-white dark:border-gray-700 dark:bg-gray-800/60 dark:placeholder:text-gray-600 dark:focus:border-amber-500 dark:focus:bg-gray-800";
 
 const LeadAddedModal = ({ open, onOpenChange }: Props) => {
   const [createLead, { isLoading }] = useCreateLeadMutation();
@@ -256,7 +259,7 @@ const LeadAddedModal = ({ open, onOpenChange }: Props) => {
              {/* Lead From */}
             <FormField
               icon={Globe}
-              label="Social Media"
+              label="Lead Source"
               htmlFor="social"
               required
               error={errors.social?.message}
@@ -273,11 +276,11 @@ const LeadAddedModal = ({ open, onOpenChange }: Props) => {
                       <SelectValue placeholder="Select lead source" />
                     </SelectTrigger>
 
-                    <SelectContent>
+                    <SelectContent className="py-2">
                       {leadSources.map((source) => (
-                        <SelectItem key={source} value={source}>
+                        <SelectItem className="cursor-pointer px-4" key={source} value={source}>
                           <div className="flex items-center gap-2">
-                            <span>{source}</span>
+                            <span className="capitalize">{source}</span>
                           </div>
                         </SelectItem>
                       ))}
