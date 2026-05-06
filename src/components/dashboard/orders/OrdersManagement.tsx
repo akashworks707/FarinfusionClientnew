@@ -53,6 +53,7 @@ import { ExchangeOrderModal } from "./ExchangeOrderModal";
 import { PartialUpdateOrderModal } from "./PartialUpdateOrderModal";
 import { DamageOrderModal } from "./DamageOrderModal";
 import { useUser } from "@/context/UserContext";
+import { InvoiceDialog } from "../shared/InvoiceDialog";
 
 // const LIMIT = 10;
 
@@ -95,6 +96,8 @@ export default function OrdersManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
+  const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -155,6 +158,11 @@ export default function OrdersManagement() {
     setStatus("");
     setDateFilter({ from: undefined, to: undefined });
     setPage(1);
+  };
+
+  const handleViewInvoice = (order: Order) => {
+    setInvoiceOrder(order);
+    setInvoiceModalOpen(true);
   };
 
   const handlePartialUpdate = (order: Order) => {
@@ -435,6 +443,7 @@ export default function OrdersManagement() {
             onConfirmOrder={handleConfirmClick}
             refetch={refetch}
             onPartialUpdate={handlePartialUpdate}
+            onViewInvoice={handleViewInvoice}
             onExchange={handleExchange}
             onMarkDamage={handleMarkDamage}
             onViewOrder={handleViewClick}
@@ -453,6 +462,7 @@ export default function OrdersManagement() {
             error={null}
             onConfirmOrder={handleConfirmClick}
             refetch={refetch}
+            onViewInvoice={handleViewInvoice}
             onPartialUpdate={handlePartialUpdate}
             onExchange={handleExchange}
             onMarkDamage={handleMarkDamage}
@@ -471,6 +481,7 @@ export default function OrdersManagement() {
             loading={isHoldLoading}
             error={null}
             onConfirmOrder={handleConfirmClick}
+            onViewInvoice={handleViewInvoice}
             refetch={refetch}
             onViewOrder={handleViewClick}
             setDeleteTarget={setDeleteTarget}
@@ -549,6 +560,15 @@ export default function OrdersManagement() {
         onClose={() => setCourierModalOpen(false)}
         onSubmit={handleCourierSubmit}
       />
+
+      {/* Invoice Dialog */}
+      {invoiceOrder && (
+        <InvoiceDialog
+          open={invoiceModalOpen}
+          onOpenChange={setInvoiceModalOpen}
+          order={invoiceOrder}
+        />
+      )}
 
       <ConfirmOrderModal
         open={confirmModalOpen}

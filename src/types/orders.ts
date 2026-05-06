@@ -11,7 +11,7 @@ export interface GetQueryParams {
   [key: string]: any;
 }
 
-export type OrderStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "DAMAGE";
+export type OrderStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "DAMAGE" | "PARTIAL";
 export type DeliveryStatus =
   | "NOT_SHIPPED"
   | "IN_TRANSIT"
@@ -49,6 +49,7 @@ export type CreateOrderPayload = {
 export interface Order {
   _id: string;
   customOrderId?: string;
+  payment?: string
   seller: {
     name?: string;
     role?: string;
@@ -86,6 +87,7 @@ export interface Order {
   customerPhone: string;
   totalPrice: number;
   products: {
+    reduce(arg0: (sum: any, p: any) => any, arg1: number): unknown;
     length: number;
     map: any;
     productId: string;

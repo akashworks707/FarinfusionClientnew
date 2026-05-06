@@ -125,6 +125,7 @@ export enum ProductStatus {
 
 // ------ product ---
 export interface IProduct {
+  quantity: ReactNode;
   _id?: string;
 
   // Basic Info
