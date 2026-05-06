@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import { CourierInfo } from "./CourierInfo";
-import { User, Mail, Phone, MapPin, Clock, Car, Zap } from "lucide-react";
+import { User, Mail, Phone, MapPin, Clock, Car, Zap, Wallet, Banknote } from "lucide-react";
 import { format } from "date-fns";
 import type { Order } from "@/types/orders";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -163,6 +163,8 @@ export function OrderDetailsModal({
                 ))}
               </div>
             </div>
+
+            {/* delivery charge */}
             <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -170,6 +172,33 @@ export function OrderDetailsModal({
                   <span className="text-sm font-medium">Delivery Charge</span>
                 </div>
                 <p className="text-xl font-bold">৳{order?.shippingCost}</p>
+              </div>
+            </div>
+
+            
+            <div className="space-y-3 rounded-lg border p-4 bg-white dark:bg-gray-900">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                Advance Payment
+              </p>
+
+              <div className="flex items-center justify-between space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                
+                <p className="flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-amber-500" />
+                  <span className="font-medium">Method:</span>
+                  <span className="capitalize">
+                    {order?.advanceDetails?.option || "N/A"}
+                  </span>
+                </p>
+
+                <p className="flex items-center gap-2">
+                  <Banknote className="w-4 h-4 text-green-500" />
+                  <span className="font-medium">Amount:</span>
+                  <span className="font-semibold text-green-600">
+                    ৳{order?.advanceDetails?.amount ?? 0}
+                  </span>
+                </p>
+
               </div>
             </div>
 
