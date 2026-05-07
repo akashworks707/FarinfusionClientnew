@@ -79,9 +79,42 @@ export default function POSManagement() {
     0,
   );
 
+  // const handleAddToCart = (product: IProduct) => {
+  //   setCartItems((prev) => {
+  //     const existing = prev.find((item) => item.product._id === product._id);
+  //     if (existing) {
+  //       return prev.map((item) =>
+  //         item.product._id === product._id
+  //           ? { ...item, quantity: item.quantity + 1 }
+  //           : item,
+  //       );
+  //     }
+  //     return [...prev, { product, quantity: 1, selectedExtras: [] }];
+  //   });
+  //   toast.success(`${product.title} added to cart!`);
+  // };
+
   const handleAddToCart = (product: IProduct) => {
+    const stock = product.availableStock || 0;
+
+    const existing = cartItems.find(
+      (item) => item.product._id === product._id,
+    );
+
+    // no stock
+    if (stock <= 0) {
+      toast.error("Product out of stock");
+      return;
+    }
+
+    // stock limit check
+    if (existing && existing.quantity >= stock) {
+      toast.error(`Only ${stock} items available`);
+      return;
+    }
+
+    // update cart
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.product._id === product._id);
       if (existing) {
         return prev.map((item) =>
           item.product._id === product._id
@@ -89,19 +122,38 @@ export default function POSManagement() {
             : item,
         );
       }
+
       return [...prev, { product, quantity: 1, selectedExtras: [] }];
     });
+
+    // only success if passed all checks
     toast.success(`${product.title} added to cart!`);
-  };
+};
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
+    const cartItem = cartItems.find(
+      (item) => item.product._id === productId,
+    );
+
+    if (!cartItem) return;
+
+    const maxStock = cartItem.product.availableStock || 0;
+
+    if (quantity > maxStock) {
+      toast.error(`Only ${maxStock} items available`);
+      return;
+    }
+
     if (quantity <= 0) {
       handleRemoveFromCart(productId);
       return;
     }
+
     setCartItems((prev) =>
       prev.map((item) =>
-        item.product._id === productId ? { ...item, quantity } : item,
+        item.product._id === productId
+          ? { ...item, quantity }
+          : item,
       ),
     );
   };

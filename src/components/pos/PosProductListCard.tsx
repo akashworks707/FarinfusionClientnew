@@ -34,7 +34,7 @@ export function POSProductListCard({
     )
     : 0;
 
-  const isOutOfStock = (product.availableStock ?? 0) === 0;
+  const isOutOfStock = (product.availableStock ?? 0) <= 0;
 
   return (
     <div

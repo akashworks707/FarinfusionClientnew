@@ -102,6 +102,8 @@ const UpdateProduct = () => {
     setValue,
     reset,
     watch,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema) as any,
@@ -147,6 +149,17 @@ const UpdateProduct = () => {
     }
   }, [productData, reset]);
 
+  useEffect(() => {
+    if (newStock < 0) {
+      setError("adjustStock", {
+        type: "manual",
+        message: "Stock cannot be negative",
+      });
+    } else {
+      clearErrors("adjustStock");
+    }
+  }, [newStock, setError, clearErrors]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
@@ -188,6 +201,11 @@ const UpdateProduct = () => {
 
   const onSubmit = async (data: FormValues) => {
     try {
+
+      if (currentStock + adjustValue < 0) {
+        toast.error("Stock cannot be negative");
+        return;
+      }
       setUploadingImages(true);
       setUploadProgress(0);
 
@@ -214,13 +232,17 @@ const UpdateProduct = () => {
       };
 
       // Add stock adjustment if provided
+      // if (data.adjustStock && data.adjustStock !== 0) {
+      //   const currentStock = Number(productData?.data?.availableStock || 0);
+      //   const adjustValue = Number(data.adjustStock || 0);
+
+      //   const updatedStock = currentStock + adjustValue;
+
+      //   payloadData.totalAddedStock = updatedStock;
+      // }
+
       if (data.adjustStock && data.adjustStock !== 0) {
-        const currentStock = Number(productData?.data?.availableStock || 0);
-        const adjustValue = Number(data.adjustStock || 0);
-
-        const updatedStock = currentStock + adjustValue;
-
-        payloadData.totalAddedStock = updatedStock;
+        payloadData.totalAddedStock = Number(data.adjustStock);
       }
 
       if (role !== "MANAGER" && data.buyingPrice !== undefined) {
@@ -381,7 +403,7 @@ const UpdateProduct = () => {
                   <Label>Buying Price</Label>
                   <Input
                     type="number"
-                    onWheel={(e) => e.preventDefault()}
+                    onWheel={(e) => e.currentTarget.blur()}
                     {...register("buyingPrice")}
                   />
                   <p className="text-red-500 text-xs">
@@ -393,7 +415,7 @@ const UpdateProduct = () => {
                 <Label>Price</Label>
                 <Input
                   type="number"
-                  onWheel={(e) => e.preventDefault()}
+                  onWheel={(e) => e.currentTarget.blur()}
                   placeholder="Price"
                   {...register("price")}
                 />
@@ -402,7 +424,7 @@ const UpdateProduct = () => {
                 <Label>Discount Price</Label>
                 <Input
                   type="number"
-                  onWheel={(e) => e.preventDefault()}
+                  onWheel={(e) => e.currentTarget.blur()}
                   placeholder="Discount"
                   {...register("discountPrice")}
                 />
@@ -439,7 +461,7 @@ const UpdateProduct = () => {
                     <Label>Adjust By (Add/Subtract)</Label>
                     <Input
                       type="number"
-                      onWheel={(e) => e.preventDefault()}
+                      onWheel={(e) => e.currentTarget.blur()}
                       placeholder="e.g., 5 to add, -5 to subtract"
                       {...register("adjustStock")}
                       className="border-amber-200 focus:border-amber-400 dark:border-amber-800/40 dark:focus:border-amber-600"
@@ -447,6 +469,11 @@ const UpdateProduct = () => {
                     <p className="text-[11px] text-gray-500 dark:text-gray-400">
                       Enter positive number to add stock, negative to remove
                     </p>
+                    {errors.adjustStock && (
+                      <p className="text-red-500 text-xs">
+                        {errors.adjustStock.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>New Stock Total</Label>

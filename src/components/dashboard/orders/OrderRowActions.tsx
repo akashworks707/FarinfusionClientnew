@@ -477,10 +477,10 @@ export function OrderRowActions({
   const hasAccess =
     userRole && ["ADMIN", "MANAGER", "TELLICELSS"].includes(userRole);
 
-  const withoutTellicelss = userRole && ["ADMIN", "MANAGER"].includes(userRole);
-
   const [editOpen, setEditOpen] = useState(false);
   const [editOpenTiming, setEditOpenTiming] = useState(false);
+
+  const withoutTellicelss = userRole && ["ADMIN", "MANAGER"].includes(userRole);
 
   const [sellerDialogOpen, setSellerDialogOpen] = useState(false);
   const [selectedSellerId, setSelectedSellerId] = useState<string>(
@@ -556,8 +556,8 @@ export function OrderRowActions({
               </DropdownMenuItem>
             )}
 
-          {/* order mode option */}
-          {!(isDelivered || isCompleted) && (
+            {/* order mode option */}
+          {!(isDelivered || isConfirmed) && (
             <DropdownMenuItem
               className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
               onClick={() => setEditOpenTiming(true)}
@@ -732,13 +732,14 @@ export function OrderRowActions({
         onSuccess={refetch}
       />
 
-      {/* ---- edit order timing ---- */}
+       {/* ---- edit order timing ---- */}
       <OrderModeChangeModal
         open={editOpenTiming}
         order={order}
         onOpenChange={setEditOpenTiming}
         onSuccess={refetch}
       />
+
 
       {/* ── Assign Seller Dialog ── */}
       <Dialog open={sellerDialogOpen} onOpenChange={setSellerDialogOpen}>

@@ -107,9 +107,9 @@ export function POSCartSidebar({
   const [advanceData, setAdvanceData] = useState<AdvanceData>({
     option: undefined,
     amount: 0,
-  });
-
-  // console.log(advanceData)
+  })
+  
+  
 
   useEffect(() => {
     if (searchParams.get("prefill") === "1") {

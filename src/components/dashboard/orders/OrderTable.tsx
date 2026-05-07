@@ -495,7 +495,7 @@ export function OrderTable({
                   </div>
                 </TableCell>
                 <TableCell className="text-center">
-                  <OrderRowActions
+                  <OrderRowActions 
                     order={order}
                     refetch={refetch}
                     courier={courier}
