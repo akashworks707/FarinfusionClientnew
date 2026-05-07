@@ -1,12 +1,11 @@
-import React from 'react';
-import TrashCustomerPage from "@/components/dashboard/customer/TrashCustomerPage";
+import TrashCustomer from "@/components/dashboard/customer/TrashCustomer";
 
 const Page = () => {
-    return (
-        <div>
-            <TrashCustomerPage />
-        </div>
-    );
+  return (
+    <div>
+      <TrashCustomer />
+    </div>
+  );
 };
 
 export default Page;

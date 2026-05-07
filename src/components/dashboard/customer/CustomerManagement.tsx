@@ -4,7 +4,7 @@
 import React, { useMemo } from "react";
 import { toast } from "sonner";
 import {
-  useGetMyCustomersQuery,
+  useGetAllCustomersQuery,
   useTrashUpdateCustomerMutation,
 } from "@/redux/features/user/user.api";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
@@ -12,11 +12,12 @@ import CustomerToolbar from "@/components/dashboard/customer/CustomerToolbar";
 import DeleteAlert from "@/components/dashboard/DeleteAlert";
 import TablePagination from "@/components/shared/TablePagination";
 import DashboardManagementPageSkeleton from "@/components/dashboard/DashboardManagePageSkeleton";
-import { StaffCustomerTable } from "./StaffCustomerTable";
-import { StaffCustomerStats } from "./StaffCustomerStats";
+import { CustomerTable } from "@/components/dashboard/customer/CustomerTable";
+import { CustomerStats } from "@/components/dashboard/customer/CustomerStats";
 import CustomerDetailsModal from "./CustomerDetailsModal";
 
-const MyCustomers = () => {
+const CustomerManagement = () => {
+  const [trashCustomer] = useTrashUpdateCustomerMutation();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [sort, setSort] = React.useState("");
   const [page, setPage] = React.useState(1);
@@ -26,7 +27,7 @@ const MyCustomers = () => {
     endDate?: string;
   }>({});
 
-  const { data, isLoading, isError } = useGetMyCustomersQuery({
+  const { data, isLoading, isError } = useGetAllCustomersQuery({
     ...(searchTerm && { searchTerm }),
     ...(sort && { sort }),
     ...(dateRange.startDate && { "createdAt[gte]": dateRange.startDate }),
@@ -40,12 +41,11 @@ const MyCustomers = () => {
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [customerToDelete, setCustomerToDelete] = React.useState<any>(null);
   const [openDeleteAlert, setOpenDeleteAlert] = React.useState(false);
-  const [trashCustomer] = useTrashUpdateCustomerMutation();
 
   // Calculate stats
   const stats = useMemo(() => {
     const customers = data?.data || [];
-    const totalCustomers = customers.length;
+    const totalCustomers = data?.meta?.total || 0;
     const totalOrders = customers.reduce(
       (sum: number, c: any) => sum + (c.totalOrders || 0),
       0,
@@ -64,8 +64,11 @@ const MyCustomers = () => {
     };
   }, [data]);
 
+  // Trash handler
   const handleDelete = async (customer: any) => {
     try {
+      // Since customers are generated from orders, we need to delete via order API
+      // For now, we'll show a message
       const res = await trashCustomer({ _id: customer?.phone });
       if (res) {
         toast.success(res?.data?.message);
@@ -80,17 +83,17 @@ const MyCustomers = () => {
     return (
       <div className="p-6">
         <p className="text-red-600 dark:text-red-400">
-          Error loading your customers
+          Error loading customers
         </p>
       </div>
     );
 
   return (
     <div className="space-y-6">
-      <DashboardPageHeader title="My Customers" />
+      <DashboardPageHeader title="Customer Management" />
 
       {/* Stats Cards */}
-      <StaffCustomerStats data={stats} isLoading={isLoading} />
+      <CustomerStats data={stats} isLoading={isLoading} />
 
       {/* Toolbar */}
       <CustomerToolbar
@@ -100,7 +103,7 @@ const MyCustomers = () => {
       />
 
       {/* Table */}
-      <StaffCustomerTable
+      <CustomerTable
         customers={data?.data || []}
         isLoading={isLoading}
         onView={(customer) => {
@@ -155,4 +158,4 @@ const MyCustomers = () => {
   );
 };
 
-export default MyCustomers;
+export default CustomerManagement;
