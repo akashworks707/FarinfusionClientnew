@@ -49,7 +49,12 @@ export function OrderDetailsModal({
               </Badge>
             </DialogTitle>
             <DialogDescription>
-              Created on {new Date(order.createdAt).toLocaleDateString()}
+              Created on{" "}
+              {new Date(order.createdAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
             </DialogDescription>
           </DialogHeader>
 

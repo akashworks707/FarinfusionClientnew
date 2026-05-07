@@ -87,8 +87,8 @@ const schema = z.object({
     .object({
       option: z.string().optional(),
       amount: z.coerce.number().optional(),
-    })
-    .optional(),
+    }).optional(),
+    
 });
 type FormData = z.infer<typeof schema>;
 
@@ -317,7 +317,8 @@ export function EditOrderModal({
 
   const alreadyInCart = (id: string) =>
     cartProducts.some((p) => p.productId === id);
-  const subtotal = cartProducts.reduce((s, p) => s + p.price * p.quantity, 0);
+  // const subtotal = cartProducts.reduce((s, p) => s + p.price * p.quantity, 0);
+  const subtotal = order?.total ?? 0;
 
   const onSubmit = async (formData: FormData) => {
     if (!order?._id) return;
@@ -336,7 +337,7 @@ export function EditOrderModal({
             address: formData.address,
           },
           advanceDetails: {
-            option: formData.advanceDetails?.option || "",
+            option: formData.advanceDetails?.option || undefined,
             amount: Number(formData.advanceDetails?.amount || 0),
           },
           paymentMethod: formData.paymentMethod,
@@ -771,10 +772,10 @@ export function EditOrderModal({
                               <SelectValue placeholder="Select payment option" />
                             </SelectTrigger>
 
-                            <SelectContent className="py-2">
+                            <SelectContent className="py-2 capitalize">
                               {Object.values(PayOption).map((item) => (
                                 <SelectItem key={item} value={item}>
-                                  {item.charAt(0).toUpperCase() + item.slice(1)}
+                                  {item.charAt(0) + item.slice(1).replace("_", " ")}
                                 </SelectItem>
                               ))}
                             </SelectContent>

@@ -190,7 +190,7 @@ export function PartialUpdateOrderModal({
           </div>
         </div>
 
-        <ScrollArea className="max-h-[calc(90vh-180px)]">
+        <ScrollArea className="max-h-[calc(90vh-180px)] w-full">
           <div className="space-y-6 px-6 py-5">
             {/* Remove Items Section */}
             <div className="space-y-3">

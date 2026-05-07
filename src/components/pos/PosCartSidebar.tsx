@@ -108,8 +108,7 @@ export function POSCartSidebar({
     option: undefined,
     amount: 0,
   })
-
-  console.log(advanceData)
+  
   
 
   useEffect(() => {

@@ -413,18 +413,15 @@ export function OrderModeChangeModal({
                   className="w-13 h-13 rounded-lg object-cover border border-border shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
+                  <p className="text-sm font-medium truncate text-gray-700">
                     {item?.product?.title}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    SKU #{item?.product?.sku}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-sm font-medium">${item?.product?.price}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Qty: {item?.quantity}
-                  </p>
+                  <div className="flex items-center gap-5 text-gray-700">
+                    <p>Price : {item?.product?.price}</p>
+                    <p>
+                      Qty<span className=""></span>: {item?.quantity}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}

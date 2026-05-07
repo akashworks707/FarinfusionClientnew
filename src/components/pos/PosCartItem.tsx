@@ -18,6 +18,7 @@ export function POSCartItemComponent({
 }: POSCartItemProps) {
   const { product, quantity } = item;
   const itemTotal = (product.discountPrice || product.price) * quantity;
+  const isMaxStockReached = quantity >= (product.availableStock || 0);
 
   return (
     <div className="flex gap-3 rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
@@ -77,6 +78,7 @@ export function POSCartItemComponent({
             </span>
             <Button
               size="sm"
+              // disabled={isMaxStockReached}
               variant="ghost"
               className="h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
               onClick={() => onQuantityChange(quantity + 1)}

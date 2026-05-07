@@ -403,6 +403,7 @@ import {
   AlertTriangle,
   Plus,
   FileText,
+  TimerReset,
 } from "lucide-react";
 import type { Order } from "@/types/orders";
 import { Courier } from "@/types/courier";
@@ -414,6 +415,7 @@ import {
 import { toast } from "sonner";
 import { EditOrderModal } from "./EditOrderModal";
 import { useUpdateSellerMutation } from "@/redux/features/orders/ordersApi";
+import { OrderModeChangeModal } from "@/components/shared/OrderModeChangeModal";
 
 interface OrderRowActionsProps {
   order: Order;
@@ -475,9 +477,10 @@ export function OrderRowActions({
   const hasAccess =
     userRole && ["ADMIN", "MANAGER", "TELLICELSS"].includes(userRole);
 
-  const withoutTellicelss = userRole && ["ADMIN", "MANAGER"].includes(userRole);
-
   const [editOpen, setEditOpen] = useState(false);
+  const [editOpenTiming, setEditOpenTiming] = useState(false);
+
+  const withoutTellicelss = userRole && ["ADMIN", "MANAGER"].includes(userRole);
 
   const [sellerDialogOpen, setSellerDialogOpen] = useState(false);
   const [selectedSellerId, setSelectedSellerId] = useState<string>(
@@ -552,6 +555,18 @@ export function OrderRowActions({
                 View Invoice
               </DropdownMenuItem>
             )}
+
+            {/* order mode option */}
+          {!(isDelivered || isConfirmed) && (
+            <DropdownMenuItem
+              className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
+              onClick={() => setEditOpenTiming(true)}
+              disabled={hasCourier && !isAdmin}
+            >
+              <TimerReset className="h-3.5 w-3.5" />
+              Order Timing
+            </DropdownMenuItem>
+          )}
 
           {/* Edit */}
           <DropdownMenuItem
@@ -712,6 +727,15 @@ export function OrderRowActions({
         onOpenChange={setEditOpen}
         onSuccess={refetch}
       />
+
+       {/* ---- edit order timing ---- */}
+      <OrderModeChangeModal
+        open={editOpenTiming}
+        order={order}
+        onOpenChange={setEditOpenTiming}
+        onSuccess={refetch}
+      />
+
 
       {/* ── Assign Seller Dialog ── */}
       <Dialog open={sellerDialogOpen} onOpenChange={setSellerDialogOpen}>

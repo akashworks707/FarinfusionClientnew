@@ -326,6 +326,8 @@ export default function ProductManagement() {
 
   const { data: allPro } = useGetAllProductsQuery({ limit: allProductLimit });
 
+  console.log("All Product",allPro)
+
   const allProducts = allPro?.data ?? [];
   const rawProducts: IProduct[] = data?.data ?? [];
   const meta = data?.meta;
@@ -960,8 +962,6 @@ export default function ProductManagement() {
               </thead>
               <tbody>
                 {products.map((product, idx) => {
-
-                  console.log(product)
                   // const sellPrice = product.discountPrice ?? product.price;
                   const sellPrice =
                     product.discountPrice && product.discountPrice > 0
