@@ -625,18 +625,22 @@ export function OrderRowActions({
           )}
 
           {/* Assign Courier - For confirmed orders without courier */}
-          {order.isPublished && hasAccess && isConfirmed && !hasCourier && onAssignCourier && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="gap-2 text-sm cursor-pointer text-blue-600 focus:text-blue-600 dark:text-blue-400"
-                onClick={() => onAssignCourier(order)}
-              >
-                <Truck className="h-3.5 w-3.5" />
-                Assign Courier
-              </DropdownMenuItem>
-            </>
-          )}
+          {order.isPublished &&
+            hasAccess &&
+            isConfirmed &&
+            !hasCourier &&
+            onAssignCourier && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="gap-2 text-sm cursor-pointer text-blue-600 focus:text-blue-600 dark:text-blue-400"
+                  onClick={() => onAssignCourier(order)}
+                >
+                  <Truck className="h-3.5 w-3.5" />
+                  Assign Courier
+                </DropdownMenuItem>
+              </>
+            )}
 
           {/* Reassign Courier - For ADMIN only when courier is already assigned */}
           {isAdmin && isConfirmed && hasCourier && onAssignCourier && (

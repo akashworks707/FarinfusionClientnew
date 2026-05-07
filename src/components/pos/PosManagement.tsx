@@ -109,7 +109,7 @@ export default function POSManagement() {
 
     // stock limit check
     if (existing && existing.quantity >= stock) {
-      toast.error("Stock limit exceeded");
+      toast.error(`Only ${stock} items available`);
       return;
     }
 

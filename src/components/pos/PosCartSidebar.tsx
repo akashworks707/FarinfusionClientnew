@@ -34,7 +34,7 @@ interface POSCartSidebarProps {
   }) => void;
   onCheckout: (
     customerData: CustomerData,
-    advanceDetails : AdvanceData,
+    advanceDetails: AdvanceData,
     orderType: OrderType,
     totalAmount: number,
     discountAmount: number,
@@ -54,8 +54,8 @@ export interface CustomerData {
 }
 
 export interface AdvanceData {
-  option? : string;
-  amount? : number;
+  option?: string;
+  amount?: number;
 }
 
 const PayOption = [
@@ -144,7 +144,10 @@ export function POSCartSidebar({
     !isNaN(rawDiscount) && rawDiscount >= 0 ? rawDiscount : 0;
   const discountCapped = Math.min(discountAmount, subtotal);
 
-  const totalAmount = Math.max(0, subtotal + deliveryFee - discountCapped);
+  const advanceAmount = advanceData?.amount;
+  const total = subtotal - (advanceAmount ?? 0);
+
+  const totalAmount = Math.max(0, total + deliveryFee - discountCapped);
 
   const handleDiscountChange = (val: string) => {
     setDiscountInput(val);
