@@ -403,6 +403,7 @@ import {
   AlertTriangle,
   Plus,
   FileText,
+  TimerReset,
 } from "lucide-react";
 import type { Order } from "@/types/orders";
 import { Courier } from "@/types/courier";
@@ -414,6 +415,7 @@ import {
 import { toast } from "sonner";
 import { EditOrderModal } from "./EditOrderModal";
 import { useUpdateSellerMutation } from "@/redux/features/orders/ordersApi";
+import { OrderModeChangeModal } from "@/components/shared/OrderModeChangeModal";
 
 interface OrderRowActionsProps {
   order: Order;
@@ -478,6 +480,7 @@ export function OrderRowActions({
   const withoutTellicelss = userRole && ["ADMIN", "MANAGER"].includes(userRole);
 
   const [editOpen, setEditOpen] = useState(false);
+  const [editOpenTiming, setEditOpenTiming] = useState(false);
 
   const [sellerDialogOpen, setSellerDialogOpen] = useState(false);
   const [selectedSellerId, setSelectedSellerId] = useState<string>(
@@ -553,6 +556,18 @@ export function OrderRowActions({
               </DropdownMenuItem>
             )}
 
+          {/* order mode option */}
+          {!(isDelivered || isCompleted) && (
+            <DropdownMenuItem
+              className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
+              onClick={() => setEditOpenTiming(true)}
+              disabled={hasCourier && !isAdmin}
+            >
+              <TimerReset className="h-3.5 w-3.5" />
+              Order Timing
+            </DropdownMenuItem>
+          )}
+
           {/* Edit */}
           <DropdownMenuItem
             className="gap-2 text-sm cursor-pointer text-blue-600 focus:text-blue-600 dark:text-blue-400"
@@ -610,18 +625,22 @@ export function OrderRowActions({
           )}
 
           {/* Assign Courier - For confirmed orders without courier */}
-          {order.isPublished && hasAccess && isConfirmed && !hasCourier && onAssignCourier && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="gap-2 text-sm cursor-pointer text-blue-600 focus:text-blue-600 dark:text-blue-400"
-                onClick={() => onAssignCourier(order)}
-              >
-                <Truck className="h-3.5 w-3.5" />
-                Assign Courier
-              </DropdownMenuItem>
-            </>
-          )}
+          {order.isPublished &&
+            hasAccess &&
+            isConfirmed &&
+            !hasCourier &&
+            onAssignCourier && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="gap-2 text-sm cursor-pointer text-blue-600 focus:text-blue-600 dark:text-blue-400"
+                  onClick={() => onAssignCourier(order)}
+                >
+                  <Truck className="h-3.5 w-3.5" />
+                  Assign Courier
+                </DropdownMenuItem>
+              </>
+            )}
 
           {/* Reassign Courier - For ADMIN only when courier is already assigned */}
           {isAdmin && isConfirmed && hasCourier && onAssignCourier && (
@@ -710,6 +729,14 @@ export function OrderRowActions({
         open={editOpen}
         order={order}
         onOpenChange={setEditOpen}
+        onSuccess={refetch}
+      />
+
+      {/* ---- edit order timing ---- */}
+      <OrderModeChangeModal
+        open={editOpenTiming}
+        order={order}
+        onOpenChange={setEditOpenTiming}
         onSuccess={refetch}
       />
 
