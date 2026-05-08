@@ -358,7 +358,6 @@ export function POSCartSidebar({
           </div>
         </div>
 
-        {/* ── Discount input ── */}
         <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3">
           <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             <Tag className="h-3 w-3" />
