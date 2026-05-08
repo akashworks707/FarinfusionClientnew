@@ -1,4 +1,3 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -40,6 +39,7 @@ export interface ITopProduct {
   images?: string[];
   availableStock: number;
   totalSold: number;
+  totalRevenue: number;
   totalSoldInPeriod: number;
   totalRevenueInPeriod: number;
   orderCount: number;
@@ -284,7 +284,7 @@ export function TopProductsTable({
           <TableBody>
             {paginatedData.map((product, idx) => {
               const displayIdx = startIdx + idx + 1;
-            const sellPrice =
+              const sellPrice =
                 product.discountPrice && product.discountPrice > 0
                   ? product.discountPrice
                   : product.price;
@@ -387,7 +387,7 @@ export function TopProductsTable({
                   {/* Sold all time */}
                   <TableCell className="text-center">
                     <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-xs font-bold text-violet-700 tabular-nums dark:border-violet-800 dark:bg-violet-900/20 dark:text-violet-400">
-                      {product.totalSoldInPeriod.toLocaleString()}
+                      {product?.totalSold}
                     </span>
                   </TableCell>
 
@@ -399,7 +399,7 @@ export function TopProductsTable({
                   {/* Revenue */}
                   <TableCell className="text-right pr-5">
                     <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                      ৳{product.totalRevenueInPeriod.toLocaleString()}
+                      ৳{product?.totalRevenue}
                     </span>
                   </TableCell>
                 </TableRow>
