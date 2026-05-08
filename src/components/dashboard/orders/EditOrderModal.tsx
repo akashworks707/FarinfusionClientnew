@@ -421,6 +421,7 @@ export function EditOrderModal({
                 <Input
                   placeholder="Search and add products…"
                   value={productSearch}
+                   onWheel={(e) => e.currentTarget.blur()}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onFocus={() => {
                     setDropdownOpen(true);
@@ -573,6 +574,7 @@ export function EditOrderModal({
                         <input
                           type="number"
                           min={1}
+                           onWheel={(e) => e.currentTarget.blur()}
                           value={item.quantity}
                           onChange={(e) =>
                             setQty(
@@ -626,6 +628,7 @@ export function EditOrderModal({
                   >
                     <Input
                       id="fullName"
+                       onWheel={(e) => e.currentTarget.blur()}
                       placeholder="Customer name"
                       className={inputCls}
                       {...register("fullName")}
@@ -640,6 +643,7 @@ export function EditOrderModal({
                   >
                     <Input
                       id="email"
+                       onWheel={(e) => e.currentTarget.blur()}
                       type="email"
                       placeholder="email@example.com"
                       className={inputCls}
@@ -658,6 +662,7 @@ export function EditOrderModal({
                     <Input
                       id="phone"
                       type="tel"
+                       onWheel={(e) => e.currentTarget.blur()}
                       placeholder="01XXXXXXXXX"
                       className={inputCls}
                       {...register("phone")}
@@ -700,6 +705,7 @@ export function EditOrderModal({
                 >
                   <Input
                     id="address"
+                     onWheel={(e) => e.currentTarget.blur()}
                     placeholder="House, Road, Area, City"
                     className={inputCls}
                     {...register("address")}
@@ -719,6 +725,7 @@ export function EditOrderModal({
                       <Input
                         id="shippingCost"
                         type="number"
+                         onWheel={(e) => e.currentTarget.blur()}
                         min="0"
                         step="1"
                         placeholder="0"
@@ -737,6 +744,7 @@ export function EditOrderModal({
                         id="discount"
                         type="number"
                         min="0"
+                         onWheel={(e) => e.currentTarget.blur()}
                         step="1"
                         placeholder="0"
                         className={cn(inputCls, "pl-7")}
@@ -790,6 +798,7 @@ export function EditOrderModal({
                     >
                       <Input
                       type="number"
+                       onWheel={(e) => e.currentTarget.blur()}
                       min={0}
                       {...register("advanceDetails.amount")}
                       placeholder="Enter advance amount"

@@ -913,7 +913,7 @@ export default function ProductManagement() {
                     {
                       label: "Total Sales",
                       key: "totalRevenue",
-                      sortable: true,
+                      sortable: false,
                       cls: "text-center hidden sm:table-cell",
                     },
                     {
