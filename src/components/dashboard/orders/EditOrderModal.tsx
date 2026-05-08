@@ -365,11 +365,11 @@ export function EditOrderModal({
     }
   };
 
-  const shipping = watch("shippingCost") || 0;
-  const discount = watch("discount") || 0;
-  const discountWithShipping = shipping - discount;
+  // const shipping = watch("shippingCost") || 0;
+  // const discount = watch("discount") || 0;
+  // const discountWithShipping = shipping - discount;
 
-  const total = Math.max(0, subtotal + discountWithShipping);
+  const total = Math.max(0, subtotal);
   if (!order) return null;
 
   return (

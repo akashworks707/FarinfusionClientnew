@@ -134,7 +134,7 @@ const SORT_OPTIONS = [
   { value: "createdAt", label: "Oldest first" },
   { value: "-price", label: "Price: High → Low" },
   { value: "price", label: "Price: Low → High" },
-  { value: "-totalRevenue", label: "Best selling" },
+  { value: "-totalSold", label: "Best selling" },
 ];
 
 const STATUS_OPTIONS = [
@@ -145,6 +145,7 @@ const STATUS_OPTIONS = [
 
 const STOCK_FILTER_OPTIONS = [
   { value: "all", label: "All Stock" },
+  { value: "inStock", label: "In Stock" },
   { value: "outOfStock", label: "Out of Stock" },
   { value: "lowStock", label: "Low Stock" },
 ];
@@ -291,7 +292,7 @@ export default function ProductManagement() {
   const [localSearch, setLocalSearch] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [stockFilter, setStockFilter] = useState("");
+  const [stockFilter, setStockFilter] = useState("all");
   const [sort, setSort] = useState("-createdAt");
   const [page, setPage] = useState(1);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -301,32 +302,42 @@ export default function ProductManagement() {
   const [calRange, setCalRange] = useState<DateRange | undefined>(undefined);
   const [calOpen, setCalOpen] = useState(false);
 
-  const [clientSort, setClientSort] = useState<{
-    key: string;
-    dir: "asc" | "desc";
-  } | null>(null);
+  // const [clientSort, setClientSort] = useState<{
+  //   key: string;
+  //   dir: "asc" | "desc";
+  // } | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<IProduct | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
   const { data, isLoading, isError, refetch } = useGetAllProductsQuery({
     ...(search.trim() && { searchTerm: search.trim() }),
+
     ...(status && { status }),
+
+    ...(stockFilter &&
+      stockFilter !== "all" && {
+        stockFilter,
+      }),
+
     ...(dateFrom && {
       "createdAt[gte]": format(dateFrom, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
     }),
+
     ...(dateTo && {
       "createdAt[lte]": format(dateTo, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
     }),
+
     sort,
+
     page,
+
     limit: LIMIT,
   });
 
   const { data: allPro } = useGetAllProductsQuery({ limit: allProductLimit });
 
-  console.log("All Product",allPro)
+  // console.log("All Product",allPro)
 
   const allProducts = allPro?.data ?? [];
   const rawProducts: IProduct[] = data?.data ?? [];
@@ -341,49 +352,49 @@ export default function ProductManagement() {
   const totalSold = allProducts.reduce((s, p) => s + (p.totalSold ?? 0), 0);
 
   // Apply stock filter to raw products
-  const filteredByStock = rawProducts.filter((product) => {
-    if (!stockFilter) return true;
-    const stock = product.availableStock ?? 0;
-    if (stockFilter === "outOfStock") return stock === 0;
-    if (stockFilter === "lowStock") return stock > 0 && stock <= 10;
-    if (stockFilter === "inStock") return stock > 10;
-    return true;
-  });
+  // const filteredByStock = rawProducts.filter((product) => {
+  //   if (!stockFilter) return true;
+  //   const stock = product.availableStock ?? 0;
+  //   if (stockFilter === "outOfStock") return stock === 0;
+  //   if (stockFilter === "lowStock") return stock > 0 && stock <= 10;
+  //   if (stockFilter === "inStock") return stock > 10;
+  //   return true;
+  // });
 
   // Apply sorting - handle special stock sorts client-side
-  let products = [...filteredByStock];
+  const products = [...rawProducts];
 
-  if (sort === "stock-low") {
-    // Sort by stock level ascending (lowest first)
-    products.sort((a, b) => (a.availableStock ?? 0) - (b.availableStock ?? 0));
-  } else if (sort === "stock-out") {
-    // Sort out of stock items first, then by stock level
-    products.sort((a, b) => {
-      const aZero = (a.availableStock ?? 0) === 0 ? -1 : 1;
-      const bZero = (b.availableStock ?? 0) === 0 ? -1 : 1;
-      if (aZero !== bZero) return aZero - bZero;
-      return (a.availableStock ?? 0) - (b.availableStock ?? 0);
-    });
-  } else if (clientSort) {
-    // Handle client-side sorting for column headers
-    products = products.sort((a, b) => {
-      const av = (a as any)[clientSort.key] ?? 0;
-      const bv = (b as any)[clientSort.key] ?? 0;
-      if (typeof av === "string")
-        return clientSort.dir === "asc"
-          ? av.localeCompare(bv)
-          : bv.localeCompare(av);
-      return clientSort.dir === "asc" ? av - bv : bv - av;
-    });
-  }
+  // if (sort === "stock-low") {
+  //   // Sort by stock level ascending (lowest first)
+  //   products.sort((a, b) => (a.availableStock ?? 0) - (b.availableStock ?? 0));
+  // } else if (sort === "stock-out") {
+  //   // Sort out of stock items first, then by stock level
+  //   products.sort((a, b) => {
+  //     const aZero = (a.availableStock ?? 0) === 0 ? -1 : 1;
+  //     const bZero = (b.availableStock ?? 0) === 0 ? -1 : 1;
+  //     if (aZero !== bZero) return aZero - bZero;
+  //     return (a.availableStock ?? 0) - (b.availableStock ?? 0);
+  //   });
+  // } else if (clientSort) {
+  //   // Handle client-side sorting for column headers
+  //   products = products.sort((a, b) => {
+  //     const av = (a as any)[clientSort.key] ?? 0;
+  //     const bv = (b as any)[clientSort.key] ?? 0;
+  //     if (typeof av === "string")
+  //       return clientSort.dir === "asc"
+  //         ? av.localeCompare(bv)
+  //         : bv.localeCompare(av);
+  //     return clientSort.dir === "asc" ? av - bv : bv - av;
+  //   });
+  // }
 
-  const handleClientSort = (key: string) => {
-    setClientSort((prev) =>
-      prev?.key === key
-        ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
-        : { key, dir: "desc" },
-    );
-  };
+  // const handleClientSort = (key: string) => {
+  //   setClientSort((prev) =>
+  //     prev?.key === key
+  //       ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
+  //       : { key, dir: "desc" },
+  //   );
+  // };
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -440,7 +451,6 @@ export default function ProductManagement() {
     setSort("-createdAt");
     setStatus("");
     setStockFilter("");
-    setClientSort(null);
     setCalRange(undefined);
     setDateFrom(undefined);
     setDateTo(undefined);
@@ -598,7 +608,7 @@ export default function ProductManagement() {
 
           {/* Stock Filter */}
           <Select
-            value={stockFilter}
+            value={stockFilter || "all"}
             onValueChange={(v) => {
               setStockFilter(v);
               setPage(1);
@@ -625,7 +635,6 @@ export default function ProductManagement() {
             value={sort}
             onValueChange={(v) => {
               setSort(v);
-              setClientSort(null);
               setPage(1);
             }}
           >
@@ -903,7 +912,7 @@ export default function ProductManagement() {
                     },
                     {
                       label: "Total Sales",
-                      key: "totalSales",
+                      key: "totalRevenue",
                       sortable: true,
                       cls: "text-center hidden sm:table-cell",
                     },
@@ -934,7 +943,22 @@ export default function ProductManagement() {
                         key={col.label}
                         onClick={
                           col.sortable && col.key
-                            ? () => handleClientSort(col.key!)
+                            ? () => {
+                                const current =
+                                  sort === col.key
+                                    ? "asc"
+                                    : sort === `-${col.key}`
+                                      ? "desc"
+                                      : null;
+
+                                if (current === "desc") {
+                                  setSort(col.key!);
+                                } else {
+                                  setSort(`-${col.key}`);
+                                }
+
+                                setPage(1);
+                              }
                             : undefined
                         }
                         className={cn(
@@ -948,12 +972,8 @@ export default function ProductManagement() {
                         {col.label}
                         {col.sortable && col.key && (
                           <SortIcon
-                            active={clientSort?.key === col.key}
-                            dir={
-                              clientSort?.key === col.key
-                                ? clientSort.dir
-                                : "desc"
-                            }
+                            active={sort === col.key || sort === `-${col.key}`}
+                            dir={sort === col.key ? "asc" : "desc"}
                           />
                         )}
                       </th>
