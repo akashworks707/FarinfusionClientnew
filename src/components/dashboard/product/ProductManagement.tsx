@@ -209,7 +209,7 @@ function StatCard({
 }
 
 function StockBadge({ stock }: { stock: number }) {
-  if (stock === 0)
+  if (stock <= 0)
     return (
       <Badge
         variant="outline"
