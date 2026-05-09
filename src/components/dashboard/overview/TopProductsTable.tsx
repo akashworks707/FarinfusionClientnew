@@ -387,7 +387,7 @@ export function TopProductsTable({
                   {/* Sold all time */}
                   <TableCell className="text-center">
                     <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-xs font-bold text-violet-700 tabular-nums dark:border-violet-800 dark:bg-violet-900/20 dark:text-violet-400">
-                      {product?.totalSold}
+                      {product?.totalSoldInPeriod}
                     </span>
                   </TableCell>
 
@@ -399,7 +399,7 @@ export function TopProductsTable({
                   {/* Revenue */}
                   <TableCell className="text-right pr-5">
                     <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                      ৳{product?.totalRevenue}
+                      ৳{product?.totalRevenueInPeriod}
                     </span>
                   </TableCell>
                 </TableRow>

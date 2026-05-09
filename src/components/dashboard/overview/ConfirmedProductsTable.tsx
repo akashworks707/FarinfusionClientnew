@@ -263,9 +263,9 @@ export function ConfirmedProductsTable({
                   ? product.discountPrice
                   : product.price;
 
-              const totalRevenue = product.totalRevenue;
+              const totalRevenue = product.totalRevenueInPeriod;
 
-              console.log("product ", product);
+              // console.log("product ", product);
               const share =
                 totalPeriodSold > 0
                   ? Math.round(
@@ -347,7 +347,7 @@ export function ConfirmedProductsTable({
                               : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
                         )}
                       >
-                        {product.totalSold}
+                        {product.totalSoldInPeriod}
                       </Badge>
                       {/* <span className="text-[9px] text-gray-500 dark:text-gray-400">
                         {share}%
