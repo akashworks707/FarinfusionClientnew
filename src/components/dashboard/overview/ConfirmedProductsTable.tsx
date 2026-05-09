@@ -129,9 +129,7 @@ export function ConfirmedProductsTable({
   const totalPeriodRevenue = confirmedProducts.reduce(
     (s, p) =>
       s +
-      (p.discountPrice && p.discountPrice > 0
-        ? p.discountPrice
-        : p.price * p.totalSoldInPeriod),
+      (p.totalRevenueInPeriod ?? 0) /* || (p.totalSoldInPeriod ?? 0) * (p.discountPrice ?? p.price)*/,
     0,
   );
 
