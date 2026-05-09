@@ -23,6 +23,8 @@ export const baseApi = createApi({
     "ORDER",
     "COURIERS",
     "COURIER",
+    "PRODUCT_PURCHASES",
+    "PRODUCT_PURCHASE",
     "MY_ORDERS",
     "DASHBOARD_OVERVIEW",
     "DASHBOARD_STATS",

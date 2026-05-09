@@ -12,7 +12,6 @@ import {
   Users,
   User,
   ShoppingCart,
-
   LogOut,
   Folder,
   Tag,
@@ -20,6 +19,7 @@ import {
   ListOrdered,
   Target,
   Store,
+  Box,
 } from "lucide-react";
 
 export interface SidebarItem {
@@ -41,13 +41,13 @@ const iconMap: Record<PageAccess, React.ReactNode> = {
   "customer-management": <User className="h-5 w-5" />,
   "my-customers": <User className="h-5 w-5" />,
   "product-management": <ShoppingCart className="h-5 w-5" />,
+  "purchase-products": <Box className="h-5 w-5" />,
   "category-management": <Folder className="h-5 w-5" />,
   "brand-management": <Tag className="h-5 w-5" />,
 
   coupons: <Ticket className="h-5 w-5" />,
   leads: <Target className="h-5 w-5" />,
   pos: <Store className="h-5 w-5" />,
- 
 };
 
 const pageHrefMap: Record<any, string> = {
@@ -55,6 +55,7 @@ const pageHrefMap: Record<any, string> = {
   "product-management": "/staff/dashboard/admin/product-management",
   "category-management": "/staff/dashboard/admin/category-management",
   "brand-management": "/staff/dashboard/admin/brand-management",
+  "purchase-products": "/staff/dashboard/admin/purchase-products",
   coupons: "/staff/dashboard/coupons",
   "staff-management": "/staff/dashboard/admin/user-management",
   "customer-management": "/staff/dashboard/admin/customer-management",
@@ -63,25 +64,24 @@ const pageHrefMap: Record<any, string> = {
   leads: "/staff/dashboard/leads",
   "my-orders": "/staff/dashboard/my-orders",
   pos: "/staff/dashboard/pos",
-
- 
 };
 
 export const buildSidebarItems = (
   userRole: UserRole,
   customPermissions?: PageAccess[],
 ): SidebarItem[] => {
- const permittedPages =
-  userRole === "ADMIN"
-    ? availablePages.map((p) => p.id) 
-    : customPermissions?.length
-    ? customPermissions
-    : defaultRolePermissions[userRole];
+  const permittedPages =
+    userRole === "ADMIN"
+      ? availablePages.map((p) => p.id)
+      : customPermissions?.length
+        ? customPermissions
+        : defaultRolePermissions[userRole];
 
   const sections: Record<string, PageAccess[]> = {
     core: ["dashboard"],
     management: [
       "product-management",
+      "purchase-products",
       "category-management",
       "brand-management",
       "coupons",
@@ -90,7 +90,6 @@ export const buildSidebarItems = (
       "my-customers",
     ],
     operations: ["orders-management", "leads", "my-orders", "pos"],
-   
   };
 
   // Build sidebar items organized by sections, then add profile and logout
