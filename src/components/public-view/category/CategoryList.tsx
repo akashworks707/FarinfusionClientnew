@@ -95,7 +95,7 @@ const CategoryList = () => {
                 key={cat._id}
                 className="pl-3 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-[14.2%]"
               >
-                <Link href={`/shop/category/${cat.slug}`}>
+                <Link href={`/shop?category=${cat.slug}`}>
                   <div className="group relative rounded-2xl overflow-hidden bg-[#2d3748] cursor-pointer hover:scale-[1.03] transition-transform duration-300 shadow-md">
                     <div className="bg-[#f5dfc8] aspect-[3/2.8] relative flex items-center justify-center overflow-hidden">
                       <Image

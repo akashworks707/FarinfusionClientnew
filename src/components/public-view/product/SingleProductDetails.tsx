@@ -84,6 +84,8 @@ const SingleProductDetails = () => {
 
   const {
     title,
+    brand,
+    category,
     images = [],
     price,
     discountPrice,
@@ -95,6 +97,8 @@ const SingleProductDetails = () => {
   const rating = ratings || 0;
   const reviewCount = reviews?.length || 0;
   const displayPrice = discountPrice || price;
+
+  console.log("Product Data:", product?.category?.title);
 
   const discount =
     price && discountPrice && price > discountPrice
@@ -131,10 +135,10 @@ const SingleProductDetails = () => {
             {product?.category && (
               <>
                 <Link
-                  href={`/shop/category/${product.category.slug}`}
+                  href={`/shop?category=${product?.category?.slug}`}
                   className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                 >
-                  {product.category.title}
+                  {product.category?.title}
                 </Link>
                 <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-600" />
               </>
@@ -163,7 +167,17 @@ const SingleProductDetails = () => {
 
               {/* RIGHT */}
               <div className="flex-1 flex flex-col gap-5 bg-white shadow rounded-2xl p-5">
-                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                <h1 className="text-2xl heading-animate font-bold text-gray-900">{title}</h1>
+                <div className="flex items-center gap-3">
+                  <p className="text-sm text-gray-600">
+                    Brand :{" "}
+                    <span onClick={() => router.push(`/shop?brand=${product?.brand?._id}`)} className="text-amber-500 hover:underline cursor-pointer">
+                      {brand?.title}
+                    </span> | Category : <span onClick={() => router.push(`/shop?category=${product?.category?.slug}`)} className="text-amber-500 hover:underline cursor-pointer">
+                      {category?.title}
+                    </span>
+                  </p>
+                </div>
 
                 {/* rating */}
                 <div className="flex items-center gap-2">

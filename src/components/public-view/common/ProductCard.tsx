@@ -39,6 +39,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const wishlistItems = useSelector((state: RootState) => state.wish.items);
 
   const wished = wishlistItems.some((item) => item._id === product._id);
+  const hasDiscount =
+  typeof discountPrice === "number" &&
+  discountPrice > 0 &&
+  discountPrice < price;
 
   const [cardHovered, setCardHovered] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
@@ -46,9 +50,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const dispatch = useDispatch();
 
   const productHref = slug ? `/product/${slug}` : "#";
-  const categoryHref = category?.slug
-    ? `/shop/category/${category?.slug}`
-    : "#";
+  const categoryHref = `/shop?category=${category?.slug ?? ""}`;
+  // const categoryHref = category?.slug
+  //   ? `/shop/category/${category?.slug}`
+  //   : "#";
   const isOutOfStock = !product?.availableStock || product.availableStock <= 0;
 
   const onWishlist = () => {
@@ -107,7 +112,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div
         onMouseEnter={() => setCardHovered(true)}
         onMouseLeave={() => setCardHovered(false)}
-        className="w-full bg-white rounded-2xl shadow-md overflow-hidden p-2 relative transition-all duration-300 flex flex-col h-full"
+        className="w-full bg-white rounded-2xl shadow-md overflow-hidden p-2 relative  flex flex-col h-full
+        transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg "
       >
         {/* Wishlist */}
         <Tooltip>
@@ -212,13 +218,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
               {/* Discount Price (main price) */}
               <p className="text-[14px] font-bold text-yellow-500 mb-2">
                 ৳{" "}
-                {(discountPrice ?? price ?? 0).toLocaleString("en-BD", {
+                {(hasDiscount ? discountPrice : price ?? 0).toLocaleString("en-BD", {
                   minimumFractionDigits: 2,
                 })}
               </p>
 
-              {/* Original Price (cut) → only if discount */}
-              {discountPrice && (
+              {/* Original Price */}
+              {hasDiscount && (
                 <p className="text-[12px] font-bold text-gray-500 mb-2 line-through">
                   ৳{" "}
                   {(price ?? 0).toLocaleString("en-BD", {

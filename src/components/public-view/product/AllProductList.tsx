@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutGrid,
   LayoutList,
@@ -30,6 +30,10 @@ import ProductSkeleton from "@/components/public-view/common/ProductSkeleton";
 import { IProduct } from "@/types";
 import { setViewMode } from "@/redux/slices/viewModeSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Image from "next/image";
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 10000;
@@ -134,109 +138,181 @@ function SidebarContent({
   brands,
   selectedBrand,
   onBrandChange,
+  categories,
+  selectedCategory,
+  onCategoryChange,
 }: {
   priceRange: [number, number];
   onPriceChange: (v: [number, number]) => void;
   onPriceApply: () => void;
+
   brands: any[];
   selectedBrand: string;
   onBrandChange: (id: string) => void;
+
+
+  categories: any[];
+  selectedCategory: string;
+  onCategoryChange: (id: string) => void; 
 }) {
-  const [brandsOpen, setBrandsOpen] = useState(true);
-
   return (
-    <div className="space-y-6">
-      {/* Filter By Price */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
-        <h3 className="mb-4 text-sm font-bold text-gray-900 dark:text-gray-50">
-          Filter By Price
-        </h3>
-        <Slider
-          min={PRICE_MIN}
-          max={PRICE_MAX}
-          step={50}
-          value={priceRange}
-          onValueChange={(v: any) => onPriceChange(v as [number, number])}
-          className="mb-4"
-        />
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Price:{" "}
-            <span className="font-semibold text-gray-900 dark:text-gray-50">
-              ৳ {priceRange[0]}
-            </span>
-            {" — "}
-            <span className="font-semibold text-gray-900 dark:text-gray-50">
-              ৳ {priceRange[1]}
-            </span>
-          </p>
-          <Button
-            size="sm"
-            onClick={onPriceApply}
-            className="h-7 rounded-full bg-amber-500 px-3 text-xs text-white hover:bg-amber-600"
-          >
-            Filter
-          </Button>
-        </div>
-      </div>
+        <div className="space-y-6">
+      {/* ================= PRICE FILTER ================= */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Filter By Price</CardTitle>
+        </CardHeader>
 
-      {/* Filter By Brands */}
-      <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 overflow-hidden">
-        <button
-          onClick={() => setBrandsOpen((b) => !b)}
-          className="flex w-full items-center justify-between p-4 text-sm font-bold text-gray-900 dark:text-gray-50"
-        >
-          Filter By Brands
-          <ChevronDown
-            className={cn(
-              "h-4 w-4 text-gray-400 transition-transform",
-              brandsOpen && "rotate-180",
-            )}
+        <CardContent className="space-y-4">
+          <Slider
+            min={PRICE_MIN}
+            max={PRICE_MAX}
+            step={50}
+            value={priceRange}
+            onValueChange={(v) => onPriceChange(v as [number, number])}
           />
-        </button>
 
-        {brandsOpen && (
-          <div className="border-t border-gray-100 px-4 pb-4 dark:border-gray-800 space-y-1.5 pt-3">
-            <button
-              onClick={() => onBrandChange("")}
-              className={cn(
-                "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors",
-                !selectedBrand
-                  ? "text-amber-600 font-semibold"
-                  : "text-gray-600 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400",
-              )}
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Price:{" "}
+              <span className="font-semibold text-gray-900 dark:text-gray-50">
+                ৳ {priceRange[0]}
+              </span>{" "}
+              —{" "}
+              <span className="font-semibold text-gray-900 dark:text-gray-50">
+                ৳ {priceRange[1]}
+              </span>
+            </p>
+
+            <Button
+              size="sm"
+              onClick={onPriceApply}
+              className="h-7 rounded-full bg-amber-500 px-3 text-xs text-white hover:bg-amber-600"
             >
-              All Brands
-            </button>
-            {brands.map((brand: any) => (
+              Filter
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+     <Card className="overflow-hidden">
+      <CardContent className="p-0">
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue={"brands"}
+          className="w-full"
+        >
+          {/* ================= BRAND FILTER ================= */}
+          <AccordionItem value="brands" className="border-b">
+            <AccordionTrigger
+              className="
+                px-4 py-3 text-sm font-bold
+                hover:bg-gray-100 dark:hover:bg-gray-800
+                cursor-pointer
+                transition-colors
+                no-underline hover:no-underline
+              "
+            >
+              Filter By Brands
+            </AccordionTrigger>
+
+            <AccordionContent className="px-4 pb-4 h-full pt-2 space-y-1.5">
+             <ScrollArea className="space-y-1.5 max-h-72 overflow-y-auto">
+               {/* All Brands */}
               <button
-                key={brand._id}
-                onClick={() => onBrandChange(brand._id)}
+                onClick={() => onBrandChange("")}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors",
-                  selectedBrand === brand._id
-                    ? "text-amber-600 font-semibold"
-                    : "text-gray-600 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400",
+                  "flex w-full items-center rounded-lg px-2 py-1.5 text-sm transition-all cursor-pointer",
+                  !selectedBrand
+                    ? "bg-amber-50 font-semibold text-amber-600 dark:bg-amber-900/20"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-amber-400"
                 )}
               >
-                <ChevronRight className="h-3 w-3 shrink-0" />
-                {brand.title}
+                All Brands
               </button>
-            ))}
-          </div>
-        )}
-      </div>
+
+              {/* Brand List */}
+              {brands?.map((brand: any) => (
+                <button
+                  key={brand._id}
+                  onClick={() => onBrandChange(brand._id)}
+                  className={cn(
+                    "flex w-full items-center rounded-lg px-2 py-1.5 text-sm transition-all cursor-pointer",
+                    selectedBrand === brand._id
+                      ? "bg-amber-50 font-semibold text-amber-600 dark:bg-amber-900/20"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-amber-400"
+                  )}
+                >
+                  {brand.title}
+                </button>
+              ))}
+             </ScrollArea>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ================= CATEGORY FILTER ================= */}
+          <AccordionItem value="categories" className="border-none">
+            <AccordionTrigger
+              className="
+                px-4 py-3 text-sm font-bold
+                hover:bg-gray-100 dark:hover:bg-gray-800
+                cursor-pointer
+                transition-colors
+                no-underline hover:no-underline
+              "
+            >
+              Filter By Categories
+            </AccordionTrigger>
+
+            <AccordionContent className="px-4 pb-4 h-full pt-2 space-y-1.5">
+             <ScrollArea className="space-y-1.5 max-h-72 overflow-y-auto">
+               {/* All Categories */}
+              <button
+                onClick={() => onCategoryChange("")}
+                className={cn(
+                  "flex w-full items-center rounded-lg px-2 py-1.5 text-sm transition-all cursor-pointer",
+                  !selectedCategory
+                    ? "bg-amber-50 font-semibold text-amber-600 dark:bg-amber-900/20"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-amber-400"
+                )}
+              >
+                All Categories
+              </button>
+
+              {/* Category List */}
+              {categories?.map((category: any) => (
+                <button
+                  key={category._id}
+                  onClick={() => onCategoryChange(category.slug)}
+                  className={cn(
+                    "flex w-full items-center rounded-lg px-2 py-1.5 text-sm transition-all cursor-pointer",
+                    selectedCategory === category.slug
+                      ? "bg-amber-50 font-semibold text-amber-600 dark:bg-amber-900/20"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-amber-400"
+                  )}
+                >
+                  {category.title}
+                </button>
+              ))}
+             </ScrollArea>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </CardContent>
+    </Card>
     </div>
   );
 }
 
 export default function AllProductList() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const params = new URLSearchParams(searchParams.toString());
 
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(12);
   const [sort, setSort] = useState("default");
-  // const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const dispatch = useAppDispatch();
   const viewMode = useAppSelector((state) => state.viewMode.viewMode);
   const [priceRange, setPriceRange] = useState<[number, number]>([
@@ -247,10 +323,14 @@ export default function AllProductList() {
     PRICE_MIN,
     PRICE_MAX,
   ]);
-  const [selectedBrand, setSelectedBrand] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-
   const searchQuery = searchParams.get("search") ?? "";
+  const brandQuery = searchParams.get("brand") ?? "";
+  const categoryQuery = searchParams.get("category") ?? "";
+
+  const [selectedBrand, setSelectedBrand] = useState(brandQuery);
+  const [selectedCategory, setSelectedCategory] = useState(categoryQuery);
+
+  
 
   const queryArgs: any = {
     page,
@@ -263,11 +343,7 @@ export default function AllProductList() {
     ...(appliedPrice[1] < PRICE_MAX && { "price[lte]": appliedPrice[1] }),
   };
 
-  const {
-    data: productsData,
-    isLoading,
-    isError,
-  } = useGetAllProductsQuery(queryArgs);
+  const { data: productsData, isLoading, isError,} = useGetAllProductsQuery(queryArgs);
   const { data: categoriesData } = useGetAllCategoriesQuery({ limit: 100 });
   const { data: brandsData } = useGetAllBrandsQuery({ limit: 100 });
 
@@ -278,6 +354,9 @@ export default function AllProductList() {
   const categories = categoriesData?.data ?? [];
   const brands = brandsData?.data ?? [];
 
+  console.log("categories", categories);
+
+
   const handlePriceApply = useCallback(() => {
     setAppliedPrice(priceRange);
     setPage(1);
@@ -285,16 +364,50 @@ export default function AllProductList() {
 
   const handleBrandChange = (id: string) => {
     setSelectedBrand(id);
+    setSelectedCategory(""); 
     setPage(1);
+
+    if (id) {
+      params.set("brand", id);
+    } else {
+      params.delete("brand");
+    }
+
+    params.delete("category"); 
+
+    router.push(`/shop?${params.toString()}`);
   };
 
+
   const handleCategoryClick = (slug: string) => {
-    setSelectedCategory((prev) => (prev === slug ? "" : slug));
+    const newCategory = selectedCategory === slug ? "" : slug;
+
+    setSelectedBrand(""); 
+    setSelectedCategory(newCategory);
     setPage(1);
+
+    if (newCategory) {
+      params.set("category", newCategory);
+    } else {
+      params.delete("category");
+    }
+
+    params.delete("brand"); 
+
+    router.push(`/shop?${params.toString()}`);
   };
 
   const showing1 = (page - 1) * perPage + 1;
   const showing2 = Math.min(page * perPage, totalCount);
+
+
+  useEffect(() => {
+    setSelectedCategory(categoryQuery);
+  }, [categoryQuery]);
+
+  useEffect(() => {
+    setSelectedBrand(brandQuery);
+  }, [brandQuery]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
@@ -330,9 +443,9 @@ export default function AllProductList() {
 
         {/* ── Category scroll row ── */}
         {categories.length > 0 && (
-          <div className="mb-6 overflow-x-auto">
+          <div className="mb-6 mt-5 overflow-x-auto">
             <div
-              className="flex gap-4 pb-2"
+              className="flex gap-4 p-2"
               style={{ minWidth: "max-content" }}
             >
               {categories.map((cat: any) => (
@@ -340,25 +453,25 @@ export default function AllProductList() {
                   key={cat?.slug}
                   onClick={() => handleCategoryClick(cat.slug)}
                   className={cn(
-                    "flex flex-col items-center gap-2 rounded-xl p-3 text-center transition-all duration-200 min-w-22.5",
+                    "flex flex-col items-center gap-2 rounded-xl cursor-pointer p-3 text-center transition-all duration-200 min-w-22.5",
                     selectedCategory === cat.slug
                       ? "bg-amber-50 ring-2 ring-amber-400 dark:bg-amber-900/20"
                       : "bg-gray-50 hover:bg-amber-50/60 dark:bg-gray-900 dark:hover:bg-amber-900/10",
                   )}
                 >
                   {/* Category image */}
-                  {/* <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+                  <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
                     {cat.image?.[0] ? (
-                      <Image src={cat.image[0] ?? ""} alt={cat.title ?? ""} fill priority quality={90} sizes="64px" className="object-cover" />
+                      <Image src={cat.image ?? ""} alt={cat.title ?? ""} fill priority quality={90} sizes="64px" className="object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-gray-300 text-xs">?</div>
                     )}
-                  </div> */}
-                  <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 leading-tight">
+                  </div>
+                  <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 leading-none">
                     {cat.title}
                   </p>
                   {cat.productCount !== undefined && (
-                    <p className="text-[10px] text-gray-400">
+                    <p className="text-[10px] text-gray-400 leading-0">
                       {cat.productCount} products
                     </p>
                   )}
@@ -379,6 +492,9 @@ export default function AllProductList() {
               brands={brands}
               selectedBrand={selectedBrand}
               onBrandChange={handleBrandChange}
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryClick}
             />
           </aside>
 
@@ -412,6 +528,10 @@ export default function AllProductList() {
                       brands={brands}
                       selectedBrand={selectedBrand}
                       onBrandChange={handleBrandChange}
+
+                      categories={categories}
+                      selectedCategory={selectedCategory}
+                      onCategoryChange={handleCategoryClick}
                     />
                   </SheetContent>
                 </Sheet>
