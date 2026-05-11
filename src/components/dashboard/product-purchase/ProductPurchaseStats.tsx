@@ -2,16 +2,11 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Package,
-  DollarSign,
-  TrendingUp,
-  AlertCircle,
-} from "lucide-react";
+import { Package, TrendingUp, AlertCircle, ArrowUpDown } from "lucide-react";
 
 interface PurchaseStats {
   totalPurchases: number;
-  totalAmount: number;
+  totalAmount?: number;
   totalProfit: number;
   pendingPayments: number;
 }
@@ -28,35 +23,35 @@ export const ProductPurchaseStats: React.FC<ProductPurchaseStatsProps> = ({
   const stats = [
     {
       title: "Total Purchases",
-      value: data.totalPurchases,
+      value: data?.totalPurchases ?? 0,
       icon: Package,
       color: "text-amber-600 dark:text-amber-400",
-      bgColor: "bg-amber-100 dark:bg-amber-900/20",
-      borderColor: "border-amber-200 dark:border-amber-800",
+      bgColor: "bg-amber-50 dark:bg-amber-900/20",
+      borderColor: "border-amber-100 dark:border-amber-800",
     },
     {
       title: "Total Spent",
-      value: `৳${(data.totalAmount || 0).toLocaleString()}`,
-      icon: DollarSign,
+      value: `৳${(data?.totalAmount || 0).toLocaleString()}`,
+      icon: ArrowUpDown,
       color: "text-blue-600 dark:text-blue-400",
-      bgColor: "bg-blue-100 dark:bg-blue-900/20",
-      borderColor: "border-blue-200 dark:border-blue-800",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+      borderColor: "border-blue-100 dark:border-blue-800",
     },
     {
       title: "Total Profit",
-      value: `৳${(data.totalProfit || 0).toLocaleString()}`,
+      value: `৳${(data?.totalProfit || 0).toLocaleString()}`,
       icon: TrendingUp,
       color: "text-green-600 dark:text-green-400",
-      bgColor: "bg-green-100 dark:bg-green-900/20",
-      borderColor: "border-green-200 dark:border-green-800",
+      bgColor: "bg-green-50 dark:bg-green-900/20",
+      borderColor: "border-green-100 dark:border-green-800",
     },
     {
       title: "Pending Payments",
-      value: data.pendingPayments,
+      value: data?.pendingPayments ?? 0,
       icon: AlertCircle,
       color: "text-red-600 dark:text-red-400",
-      bgColor: "bg-red-100 dark:bg-red-900/20",
-      borderColor: "border-red-200 dark:border-red-800",
+      bgColor: "bg-red-50 dark:bg-red-900/20",
+      borderColor: "border-red-100 dark:border-red-800",
     },
   ];
 

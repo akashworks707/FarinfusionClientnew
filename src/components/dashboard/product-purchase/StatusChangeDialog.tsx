@@ -32,13 +32,13 @@ interface StatusChangeDialogProps {
 const PURCHASE_STATUSES = [
   { value: "PENDING", label: "Pending", description: "Waiting for order" },
   { value: "ORDERED", label: "Ordered", description: "Order placed" },
-//   {
-//     value: "SHIPPED",
-//     label: "Shipped",
-//     description: "In transit to warehouse",
-//   },
+  //   {
+  //     value: "SHIPPED",
+  //     label: "Shipped",
+  //     description: "In transit to warehouse",
+  //   },
   { value: "RECEIVED", label: "Received", description: "Arrived at warehouse" },
-//   { value: "COMPLETED", label: "Completed", description: "Stock updated" },
+  //   { value: "COMPLETED", label: "Completed", description: "Stock updated" },
   { value: "CANCELLED", label: "Cancelled", description: "Order cancelled" },
 ];
 
@@ -177,7 +177,7 @@ export const StatusChangeDialog: React.FC<StatusChangeDialogProps> = ({
             disabled={isSubmitting || !isChanged}
             className={`${
               isSubmitting || !isChanged ? "opacity-50 cursor-not-allowed" : ""
-            } bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800 text-white`}
+            } hover:cursor-pointer bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800 text-white`}
           >
             {isSubmitting ? "Updating..." : "Update Status"}
           </AlertDialogAction>

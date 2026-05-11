@@ -15,6 +15,7 @@ import {
   useExchangeOrderMutation,
   useMarkDamageMutation,
   useGetAllDamagedProductsQuery,
+  useCancelOrderMutation,
 } from "@/redux/features/orders/ordersApi";
 import { useCreateCourierMutation } from "@/lib/hooks";
 import { OrderStats } from "./OrderStats";
@@ -86,6 +87,7 @@ export default function OrdersManagement() {
   >("instant");
 
   const [doPartialUpdate] = usePartialUpdateOrderMutation();
+  const [cancelOrder] = useCancelOrderMutation();
   const [doExchange] = useExchangeOrderMutation();
   const [doDamage] = useMarkDamageMutation();
 
@@ -184,6 +186,22 @@ export default function OrdersManagement() {
   const handleExchange = (order: Order) => {
     setExchangeOrder(order);
     setExchangeModalOpen(true);
+  };
+
+  const handleCancelOrder = async (order: Order) => {
+    try {
+      await cancelOrder({
+        _id: order._id,
+        orderStatus: "CANCELLED",
+        deliveryStatus: "CANCELLED",
+      }).unwrap();
+
+      toast.success("Order cancelled successfully");
+
+      refetch();
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to cancel order");
+    }
   };
 
   const handleExchangeSubmit = async () => {
@@ -445,6 +463,7 @@ export default function OrdersManagement() {
             onPartialUpdate={handlePartialUpdate}
             onViewInvoice={handleViewInvoice}
             onExchange={handleExchange}
+            onCancelOrder={handleCancelOrder}
             onMarkDamage={handleMarkDamage}
             onViewOrder={handleViewClick}
             onAssignCourier={handleOpenCourierModal}
@@ -465,6 +484,7 @@ export default function OrdersManagement() {
             onViewInvoice={handleViewInvoice}
             onPartialUpdate={handlePartialUpdate}
             onExchange={handleExchange}
+            onCancelOrder={handleCancelOrder}
             onMarkDamage={handleMarkDamage}
             onViewOrder={handleViewClick}
             setDeleteTarget={setDeleteTarget}
@@ -484,6 +504,7 @@ export default function OrdersManagement() {
             onViewInvoice={handleViewInvoice}
             refetch={refetch}
             onViewOrder={handleViewClick}
+            onCancelOrder={handleCancelOrder}
             setDeleteTarget={setDeleteTarget}
             setDeleteOpen={setDeleteOpen}
             onAssignCourier={handleOpenCourierModal}

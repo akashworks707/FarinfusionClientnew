@@ -113,13 +113,15 @@ export function OrderModeChangeModal({
     prevOrderId.current = currentId;
 
     const derived = deriveScheduleState(order);
-    setState({
-      scheduleType: derived.type,
-      scheduledAt: derived.scheduledAt,
-      selectedDate: derived.selectedDate,
-      time: derived.time,
-      calendarOpen: false,
-    });
+    setTimeout(() => {
+      setState({
+        scheduleType: derived.type,
+        scheduledAt: derived.scheduledAt,
+        selectedDate: derived.selectedDate,
+        time: derived.time,
+        calendarOpen: false,
+      });
+    }, 100);
   }, [order, open]);
 
   const isInstant = state.scheduleType === "INSTANT";

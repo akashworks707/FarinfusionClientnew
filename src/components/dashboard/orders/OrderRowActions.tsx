@@ -404,6 +404,7 @@ import {
   Plus,
   FileText,
   TimerReset,
+  X,
 } from "lucide-react";
 import type { Order } from "@/types/orders";
 import { Courier } from "@/types/courier";
@@ -416,6 +417,7 @@ import { toast } from "sonner";
 import { EditOrderModal } from "./EditOrderModal";
 import { useUpdateSellerMutation } from "@/redux/features/orders/ordersApi";
 import { OrderModeChangeModal } from "@/components/shared/OrderModeChangeModal";
+import { CancelOrderModal } from "./CancelOrderModal";
 
 interface OrderRowActionsProps {
   order: Order;
@@ -428,6 +430,7 @@ interface OrderRowActionsProps {
   setDeleteTarget?: (order: Order) => void;
   setDeleteOpen?: (open: boolean) => void;
   onComplete?: (order: Order) => void;
+  onCancelOrder?: (order: Order) => void;
   onMarkDamage?: (order: Order) => void;
   onMarkExchange?: (order: Order) => void;
   onPartialUpdate?: (order: Order) => void;
@@ -440,6 +443,7 @@ export function OrderRowActions({
   onConfirm,
   onPartialUpdate,
   onView,
+  onCancelOrder,
   onViewInvoice,
   onAssignCourier,
   setDeleteOpen,
@@ -483,6 +487,7 @@ export function OrderRowActions({
   const withoutTellicelss = userRole && ["ADMIN", "MANAGER"].includes(userRole);
 
   const [sellerDialogOpen, setSellerDialogOpen] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedSellerId, setSelectedSellerId] = useState<string>(
     (order.seller as any)?._id ?? order.seller ?? "",
   );
@@ -556,7 +561,7 @@ export function OrderRowActions({
               </DropdownMenuItem>
             )}
 
-            {/* order mode option */}
+          {/* order mode option */}
           {!(isDelivered || isConfirmed) && (
             <DropdownMenuItem
               className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
@@ -594,6 +599,16 @@ export function OrderRowActions({
                 )}
               </DropdownMenuItem>
             </>
+          )}
+
+          {hasAccess && !isCompleted && onCancelOrder && (
+            <DropdownMenuItem
+              onClick={() => setCancelModalOpen(true)}
+              className="gap-2 text-sm cursor-pointer text-rose-600 focus:text-rose-600 dark:text-rose-400"
+            >
+              <X className="h-3.5 w-3.5" />
+              Cancel Order
+            </DropdownMenuItem>
           )}
 
           {/* Partial Update - Only for ADMIN and when order is CONFIRMED */}
@@ -732,7 +747,7 @@ export function OrderRowActions({
         onSuccess={refetch}
       />
 
-       {/* ---- edit order timing ---- */}
+      {/* ---- edit order timing ---- */}
       <OrderModeChangeModal
         open={editOpenTiming}
         order={order}
@@ -740,6 +755,15 @@ export function OrderRowActions({
         onSuccess={refetch}
       />
 
+      <CancelOrderModal
+        open={cancelModalOpen}
+        order={order}
+        onCancel={() => setCancelModalOpen(false)}
+        onConfirm={() => {
+          setCancelModalOpen(false);
+          onCancelOrder?.(order);
+        }}
+      />
 
       {/* ── Assign Seller Dialog ── */}
       <Dialog open={sellerDialogOpen} onOpenChange={setSellerDialogOpen}>

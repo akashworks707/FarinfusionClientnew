@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import { toast } from "sonner";
 import {
   useGetAllProductPurchasesQuery,
   useDeleteProductPurchaseMutation,
   useCreateProductPurchaseMutation,
   useUpdateProductPurchaseMutation,
-//   useUpdatePurchaseStatusMutation,
+  useUpdatePurchaseStatusMutation,
+  useGetPurchaseStatsQuery,
 } from "@/redux/features/productPurchase/productPurchaseApi";
 import { useGetAllProductsQuery } from "@/redux/features/product/product.api";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
@@ -20,6 +21,7 @@ import TablePagination from "@/components/shared/TablePagination";
 import DashboardManagementPageSkeleton from "@/components/dashboard/DashboardManagePageSkeleton";
 import DeleteAlert from "@/components/dashboard/DeleteAlert";
 import ProductPurchaseDetailsModal from "@/components/dashboard/product-purchase/ProductPurchaseDetailsModal";
+import { IPurchase } from "@/types/purchase";
 
 interface Purchase {
   _id: string;
@@ -28,7 +30,8 @@ interface Purchase {
   supplierPhone?: string;
   quantity: number;
   buyingPrice: number;
-  totalAmount: number;
+  totalAmount?: number;
+  grandTotal?: number;
   paymentStatus: string;
   purchaseStatus: string;
   invoiceNo?: string;
@@ -39,7 +42,7 @@ const ProductPurchaseManagement = () => {
   const [deleteProductPurchase] = useDeleteProductPurchaseMutation();
   const [createProductPurchase] = useCreateProductPurchaseMutation();
   const [updateProductPurchase] = useUpdateProductPurchaseMutation();
-//   const [updatePurchaseStatus] = useUpdatePurchaseStatusMutation();
+  const [updatePurchaseStatus] = useUpdatePurchaseStatusMutation();
 
   const [searchTerm, setSearchTerm] = React.useState("");
   const [purchaseStatus, setPurchaseStatus] = React.useState("");
@@ -55,50 +58,58 @@ const ProductPurchaseManagement = () => {
     limit,
   });
 
-  const { data: productsData } = useGetAllProductsQuery({});
+  const { data: productsData } = useGetAllProductsQuery({ limit: 1000 });
+  const { data: statsData } = useGetPurchaseStatsQuery(undefined);
 
   // Modal and delete states
   const [selectedPurchase, setSelectedPurchase] =
-    React.useState<Purchase | null>(null);
+    React.useState<IPurchase | null>(null);
   const [openViewModal, setOpenViewModal] = React.useState(false);
-  const [purchaseToDelete, setPurchaseToDelete] =
-    React.useState<Purchase | null>(null);
+  const [purchaseToDelete, setPurchaseToDelete] = React.useState<any | null>(
+    null,
+  );
   const [openDeleteAlert, setOpenDeleteAlert] = React.useState(false);
 
   // Form states
   const [openFormModal, setOpenFormModal] = React.useState(false);
-  const [editingPurchase, setEditingPurchase] = React.useState<Purchase | null>(
-    null,
-  );
+  const [editingPurchase, setEditingPurchase] =
+    React.useState<IPurchase | null>(null);
 
   // Calculate statistics
-  const stats = useMemo(() => {
-    const purchases = data?.data || [];
-    const totalPurchases = purchases.length;
-    const totalAmount = purchases.reduce(
-      (sum: number, p: any) => sum + (p.totalAmount || 0),
-      0,
-    );
-    const pendingPayments = purchases.filter(
-      (p: any) => p.paymentStatus !== "PAID",
-    ).length;
+  // const stats = useMemo(() => {
+  //   const purchases = data?.data || [];
 
-    // Calculate profit: (selling price - buying price) * quantity
-    const totalProfit = purchases.reduce((sum: number, p: any) => {
-      const product = p.product as any;
-      const sellingPrice = product?.price || 0;
-      const buyingPrice = p.buyingPrice || 0;
-      const profit = (sellingPrice - buyingPrice) * (p.quantity || 0);
-      return sum + Math.max(0, profit);
-    }, 0);
+  //   const totalPurchases = purchases.length;
 
-    return {
-      totalPurchases,
-      totalAmount,
-      totalProfit,
-      pendingPayments,
-    };
-  }, [data]);
+  //   const grandTotal = purchases.reduce(
+  //     (sum: number, p: any) => sum + (p.totalAmount || 0),
+  //     0,
+  //   );
+
+  //   const pendingPayments = purchases.filter(
+  //     (p: any) => p.paymentStatus !== "PAID",
+  //   ).length;
+
+  //   const totalProfit = purchases.reduce((sum: number, p: any) => {
+  //     const purchaseProfit =
+  //       p.products?.reduce((acc: number, item: any) => {
+  //         const sellingPrice = item.product?.price || 0;
+
+  //         const buyingPrice = item.buyingPrice || 0;
+
+  //         return acc + (sellingPrice - buyingPrice) * item.quantity;
+  //       }, 0) || 0;
+
+  //     return sum + purchaseProfit;
+  //   }, 0);
+
+  //   return {
+  //     totalPurchases,
+  //     grandTotal,
+  //     totalProfit,
+  //     pendingPayments,
+  //   };
+  // }, [data]);
 
   const handleDelete = async (purchase: Purchase) => {
     try {
@@ -136,19 +147,32 @@ const ProductPurchaseManagement = () => {
     }
   };
 
-  //   const handleStatusChange = async (purchaseId: string, newStatus: string) => {
-  //     try {
-  //       const res = await updatePurchaseStatus({
-  //         id: purchaseId,
-  //         status: newStatus,
-  //       }).unwrap();
-  //       if (res.success) {
-  //         toast.success("Status updated successfully");
-  //       }
-  //     } catch (error: any) {
-  //       toast.error(error?.data?.message || "Failed to update status");
-  //     }
-  //   };
+  const handleStatusChange = async (
+    purchaseId: string,
+    statusType: "purchase" | "payment",
+    newStatus: string,
+  ) => {
+    try {
+      const payload =
+        statusType === "purchase"
+          ? {
+              _id: purchaseId,
+              purchaseStatus: newStatus,
+            }
+          : {
+              _id: purchaseId,
+              paymentStatus: newStatus,
+            };
+
+      const res = await updatePurchaseStatus(payload).unwrap();
+
+      if (res.success) {
+        toast.success("Status updated successfully");
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to update status");
+    }
+  };
 
   if (isLoading) return <DashboardManagementPageSkeleton />;
   if (isError)
@@ -165,7 +189,7 @@ const ProductPurchaseManagement = () => {
       <DashboardPageHeader title="Product Purchase Management" />
 
       {/* Statistics */}
-      <ProductPurchaseStats data={stats} isLoading={isLoading} />
+      <ProductPurchaseStats data={statsData?.data} isLoading={isLoading} />
 
       {/* Toolbar */}
       <ProductPurchaseToolbar
@@ -192,9 +216,7 @@ const ProductPurchaseManagement = () => {
           setSelectedPurchase(purchase);
           setOpenViewModal(true);
         }}
-        // onStatusChange={async (id, type, status) => {
-        //   await updatePurchaseStatus(id);
-        // }}
+        onStatusChange={handleStatusChange}
         onEdit={(purchase) => {
           setEditingPurchase(purchase);
           setOpenFormModal(true);
