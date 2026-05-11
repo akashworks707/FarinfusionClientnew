@@ -1,10 +1,10 @@
-import { IProductPurchase, Purchase } from "@/types/purchase";
+import { IProductPurchase, IPurchase } from "@/types/purchase";
 import { baseApi } from "../baseApi";
 import type { IResponse, GetQueryParams, IPaginationMeta } from "@/types";
 
 interface GetAllProductPurchasesResponse {
   success: boolean;
-  data: Purchase[];
+  data: IPurchase[];
   meta: IPaginationMeta;
 }
 
@@ -21,6 +21,15 @@ export const productPurchaseApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["PRODUCT_PURCHASES", "PRODUCTS"],
     }),
+
+    getPurchaseStats: builder.query({
+  query: () => ({
+    url: "/product-purchase/stats/overview",
+    method: "GET",
+  }),
+
+  providesTags: ["PRODUCT_PURCHASES"],
+}),
 
     updateProductPurchase: builder.mutation<
       IResponse<IProductPurchase>,
@@ -65,18 +74,17 @@ export const productPurchaseApi = baseApi.injectEndpoints({
     }),
 
     updatePurchaseStatus: builder.mutation<
-      IResponse<IProductPurchase>,
+      IResponse<IPurchase>,
       {
         _id: string;
-        purchaseStatus: string;
+        purchaseStatus?: string;
+        paymentStatus?: string;
       }
     >({
-      query: ({ _id, purchaseStatus }) => ({
+      query: ({ _id, ...data }) => ({
         url: `/product-purchase/status/${_id}`,
         method: "PATCH",
-        data: {
-          purchaseStatus,
-        },
+        data,
       }),
 
       invalidatesTags: (result, error, { _id }) => [
@@ -95,7 +103,16 @@ export const productPurchaseApi = baseApi.injectEndpoints({
         method: "GET",
         params,
       }),
-      providesTags: ["PRODUCT_PURCHASES"],
+      providesTags: (result) =>
+        result?.data
+          ? [
+              ...result.data.map((purchase) => ({
+                type: "PRODUCT_PURCHASE" as const,
+                id: purchase._id,
+              })),
+              "PRODUCT_PURCHASES",
+            ]
+          : ["PRODUCT_PURCHASES"],
     }),
   }),
 
@@ -108,5 +125,6 @@ export const {
   useDeleteProductPurchaseMutation,
   useGetSingleProductPurchaseQuery,
   useGetAllProductPurchasesQuery,
+  useGetPurchaseStatsQuery,
   useUpdatePurchaseStatusMutation,
 } = productPurchaseApi;

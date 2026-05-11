@@ -94,7 +94,7 @@ export const ProductPurchaseToolbar: React.FC<ProductPurchaseToolbarProps> = ({
         {/* Create Button */}
         <Button
           onClick={() => onCreate?.()}
-          className="bg-amber-600 dark:bg-amber-700 hover:bg-amber-700 dark:hover:bg-amber-800 text-white"
+          className="bg-amber-600 hover:cursor-pointer dark:bg-amber-700 hover:bg-amber-700 dark:hover:bg-amber-800 text-white"
         >
           <span className="text-lg mr-2">+</span>
           Create Purchase

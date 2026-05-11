@@ -11,29 +11,13 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Copy, CheckCircle } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface Purchase {
-  _id: string;
-  product?: { title?: string };
-  supplierName: string;
-  supplierPhone?: string;
-  supplierAddress?: string;
-  quantity: number;
-  buyingPrice: number;
-  totalAmount: number;
-  paymentStatus: string;
-  purchaseStatus: string;
-  invoiceNo?: string;
-  reference?: string;
-  notes?: string;
-  purchaseDate: string;
-}
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { IPurchase } from "@/types/purchase";
 
 interface ProductPurchaseDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  purchase: Purchase;
+  purchase: IPurchase;
 }
 
 const getPurchaseStatusColor = (status: string) => {
@@ -74,22 +58,28 @@ const ProductPurchaseDetailsModal: React.FC<
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const profit = purchase.product
-    ? ((purchase.product as any).price || 0) - (purchase.buyingPrice || 0)
-    : 0;
-  const totalProfit = Math.max(0, profit * (purchase.quantity || 0));
+  const totalProfit =
+    purchase.products?.reduce((acc, item: any) => {
+      const sellingPrice = item.product?.price || 0;
+
+      const buyingPrice = item.buyingPrice || 0;
+
+      const profitPerUnit = sellingPrice - buyingPrice;
+
+      return acc + profitPerUnit * item.quantity;
+    }, 0) || 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader className="border-b border-gray-200 dark:border-gray-700">
+        <ScrollArea className="flex-1 max-h-[90vh]">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto flex flex-col">
+        <DialogHeader className="">
           <DialogTitle className="text-xl font-bold">
             Purchase Details
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 overflow-auto">
-          <div className="p-6 space-y-6">
+          <div className="space-y-6">
             {/* Header Info */}
             <Card className="border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/20">
               <CardContent className="pt-6">
@@ -120,24 +110,25 @@ const ProductPurchaseDetailsModal: React.FC<
                 <CardTitle className="text-base">Product Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold">
-                      PRODUCT NAME
-                    </p>
-                    <p className="font-semibold text-gray-900 dark:text-white mt-1">
-                      {purchase.product?.title || "N/A"}
-                    </p>
+                {purchase.products?.map((item, index) => (
+                  <div key={index} className="border rounded-lg p-3">
+                    <div className="flex justify-between">
+                      <div>
+                        <p className="font-semibold">{item.product?.title}</p>
+
+                        <p className="text-sm text-muted-foreground">
+                          Qty: {item.quantity}
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <p>৳{item.buyingPrice}</p>
+
+                        <p className="font-bold">৳{item.totalAmount}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold">
-                      QUANTITY
-                    </p>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-                      {purchase.quantity}
-                    </p>
-                  </div>
-                </div>
+                ))}
               </CardContent>
             </Card>
 
@@ -210,7 +201,10 @@ const ProductPurchaseDetailsModal: React.FC<
                       UNIT PRICE
                     </p>
                     <p className="text-lg font-bold text-gray-900 dark:text-white mt-2">
-                      ৳{(purchase.buyingPrice || 0).toLocaleString()}
+                      ৳
+                      {purchase.products
+                        ?.reduce((acc, item) => acc + item.buyingPrice, 0)
+                        .toLocaleString()}
                     </p>
                   </div>
                   <div className="bg-white dark:bg-slate-800 p-4 rounded-lg">
@@ -218,7 +212,7 @@ const ProductPurchaseDetailsModal: React.FC<
                       TOTAL AMOUNT
                     </p>
                     <p className="text-lg font-bold text-blue-600 dark:text-blue-400 mt-2">
-                      ৳{(purchase.totalAmount || 0).toLocaleString()}
+                      ৳{(purchase.grandTotal || 0).toLocaleString()}
                     </p>
                   </div>
                   <div className="bg-white dark:bg-slate-800 p-4 rounded-lg">
@@ -226,9 +220,9 @@ const ProductPurchaseDetailsModal: React.FC<
                       PROFIT PER UNIT
                     </p>
                     <p
-                      className={`text-lg font-bold mt-2 ${profit > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                      className={`text-lg font-bold mt-2 ${totalProfit > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
                     >
-                      ৳{profit.toLocaleString()}
+                      ৳{totalProfit.toLocaleString()}
                     </p>
                   </div>
                   <div className="bg-white dark:bg-slate-800 p-4 rounded-lg">
@@ -357,8 +351,9 @@ const ProductPurchaseDetailsModal: React.FC<
               </Card>
             )}
           </div>
-        </ScrollArea>
       </DialogContent>
+          <ScrollBar orientation="vertical" />
+        </ScrollArea>
     </Dialog>
   );
 };

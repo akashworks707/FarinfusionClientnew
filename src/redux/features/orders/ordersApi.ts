@@ -57,7 +57,7 @@ export const ordersApi = baseApi.injectEndpoints({
 
     getAllholdOrders: builder.query<GetAllOrdersResponse, GetQueryParams>({
       query: (params) => ({
-        url: "/order/hold-orders", 
+        url: "/order/hold-orders",
         method: "GET",
         params,
       }),
@@ -179,6 +179,23 @@ export const ordersApi = baseApi.injectEndpoints({
       }),
     }),
 
+    cancelOrder: builder.mutation<
+      any,
+      {
+        _id: string;
+        orderStatus: string;
+        deliveryStatus: string;
+      }
+    >({
+      query: ({ _id, ...data }) => ({
+        url: `/order/${_id}/cancel-status`,
+        method: "PATCH",
+        data,
+      }),
+
+      invalidatesTags: ["ORDERS", "PRODUCTS"],
+    }),
+
     updateDeliveryStatus: builder.mutation<
       OrderResponse,
       {
@@ -208,6 +225,7 @@ export const {
   useDeleteOrderMutation,
   useConfirmOrderMutation,
   useGetAllScheduledOrdersQuery,
+  useCancelOrderMutation,
   useGetAllDamagedProductsQuery,
   useUpdateDeliveryStatusMutation,
   usePartialUpdateOrderMutation,

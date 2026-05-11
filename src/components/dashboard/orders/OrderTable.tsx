@@ -271,6 +271,7 @@ interface OrderTableProps {
   onConfirmOrder: (order: Order) => void;
   onViewOrder?: (order: Order) => void;
   onAssignCourier?: (order: Order) => void;
+  onCancelOrder?: (order: Order) => void;
   setDeleteTarget?: (order: Order) => void;
   setDeleteOpen?: (open: boolean) => void;
   onPartialUpdate?: (order: Order) => void;
@@ -287,6 +288,7 @@ export function OrderTable({
   error,
   onConfirmOrder,
   onViewInvoice,
+  onCancelOrder,
   onAssignCourier,
   onViewOrder,
   onPartialUpdate,
@@ -505,6 +507,7 @@ export function OrderTable({
                     onPartialUpdate={onPartialUpdate}
                     onMarkExchange={onExchange}
                     onMarkDamage={onMarkDamage}
+                      onCancelOrder={onCancelOrder}
                     setDeleteTarget={setDeleteTarget}
                     onViewInvoice={onViewInvoice}
                     setDeleteOpen={setDeleteOpen}

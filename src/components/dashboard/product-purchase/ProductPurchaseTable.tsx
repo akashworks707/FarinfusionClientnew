@@ -21,27 +21,31 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Eye, MoreHorizontal, Trash2, Edit, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { StatusChangeDialog } from "./StatusChangeDialog";
+import { IPurchase } from "@/types/purchase";
 
-interface Purchase {
-  _id: string;
-  product?: { title?: string };
-  supplierName: string;
-  supplierPhone?: string;
-  quantity: number;
-  buyingPrice: number;
-  totalAmount: number;
-  paymentStatus: string;
-  purchaseStatus: string;
-  invoiceNo?: string;
-  purchaseDate: string;
-}
+// interface Purchase {
+//   _id: string;
+//   products?: Array<{
+//     product?: { title?: string };
+//     quantity: number;
+//     buyingPrice: number;
+//     totalAmount: number;
+//   }>;
+//   supplierName: string;
+//   supplierPhone?: string;
+//   grandTotal?: number;
+//   paymentStatus: string;
+//   purchaseStatus: string;
+//   invoiceNo?: string;
+//   purchaseDate: string;
+// }
 
 interface ProductPurchaseTableProps {
-  purchases: Purchase[];
+  purchases: IPurchase[];
   isLoading?: boolean;
-  onView?: (purchase: Purchase) => void;
-  onEdit?: (purchase: Purchase) => void;
-  onDelete?: (purchase: Purchase) => void;
+  onView?: (purchase: IPurchase) => void;
+  onEdit?: (purchase: IPurchase) => void;
+  onDelete?: (purchase: IPurchase) => void;
   onStatusChange?: (
     purchaseId: string,
     statusType: "purchase" | "payment",
@@ -118,6 +122,12 @@ export const ProductPurchaseTable: React.FC<ProductPurchaseTableProps> = ({
         statusChangeDialog.statusType,
         newStatus,
       );
+      setStatusChangeDialog({
+        open: false,
+        purchaseId: null,
+        currentStatus: "",
+        statusType: "purchase",
+      });
     }
   };
 
@@ -197,7 +207,18 @@ export const ProductPurchaseTable: React.FC<ProductPurchaseTableProps> = ({
                     className="border-b border-gray-100 dark:border-gray-800 hover:bg-amber-50/30 dark:hover:bg-amber-950/10 transition-colors"
                   >
                     <TableCell className="font-semibold text-gray-900 dark:text-white">
-                      {purchase.product?.title || "N/A"}
+                      <div className="space-y-1">
+                        {purchase.products?.map((item, idx) => (
+                          <div key={idx}>
+                            <p className="font-medium">
+                              {item.product?.title || "Unknown"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Qty: {item.quantity}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     </TableCell>
                     <TableCell className="text-sm text-gray-600 dark:text-gray-400">
                       <div>
@@ -208,13 +229,27 @@ export const ProductPurchaseTable: React.FC<ProductPurchaseTableProps> = ({
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-medium text-gray-900 dark:text-white">
-                      {purchase.quantity}
+                      {purchase.products?.reduce(
+                        (sum, item) => sum + item.quantity,
+                        0,
+                      ) || 0}
                     </TableCell>
                     <TableCell className="text-right text-gray-700 dark:text-gray-300">
-                      ৳{(purchase.buyingPrice || 0).toLocaleString()}
+                      ৳
+                      {(
+                        purchase.products?.[0]?.buyingPrice || 0
+                      ).toLocaleString()}
                     </TableCell>
                     <TableCell className="text-right font-semibold text-gray-900 dark:text-white">
-                      ৳{(purchase.totalAmount || 0).toLocaleString()}
+                      ৳
+                      {(
+                        purchase.grandTotal ||
+                        purchase.products?.reduce(
+                          (sum, item) => sum + item.totalAmount,
+                          0,
+                        ) ||
+                        0
+                      ).toLocaleString()}
                     </TableCell>
                     <TableCell className="text-center">
                       <button

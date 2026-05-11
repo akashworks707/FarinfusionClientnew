@@ -18,6 +18,43 @@ export interface IProductPurchaseItem {
   subtotal: number;
 }
 
+export interface IPurchaseProduct {
+  product: {
+    _id: string;
+    title: string;
+    price?: number;
+    images?: string[];
+  };
+
+  quantity: number;
+  buyingPrice: number;
+  totalAmount: number;
+}
+
+export interface IPurchase {
+  _id: string;
+
+  products: IPurchaseProduct[];
+
+  supplierName: string;
+  supplierPhone?: string;
+  supplierAddress?: string;
+
+  grandTotal: number;
+
+  paymentStatus: string;
+  purchaseStatus: string;
+
+  invoiceNo?: string;
+  reference?: string;
+  notes?: string;
+
+  purchaseDate: string;
+
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Purchase {
   _id: string;
   product?: { title?: string };

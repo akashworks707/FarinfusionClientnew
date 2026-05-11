@@ -1,4 +1,3 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -313,9 +312,9 @@ export default function DashboardOverview() {
     isError,
   } = useGetDashboardOverviewQuery(queryParams);
   const data: IDashboardOverview | undefined = overviewRes?.data;
-  const commissionSalary = me?.data?.commissionSalary || 20
-  const totalCommission = (data?.orderStats?.COMPLETED as number) * commissionSalary;
-
+  const commissionSalary = me?.data?.commissionSalary || 20;
+  const totalCommission =
+    (data?.orderStats?.COMPLETED as number) * commissionSalary;
 
   const { data: users } = useGetAllUsersQuery({});
 
@@ -366,23 +365,23 @@ export default function DashboardOverview() {
 
   const orderStatsChartData = data
     ? [
-      { name: "Pending", value: data?.orderStats?.PENDING, fill: "#f59e0b" },
-      {
-        name: "Confirmed",
-        value: data?.orderStats?.CONFIRMED,
-        fill: "#10b981",
-      },
-      {
-        name: "Completed",
-        value: data?.orderStats?.COMPLETED,
-        fill: "#8b5cf6",
-      },
-      {
-        name: "Cancelled",
-        value: data?.orderStats?.CANCELLED,
-        fill: "#ef4444",
-      },
-    ]
+        { name: "Pending", value: data?.orderStats?.PENDING, fill: "#f59e0b" },
+        {
+          name: "Confirmed",
+          value: data?.orderStats?.CONFIRMED,
+          fill: "#10b981",
+        },
+        {
+          name: "Completed",
+          value: data?.orderStats?.COMPLETED,
+          fill: "#8b5cf6",
+        },
+        {
+          name: "Cancelled",
+          value: data?.orderStats?.CANCELLED,
+          fill: "#ef4444",
+        },
+      ]
     : [];
 
   const staffBarData = useMemo(() => {
@@ -463,11 +462,14 @@ export default function DashboardOverview() {
                 : "Your order history and spending summary"}
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 dark:border-amber-900/40 dark:bg-amber-900/20">
+        <div className="flex gap-2 items-center">
+          <span className="text-lg text-gray-800 font-semibold">Welcome</span>
+          <div className="hidden sm:flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 dark:border-amber-900/40 dark:bg-amber-900/20">
           <User className="h-3.5 w-3.5 text-amber-500" />
           <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">
             {me?.data?.name ?? "Welcome"}
           </span>
+        </div>
         </div>
       </div>
 
@@ -679,7 +681,7 @@ export default function DashboardOverview() {
                 ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
                 : isModerator
                   ? "grid-cols-1 sm:grid-cols-3"
-                  : "grid-cols-2"
+                  : "grid-cols-2",
             )}
           >
             <StatCard
@@ -688,7 +690,7 @@ export default function DashboardOverview() {
               icon={ShoppingBag}
               accent="bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
             />
-            {isAdmin &&
+            {isAdmin && (
               <StatCard
                 label="Total Revenue"
                 value={`৳${data.totalRevenue}`}
@@ -696,17 +698,16 @@ export default function DashboardOverview() {
                 accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
                 sub="All confirmed payments"
               />
-            }
-            {
-
-              isModerator && <StatCard
+            )}
+            {isModerator && (
+              <StatCard
                 label="Total Commission"
                 value={`৳${totalCommission}`}
                 icon={TrendingUp}
                 accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
                 sub="All confirmed payments"
               />
-            }
+            )}
             {isAdmin && data.totalUsers !== undefined && (
               <StatCard
                 label="Total Staffs"
@@ -989,4 +990,3 @@ export default function DashboardOverview() {
     </div>
   );
 }
-
