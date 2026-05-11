@@ -639,7 +639,6 @@ export function OrderRowActions({
             </>
           )}
 
-          {/* Assign Courier - For confirmed orders without courier */}
           {order.isPublished &&
             hasAccess &&
             isConfirmed &&
