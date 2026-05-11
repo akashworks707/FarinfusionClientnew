@@ -9,10 +9,18 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
+import { toast } from "sonner"
 
-export function CartBreadcrumb() {
+type props = {
+  hasInvalidQty: boolean;
+};
+
+export function CartBreadcrumb({ hasInvalidQty }: props) {
   const router = useRouter()
   const pathname = usePathname()
+  const cartLength = useSelector((state: RootState) => state.cart.items.length)
 
   const isCart = pathname === "/cart"
   const isCheckout = pathname === "/checkout"
@@ -35,7 +43,7 @@ export function CartBreadcrumb() {
             onClick={() => router.push("/cart")}
             className={`${baseStyle} ${isCart ? activeStyle : hoverStyle}`}
           >
-            SHOPPING
+            SHOPPING CART {cartLength > 0 && `(${cartLength})`}
           </BreadcrumbLink>
         </BreadcrumbItem>
 
@@ -44,7 +52,13 @@ export function CartBreadcrumb() {
         {/* CHECKOUT */}
         <BreadcrumbItem>
           <BreadcrumbLink
-            // onClick={() => router.push("/checkout")}
+            onClick={() => {
+              if(hasInvalidQty){
+                toast.error("Please fix quantity before checkout");
+                return;
+              }
+              router.push("/checkout")
+            }}
             className={`${baseStyle} ${isCheckout ? activeStyle : hoverStyle}`}
           >
             CHECKOUT

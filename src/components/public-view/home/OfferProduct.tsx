@@ -23,7 +23,7 @@ const OfferProduct = () => {
   const offerProducts = data?.data;
 
   return (
-      <section className="w-full bg-[#e8edf5] py-8">
+      <section className="w-full bg-[#e8edf5] py-8" >
         <div className="container mx-auto px-5">
           <div className="grid gap-6 md:grid-cols-[44%_56%]">
             <div className="overflow-hidden rounded-2xl">
@@ -87,14 +87,15 @@ const OfferProduct = () => {
                       >
                         <Card
                             onClick={() =>
-                                router.push(`/shop/category/${item?.category?.slug}`)
+                                router.push(`/shop?category=${item?.category?.slug}`)
                             }
-                            className="flex-row items-center gap-3 rounded-lg border border-slate-200 bg-white px-2 py-2 shadow-none cursor-pointer"
+                            className="flex-row items-center gap-3 rounded-lg border border-slate-200 bg-white px-2 py-2 shadow-none 
+                            cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg "
                         >
 
                           <Image
                               onClick={() =>
-                                  router.push(`/shop/category/${item?.category?.slug}`)
+                                  router.push(`/shop?category=${item?.category?.slug}`)
                               }
                               src={imageSrc}
                               alt={item.category?.title}
@@ -107,7 +108,7 @@ const OfferProduct = () => {
                           <div className="min-w-0">
                             <h3
                                 onClick={() =>
-                                    router.push(`/shop/category/${item?.category?.slug}`)
+                                    router.push(`/shop?category=${item?.category?.slug}`)
                                 }
                                 className="truncate text-sm font-semibold text-gray-800 cursor-pointer"
                             >

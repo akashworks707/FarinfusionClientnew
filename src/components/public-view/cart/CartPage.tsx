@@ -25,6 +25,7 @@ export default function CartPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const cartItems = useSelector((state: RootState) => state.cart.items);
+  const hasInvalidQty = cartItems.some((item) => item.quantity > item.availableStock);
 
   // 🟡 Subtotal
   const subtotal = cartItems.reduce((total, item) => {
@@ -43,7 +44,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-6">
       <div className="container mx-auto px-4">
-        <CartBreadcrumb />
+        <CartBreadcrumb hasInvalidQty={hasInvalidQty} />
 
         <div className="grid lg:grid-cols-3 gap-6 mt-6">
           {/* LEFT */}
@@ -220,7 +221,6 @@ export default function CartPage() {
 
               <Button
                 onClick={() => {
-                  const hasInvalidQty = cartItems.some((item) => item.quantity > item.availableStock);
                   if(hasInvalidQty){
                     toast.error("Please fix quantity before checkout");
                     return;

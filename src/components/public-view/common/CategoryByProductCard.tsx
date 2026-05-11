@@ -41,6 +41,10 @@ const CategoryByProductCard = ({ product}: ProductCardProps) => {
 
   const [cardHovered, setCardHovered] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
+  const hasDiscount =
+    typeof discountPrice === "number" &&
+    discountPrice > 0 &&
+    discountPrice < price;
 
   const productHref = slug ? `/product/${slug}` : "#";
   const categoryHref = category?.slug
@@ -234,16 +238,16 @@ const CategoryByProductCard = ({ product}: ProductCardProps) => {
           >
             {/* PRICE */}
             <div className="flex flex-wrap items-center gap-2">
-              {/* Discount Price (main price) */}
+             {/* Discount Price (main price) */}
               <p className="text-[14px] font-bold text-yellow-500 mb-2">
                 ৳{" "}
-                {(discountPrice ?? price ?? 0).toLocaleString("en-BD", {
+                {(hasDiscount ? discountPrice : price ?? 0).toLocaleString("en-BD", {
                   minimumFractionDigits: 2,
                 })}
               </p>
 
-              {/* Original Price (cut) → only if discount */}
-              {discountPrice && (
+              {/* Original Price */}
+              {hasDiscount && (
                 <p className="text-[12px] font-bold text-gray-500 mb-2 line-through">
                   ৳{" "}
                   {(price ?? 0).toLocaleString("en-BD", {

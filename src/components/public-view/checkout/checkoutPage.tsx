@@ -69,6 +69,7 @@ export default function CheckoutPage() {
       // return sum + (item.discountPrice || 0) * item.quantity;
     }, 0);
   }, [cartList]);
+  const hasInvalidQty = cartList.some((item) => item.quantity > item.availableStock);
 
   const payableTotal = finalTotal || cartTotal;
 
@@ -158,7 +159,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <CartBreadcrumb />
+      <CartBreadcrumb hasInvalidQty={hasInvalidQty} />
 
       <div className="container mx-auto px-4 py-8 grid lg:grid-cols-3 gap-8">
         {/* LEFT FORM */}

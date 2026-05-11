@@ -13,22 +13,14 @@ import Link from "next/link";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useRouter } from "next/navigation";
-
-const NAV_LINKS = [
-  { title: "baby cream", slug: "baby-cream" },
-  { title: "baby lotion", slug: "baby-lotion" },
-  { title: "baby suncream", slug: "baby-suncream" },
-  { title: "centella", slug: "centella" },
-  { title: "combo", slug: "combo" },
-  { title: "cream", slug: "cream" },
-  { title: "eye cream", slug: "eye-cream" },
-  { title: "face serum", slug: "face-serum" },
-];
+import { useGetAllCategoriesQuery } from "@/redux/features/category/category.api";
 
 const NavbarMenu: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
   const router = useRouter();
   const { user, logout } = useUser();
+  const { data: categoriesData } = useGetAllCategoriesQuery({ limit: 8 });
+  const categories = categoriesData?.data ?? [];
 
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
@@ -111,14 +103,14 @@ const NavbarMenu: React.FC = () => {
           {/* CENTER */}
           <div className="hidden xl:block">
             <ul className="flex items-center gap-4">
-              {NAV_LINKS.map((link) => (
-                <li key={link.slug}>
+              {categories.map((category) => (
+                <li key={category.slug}>
                   <Link
-                    href={`/shop/category/${link.slug}`}
+                    href={`/shop?category=${category.slug}`}
                     className={`text-gray-100 text-[14px] capitalize ${isSticky ? "text-[12px]" : "text-[14px]"}`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {link.title}
+                    {category.title}
                   </Link>
                 </li>
               ))}
@@ -196,14 +188,14 @@ const NavbarMenu: React.FC = () => {
               <h2 className="text-lg font-semibold mb-4">Menu</h2>
 
               <ul className="flex flex-col gap-2">
-                {NAV_LINKS.map((link) => (
-                  <li key={link.slug}>
+                {categories.map((category) => (
+                  <li key={category.slug}>
                     <Link
-                      href={`/shop/category/${link.slug}`}
+                      href={`/shop?category=${category.slug}`}
                       className="block px-3 py-2 rounded-md text-sm hover:bg-gray-100"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      {link.title}
+                      {category.title}
                     </Link>
                   </li>
                 ))}
