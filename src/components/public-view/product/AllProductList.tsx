@@ -28,6 +28,8 @@ import { useGetAllBrandsQuery } from "@/redux/features/brand/brand.api";
 import CategoryByProductCard from "@/components/public-view/common/CategoryByProductCard";
 import ProductSkeleton from "@/components/public-view/common/ProductSkeleton";
 import { IProduct } from "@/types";
+import { setViewMode } from "@/redux/slices/viewModeSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 10000;
@@ -234,7 +236,9 @@ export default function AllProductList() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(12);
   const [sort, setSort] = useState("default");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  // const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const dispatch = useAppDispatch();
+  const viewMode = useAppSelector((state) => state.viewMode.viewMode);
   const [priceRange, setPriceRange] = useState<[number, number]>([
     PRICE_MIN,
     PRICE_MAX,
@@ -439,10 +443,10 @@ export default function AllProductList() {
                 {/* View toggles */}
                 <div className="flex items-center gap-1 rounded-lg border border-gray-200 p-0.5 dark:border-gray-700">
                   <button
-                    onClick={() => setViewMode("list")}
+                    onClick={() => dispatch(setViewMode("list"))}
                     className={cn(
                       "rounded p-1.5 transition-colors",
-                      viewMode === "list"
+                        viewMode === "list"
                         ? "bg-amber-500 text-white"
                         : "text-gray-400 hover:text-amber-500",
                     )}
@@ -450,10 +454,10 @@ export default function AllProductList() {
                     <LayoutList className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => setViewMode("grid")}
+                    onClick={() => dispatch(setViewMode("grid-3"))}
                     className={cn(
                       "rounded p-1.5 transition-colors",
-                      viewMode === "grid"
+                        viewMode === "grid-3"
                         ? "bg-amber-500 text-white"
                         : "text-gray-400 hover:text-amber-500",
                     )}
@@ -462,7 +466,7 @@ export default function AllProductList() {
                   </button>
                   {/* 3-col grid icon */}
                   <button
-                    onClick={() => setViewMode("grid")}
+                    onClick={() => dispatch(setViewMode("grid-4"))}
                     className="rounded p-1.5 text-gray-300 hover:text-amber-500 transition-colors"
                   >
                     <svg
@@ -548,9 +552,11 @@ export default function AllProductList() {
               <div
                 className={cn(
                   "grid gap-4",
-                  viewMode === "grid"
-                    ? "grid-cols-2 sm:grid-cols-3 xl:grid-cols-4"
-                    : "grid-cols-1",
+                  viewMode === "grid-3"
+                    ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+                    : viewMode === "grid-4"
+                      ? "grid-cols-2 sm:grid-cols-3 xl:grid-cols-4"
+                      : "grid-cols-1",
                 )}
               >
                 {products.map((product) => (

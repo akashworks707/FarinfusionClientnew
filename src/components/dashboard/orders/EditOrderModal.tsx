@@ -275,7 +275,7 @@ export function EditOrderModal({
         {
           productId: product._id!,
           title: product.title,
-          price: product.discountPrice ?? product.price,
+          price: product.discountPrice && product.discountPrice > 0 ? product.discountPrice : product.price,
           quantity: 1,
           image: product.images?.[0],
           availableStock: product.availableStock,
@@ -495,9 +495,10 @@ export function EditOrderModal({
                               <p className="text-xs text-gray-400">
                                 ৳
                                 {(
-                                  product.discountPrice ?? product.price
+                                  product.discountPrice && product.discountPrice > 0
+                                    ? product.discountPrice
+                                    : product.price
                                 ).toFixed(2)}{" "}
-                                ·{" "}
                                 <span
                                   className={outOfStock ? "text-red-400" : ""}
                                 >

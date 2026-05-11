@@ -23,7 +23,7 @@ interface ProductCardProps {
   product: IProduct;
 }
 
-const CategoryByProductCard = ({ product }: ProductCardProps) => {
+const CategoryByProductCard = ({ product}: ProductCardProps) => {
   const {
     slug,
     title,
