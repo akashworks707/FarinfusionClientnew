@@ -55,6 +55,7 @@ import { PartialUpdateOrderModal } from "./PartialUpdateOrderModal";
 import { DamageOrderModal } from "./DamageOrderModal";
 import { useUser } from "@/context/UserContext";
 import { InvoiceDialog } from "../shared/InvoiceDialog";
+import { CourierProvider } from "@/types";
 
 // const LIMIT = 10;
 
@@ -265,14 +266,19 @@ export default function OrdersManagement() {
     setCourierModalOpen(true);
   };
 
-  const handleCourierSubmit = async () => {
+  const handleCourierSubmit = async (courierName: CourierProvider) => {
     if (!selectedOrder) return;
     try {
-      await createCourier({ orderId: selectedOrder._id }).unwrap();
-      toast.success("Courier assigned successfully");
-      setCourierModalOpen(false);
-      setSelectedOrder(null);
-      refetch();
+      const res = await createCourier({
+        orderId: selectedOrder._id,
+        courierName,
+      }).unwrap();
+      if (res.success) {
+        toast.success("Courier assigned successfully");
+        setCourierModalOpen(false);
+        setSelectedOrder(null);
+        refetch();
+      }
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to assign courier");
     }
@@ -282,11 +288,13 @@ export default function OrdersManagement() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await deleteOrder(deleteTarget?._id as string).unwrap();
-      toast.success(`"${deleteTarget.customOrderId}" has been deleted`);
-      setDeleteOpen(false);
-      setDeleteTarget(null);
-      refetch();
+      const res = await deleteOrder(deleteTarget?._id as string).unwrap();
+      if (res.success) {
+        toast.success(`"${deleteTarget.customOrderId}" has been deleted`);
+        setDeleteOpen(false);
+        setDeleteTarget(null);
+        refetch();
+      }
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to move to trash");
     } finally {
@@ -297,13 +305,18 @@ export default function OrdersManagement() {
   const handleConfirmOrder = async (orderId: string) => {
     if (!confirmingOrder) return;
     try {
-      await confirmOrder({ _id: orderId, orderStatus: "CONFIRMED" }).unwrap();
-      await refetch();
-      toast.success("Order confirmed", {
-        description: `Order ${confirmingOrder.customOrderId || confirmingOrder._id} has been confirmed.`,
-      });
-      setConfirmModalOpen(false);
-      setConfirmingOrder(null);
+      const res = await confirmOrder({
+        _id: orderId,
+        orderStatus: "CONFIRMED",
+      }).unwrap();
+      if (res.success) {
+        await refetch();
+        toast.success("Order confirmed", {
+          description: `Order ${confirmingOrder.customOrderId || confirmingOrder._id} has been confirmed.`,
+        });
+        setConfirmModalOpen(false);
+        setConfirmingOrder(null);
+      }
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to confirm order");
     }
@@ -312,13 +325,18 @@ export default function OrdersManagement() {
   const handleCompleteOrder = async (orderId: string) => {
     if (!completingOrder) return;
     try {
-      await completeOrder({ _id: orderId, orderStatus: "COMPLETED" }).unwrap();
-      await refetch();
-      toast.success("Order completed", {
-        description: `Order ${completingOrder.customOrderId || completingOrder._id?.slice(0, 10)} marked as completed.`,
-      });
-      setCompleteModalOpen(false);
-      setCompletingOrder(null);
+      const res = await completeOrder({
+        _id: orderId,
+        orderStatus: "COMPLETED",
+      }).unwrap();
+      if (res.success) {
+        await refetch();
+        toast.success("Order completed", {
+          description: `Order ${completingOrder.customOrderId || completingOrder._id?.slice(0, 10)} marked as completed.`,
+        });
+        setCompleteModalOpen(false);
+        setCompletingOrder(null);
+      }
     } catch (err: any) {
       toast.error("Failed to complete order", {
         description: err?.data?.message || "Please try again.",
