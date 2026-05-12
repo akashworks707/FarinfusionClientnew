@@ -100,7 +100,7 @@ const Navbar: FC = () => {
       {/* Header Bar */}
       <header className="w-full primaryDark dark:bg-slate-950 border-b border-slate-700 z-40 transition-colors duration-300">
         {/* ── Mobile header ── */}
-        <div className="flex lg:hidden items-center justify-between h-16 px-4 gap-2">
+        <div className="flex lg:hidden items-center container mx-auto justify-between h-16 px-4 gap-2">
           <Link href="/" aria-label="Farin Fusion home">
             <Image
               src="/assets/FRN-Logo-scaled.webp"

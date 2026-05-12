@@ -171,7 +171,7 @@ const SingleProductDetails = () => {
                 <div className="flex items-center gap-3">
                   <p className="text-sm text-gray-600">
                     Brand :{" "}
-                    <span onClick={() => router.push(`/shop?brand=${product?.brand?._id}`)} className="text-amber-500 hover:underline cursor-pointer">
+                    <span onClick={() => router.push(`/shop?brand=${product?.brand?.slug}`)} className="text-amber-500 hover:underline cursor-pointer">
                       {brand?.title}
                     </span> | Category : <span onClick={() => router.push(`/shop?category=${product?.category?.slug}`)} className="text-amber-500 hover:underline cursor-pointer">
                       {category?.title}
