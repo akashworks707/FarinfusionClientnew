@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, TrendingUp, AlertCircle, ArrowUpDown } from "lucide-react";
+import { Package, AlertCircle, ArrowUpDown } from "lucide-react";
 
 interface PurchaseStats {
   totalPurchases: number;
@@ -37,14 +37,14 @@ export const ProductPurchaseStats: React.FC<ProductPurchaseStatsProps> = ({
       bgColor: "bg-blue-50 dark:bg-blue-900/20",
       borderColor: "border-blue-100 dark:border-blue-800",
     },
-    {
-      title: "Total Profit",
-      value: `৳${(data?.totalProfit || 0).toLocaleString()}`,
-      icon: TrendingUp,
-      color: "text-green-600 dark:text-green-400",
-      bgColor: "bg-green-50 dark:bg-green-900/20",
-      borderColor: "border-green-100 dark:border-green-800",
-    },
+    // {
+    //   title: "Total Profit",
+    //   value: `৳${(data?.totalProfit || 0).toLocaleString()}`,
+    //   icon: TrendingUp,
+    //   color: "text-green-600 dark:text-green-400",
+    //   bgColor: "bg-green-50 dark:bg-green-900/20",
+    //   borderColor: "border-green-100 dark:border-green-800",
+    // },
     {
       title: "Pending Payments",
       value: data?.pendingPayments ?? 0,
@@ -56,7 +56,7 @@ export const ProductPurchaseStats: React.FC<ProductPurchaseStatsProps> = ({
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (

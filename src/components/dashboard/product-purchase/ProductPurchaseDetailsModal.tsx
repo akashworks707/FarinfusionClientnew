@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -58,30 +57,29 @@ const ProductPurchaseDetailsModal: React.FC<
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const totalProfit =
-    purchase.products?.reduce((acc, item: any) => {
-      const sellingPrice = item.product?.price || 0;
+  // const totalProfit =
+  //   purchase.products?.reduce((acc, item: any) => {
+  //     const sellingPrice = item.product?.price || 0;
 
-      const buyingPrice = item.buyingPrice || 0;
+  //     const buyingPrice = item.buyingPrice || 0;
 
-      const profitPerUnit = sellingPrice - buyingPrice;
+  //     const profitPerUnit = sellingPrice - buyingPrice;
 
-      return acc + profitPerUnit * item.quantity;
-    }, 0) || 0;
+  //     return acc + profitPerUnit * item.quantity;
+  //   }, 0) || 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-        <ScrollArea className="flex-1 max-h-[90vh]">
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto flex flex-col">
-        <DialogHeader className="">
-          <DialogTitle className="text-xl font-bold">
-            Purchase Details
-          </DialogTitle>
-        </DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-auto flex flex-col">
+          <DialogHeader className="px-4 pt-2">
+            <DialogTitle className="text-xl font-bold">
+              Purchase Details
+            </DialogTitle>
+          </DialogHeader>
 
-          <div className="space-y-6">
+          <ScrollArea className="space-y-6 h-[70vh] px-4">
             {/* Header Info */}
-            <Card className="border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/20">
+            <Card className="mb-4 border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/20">
               <CardContent className="pt-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -105,7 +103,7 @@ const ProductPurchaseDetailsModal: React.FC<
             </Card>
 
             {/* Product Info */}
-            <Card>
+            <Card className="mb-4 ">
               <CardHeader>
                 <CardTitle className="text-base">Product Information</CardTitle>
               </CardHeader>
@@ -133,7 +131,7 @@ const ProductPurchaseDetailsModal: React.FC<
             </Card>
 
             {/* Supplier Info */}
-            <Card>
+            <Card className="mb-4 ">
               <CardHeader>
                 <CardTitle className="text-base">
                   Supplier Information
@@ -188,7 +186,7 @@ const ProductPurchaseDetailsModal: React.FC<
             </Card>
 
             {/* Financial Summary */}
-            <Card className="border-2 border-amber-200 dark:border-amber-800/50 bg-amber-50/30 dark:bg-amber-950/10">
+            {/* <Card className="border-2 border-amber-200 dark:border-amber-800/50 bg-amber-50/30 dark:bg-amber-950/10">
               <CardHeader>
                 <CardTitle className="text-base text-amber-900 dark:text-amber-100">
                   Financial Summary
@@ -237,10 +235,10 @@ const ProductPurchaseDetailsModal: React.FC<
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
             {/* Status Info */}
-            <Card>
+            <Card className="mb-4 ">
               <CardHeader>
                 <CardTitle className="text-base">Status Information</CardTitle>
               </CardHeader>
@@ -339,7 +337,7 @@ const ProductPurchaseDetailsModal: React.FC<
 
             {/* Notes */}
             {purchase.notes && (
-              <Card>
+              <Card className="my-4">
                 <CardHeader>
                   <CardTitle className="text-base">Notes</CardTitle>
                 </CardHeader>
@@ -350,10 +348,9 @@ const ProductPurchaseDetailsModal: React.FC<
                 </CardContent>
               </Card>
             )}
-          </div>
-      </DialogContent>
-          <ScrollBar orientation="vertical" />
-        </ScrollArea>
+            <ScrollBar orientation="vertical" />
+          </ScrollArea>
+        </DialogContent>
     </Dialog>
   );
 };
