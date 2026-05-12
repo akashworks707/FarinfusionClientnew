@@ -877,6 +877,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { OrderModeChangeModal } from "@/components/shared/OrderModeChangeModal";
+import { CourierProvider } from "@/types";
 
 const LIMIT = 10;
 
@@ -1213,9 +1214,11 @@ export default function MyOrders() {
   const handleCourierSubmit = async () => {
     if (!courierOrder) return;
     try {
-      await createCourier({ orderId: courierOrder._id as string }).unwrap();
+      await createCourier({ courierName: courierOrder.courierName as CourierProvider,
+        orderId: courierOrder._id
+       }).unwrap();
       toast.success("Courier assigned successfully");
-      setCourierOpen(false);
+    setCourierOpen(false);
       setCourierOrder(null);
       refetch();
     } catch (err: any) {
