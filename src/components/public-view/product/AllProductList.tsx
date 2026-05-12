@@ -425,7 +425,7 @@ export default function AllProductList() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
-      <div className="mx-auto max-w-350 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* ── Breadcrumb + count ── */}
         <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <nav className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
