@@ -235,11 +235,11 @@ function SidebarContent({
               {/* Brand List */}
               {brands?.map((brand: any) => (
                 <button
-                  key={brand._id}
-                  onClick={() => onBrandChange(brand._id)}
+                  key={brand.slug}
+                  onClick={() => onBrandChange(brand.slug)}
                   className={cn(
                     "flex w-full items-center rounded-lg px-2 py-1.5 text-sm transition-all cursor-pointer",
-                    selectedBrand === brand._id
+                    selectedBrand === brand.slug
                       ? "bg-amber-50 font-semibold text-amber-600 dark:bg-amber-900/20"
                       : "text-gray-600 hover:bg-gray-100 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-amber-400"
                   )}
@@ -282,18 +282,20 @@ function SidebarContent({
 
               {/* Category List */}
               {categories?.map((category: any) => (
-                <button
-                  key={category._id}
-                  onClick={() => onCategoryChange(category.slug)}
-                  className={cn(
-                    "flex w-full items-center rounded-lg px-2 py-1.5 text-sm transition-all cursor-pointer",
-                    selectedCategory === category.slug
-                      ? "bg-amber-50 font-semibold text-amber-600 dark:bg-amber-900/20"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-amber-400"
-                  )}
-                >
-                  {category.title}
-                </button>
+                category.productCount > 0 && (
+                  <button
+                    key={category._id}
+                    onClick={() => onCategoryChange(category.slug)}
+                    className={cn(
+                      "flex w-full items-center rounded-lg px-2 py-1.5 text-sm transition-all cursor-pointer",
+                      selectedCategory === category.slug
+                        ? "bg-amber-50 font-semibold text-amber-600 dark:bg-amber-900/20"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-amber-400"
+                    )}
+                  >
+                    {category.title}
+                  </button>
+                )
               ))}
              </ScrollArea>
             </AccordionContent>
@@ -354,26 +356,41 @@ export default function AllProductList() {
   const categories = categoriesData?.data ?? [];
   const brands = brandsData?.data ?? [];
 
-  console.log("categories", categories);
-
 
   const handlePriceApply = useCallback(() => {
     setAppliedPrice(priceRange);
     setPage(1);
-  }, [priceRange]);
 
-  const handleBrandChange = (id: string) => {
-    setSelectedBrand(id);
-    setSelectedCategory(""); 
-    setPage(1);
+    // remove old brand/category filters
+    params.delete("brand");
+    params.delete("category");
 
-    if (id) {
-      params.set("brand", id);
+
+
+    if (priceRange[0] > PRICE_MIN) {
+      params.set("price[gte]", String(priceRange[0]));
     } else {
-      params.delete("brand");
+      params.delete("price[gte]");
     }
 
-    params.delete("category"); 
+    if (priceRange[1] < PRICE_MAX) {
+      params.set("price[lte]", String(priceRange[1]));
+    } else {
+      params.delete("price[lte]");
+    }
+
+    router.push(`/shop?${params.toString()}`);
+  }, [priceRange, router, params]);
+
+  const handleBrandChange = (slug: string) => {
+    setSelectedBrand(slug);
+    setSelectedCategory("");
+    setPage(1);
+
+    if (slug) params.set("brand", slug);
+    else params.delete("brand");
+
+    params.delete("category");
 
     router.push(`/shop?${params.toString()}`);
   };
@@ -382,17 +399,14 @@ export default function AllProductList() {
   const handleCategoryClick = (slug: string) => {
     const newCategory = selectedCategory === slug ? "" : slug;
 
-    setSelectedBrand(""); 
     setSelectedCategory(newCategory);
+    setSelectedBrand("");
     setPage(1);
 
-    if (newCategory) {
-      params.set("category", newCategory);
-    } else {
-      params.delete("category");
-    }
+    if (newCategory) params.set("category", newCategory);
+    else params.delete("category");
 
-    params.delete("brand"); 
+    params.delete("brand");
 
     router.push(`/shop?${params.toString()}`);
   };
@@ -411,7 +425,7 @@ export default function AllProductList() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
-      <div className="mx-auto max-w-350 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* ── Breadcrumb + count ── */}
         <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <nav className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
@@ -448,34 +462,38 @@ export default function AllProductList() {
               className="flex gap-4 p-2"
               style={{ minWidth: "max-content" }}
             >
-              {categories.map((cat: any) => (
-                <button
-                  key={cat?.slug}
-                  onClick={() => handleCategoryClick(cat.slug)}
-                  className={cn(
-                    "flex flex-col items-center gap-2 rounded-xl cursor-pointer p-3 text-center transition-all duration-200 min-w-22.5",
-                    selectedCategory === cat.slug
-                      ? "bg-amber-50 ring-2 ring-amber-400 dark:bg-amber-900/20"
-                      : "bg-gray-50 hover:bg-amber-50/60 dark:bg-gray-900 dark:hover:bg-amber-900/10",
-                  )}
-                >
-                  {/* Category image */}
-                  <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
-                    {cat.image?.[0] ? (
-                      <Image src={cat.image ?? ""} alt={cat.title ?? ""} fill priority quality={90} sizes="64px" className="object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-gray-300 text-xs">?</div>
-                    )}
-                  </div>
-                  <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 leading-none">
-                    {cat.title}
-                  </p>
-                  {cat.productCount !== undefined && (
-                    <p className="text-[10px] text-gray-400 leading-0">
-                      {cat.productCount} products
-                    </p>
-                  )}
-                </button>
+              {categories.map((cat:any) => (
+                cat.productCount > 0 && (
+                  <>
+                    <button
+                      key={cat?.slug}
+                      onClick={() => handleCategoryClick(cat.slug)}
+                      className={cn(
+                        "flex flex-col items-center gap-2 rounded-xl cursor-pointer p-3 text-center transition-all duration-200 min-w-22.5",
+                        selectedCategory === cat.slug
+                          ? "bg-amber-50 ring-2 ring-amber-400 dark:bg-amber-900/20"
+                          : "bg-gray-50 hover:bg-amber-50/60 dark:bg-gray-900 dark:hover:bg-amber-900/10",
+                      )}
+                    >
+                      {/* Category image */}
+                      <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+                        {cat.image?.[0] ? (
+                          <Image src={cat.image ?? ""} alt={cat.title ?? ""} fill priority quality={90} sizes="64px" className="object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-gray-300 text-xs">?</div>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 leading-none">
+                        {cat.title}
+                      </p>
+                      {cat.productCount !== undefined && (
+                        <p className="text-[10px] text-gray-400 leading-0">
+                          {cat.productCount} products
+                        </p>
+                      )}
+                    </button>
+                  </>
+                )
               ))}
             </div>
           </div>

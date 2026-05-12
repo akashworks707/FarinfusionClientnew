@@ -84,33 +84,62 @@ const QuickViewModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-3xl md:min-w-4xl p-0 overflow-hidden rounded-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="
+      w-[95vw] max-w-3xl md:max-w-4xl
+      p-0 overflow-hidden rounded-2xl
+      max-h-[90vh] overflow-y-auto
+    "
+      >
         <DialogTitle className="sr-only">{product.title}</DialogTitle>
 
-        <div className="flex flex-col md:flex-row">
-          {/* Left — Image */}
-          <div className="w-full md:w-[48%] bg-gray-50 p-4 sm:p-6 flex items-center justify-center min-h-55 sm:min-h-70 md:min-h-95">
+        <div className="flex flex-col lg:flex-row">
+          {/* ───── IMAGE SECTION ───── */}
+          <div
+            className="
+        w-full lg:w-1/2
+        bg-gray-50
+        p-4 sm:p-6
+        flex items-center justify-center
+        min-h-[260px] sm:min-h-[320px] lg:min-h-[420px]
+      "
+          >
             <Image
               src={displayImage}
               alt={product.title}
-              height={400}
-              width={350}
-              className="w-full max-w-65 sm:max-w-[320px] md:max-w-full h-auto object-cover rounded-xl"
+              width={500}
+              height={500}
+              className="
+            w-full max-w-65 sm:max-w-[320px] lg:max-w-95
+            h-auto object-contain rounded-xl
+          "
             />
           </div>
 
-          {/* Right — Info */}
-          <div className="w-full md:w-[52%] p-5 sm:p-6 md:p-8 flex flex-col justify-center gap-4 sm:gap-5">
-            {/* Title */}
-            <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 leading-snug">
+          {/* ───── INFO SECTION ───── */}
+          <div
+            className="
+        w-full lg:w-1/2
+        p-5 sm:p-6 lg:p-8
+        flex flex-col gap-4 sm:gap-5
+      "
+          >
+            {/* TITLE */}
+            <h2
+              className="
+          text-base sm:text-lg lg:text-xl
+          font-bold text-gray-900 leading-snug
+        "
+            >
               {product.title}
             </h2>
 
-            {/* Price */}
+            {/* PRICE */}
             <div className="flex items-center gap-3 flex-wrap">
               <span className="text-xl sm:text-2xl font-bold text-[#F5A623]">
                 ৳ {displayPrice?.toLocaleString()}.00
               </span>
+
               {hasDiscount && (
                 <span className="text-xs sm:text-sm text-gray-400 line-through">
                   ৳ {product.price.toLocaleString()}.00
@@ -118,30 +147,47 @@ const QuickViewModal = ({
               )}
             </div>
 
-            {/* Quantity + Buttons */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              {/* Qty Counter */}
-              <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden shrink-0">
+            {/* QUANTITY + BUTTONS */}
+            <div
+              className="
+          flex flex-wrap sm:flex-row
+          gap-2 sm:gap-3
+          items-stretch sm:items-center
+        "
+            >
+              {/* QTY */}
+              <div
+                className="
+            flex items-center
+            border border-gray-200 rounded-lg
+            overflow-hidden
+           
+          "
+              >
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={`h-9 w-8 sm:h-10 sm:w-9 rounded-none text-base sm:text-lg font-bold ${
-                    qty <= 1
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-gray-100 cursor-pointer"
-                  }`}
+                  className="h-10 w-10 rounded-none"
                   disabled={qty <= 1}
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                 >
                   -
                 </Button>
-                <span className="w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center text-sm font-semibold text-gray-800 border-x border-gray-200">
+
+                <span
+                  className="
+              w-12 h-10 flex items-center justify-center
+              text-sm font-semibold
+              border-x border-gray-200
+            "
+                >
                   {qty}
                 </span>
+
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-8 sm:h-10 sm:w-9 rounded-none text-base sm:text-lg font-bold"
+                  className="h-10 w-10 rounded-none"
                   onClick={() => {
                     const existingQty = cartItem?.quantity || 0;
                     if (existingQty + qty < availableStock) {
@@ -155,32 +201,33 @@ const QuickViewModal = ({
                 </Button>
               </div>
 
+              {/* ACTION BUTTONS */}
               {isOutOfStock ? (
-                <>
-                  <button
-                    disabled
-                    className="
-                    flex-1 min-w-30 h-9 sm:h-10
-                    rounded-md
-                    bg-red-100
-                    border border-red-300
-                    text-red-500
-                    text-sm font-semibold tracking-wide
-                    cursor-not-allowed
-                    flex items-center justify-center
-                    transition-all duration-300
-                "
-                  >
-                    Out of Stock
-                  </button>
-                </>
+                <button
+                  disabled
+                  className="
+                w-full sm:flex-1
+                h-10
+                rounded-md
+                bg-red-100 border border-red-300
+                text-red-500
+                text-sm font-semibold
+                cursor-not-allowed
+              "
+                >
+                  Out of Stock
+                </button>
               ) : (
                 <>
                   <Button
                     onClick={() => onAddToCart(qty)}
-                    className={`
-                        flex-1 min-w-30 bg-blue-600 hover:bg-blue-700 text-white font-bold h-9 sm:h-10 gap-1.5 text-xs sm:text-sm
-                      `}
+                    className="
+                  w-full sm:flex-1
+                  h-10
+                  bg-blue-600 hover:bg-blue-700
+                  text-white font-bold
+                  text-sm
+                "
                   >
                     <ShoppingCart size={14} />
                     Add To Cart
@@ -188,14 +235,20 @@ const QuickViewModal = ({
 
                   <Button
                     onClick={() => {
-                        if (isMaxQtyReached) {
-                          router.push("/checkout");
-                        } else {
-                          onAddToCart(qty);
-                          router.push("/checkout");
-                        }
-                      }}               
-                    className="flex-1 min-w-25 bg-green-600 hover:bg-green-700 text-white font-bold h-9 sm:h-10 text-xs sm:text-sm"
+                      if (isMaxQtyReached) {
+                        router.push("/checkout");
+                      } else {
+                        onAddToCart(qty);
+                        router.push("/checkout");
+                      }
+                    }}
+                    className="
+                  w-full sm:flex-1
+                  h-10
+                  bg-green-600 hover:bg-green-700
+                  text-white font-bold
+                  text-sm
+                "
                   >
                     Buy Now
                   </Button>
@@ -205,19 +258,20 @@ const QuickViewModal = ({
 
             <Separator />
 
-            {/* Category */}
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 flex-wrap">
+            {/* CATEGORY */}
+            <div className="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
               <span className="font-semibold text-gray-700">Category:</span>
-              <Badge variant="secondary" className="text-xs font-medium">
+              <Badge variant="secondary" className="text-xs">
                 {product.category?.title}
               </Badge>
             </div>
 
-            {/* Share */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <span className="text-xs sm:text-sm font-semibold text-gray-700">
+            {/* SHARE */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-sm font-semibold text-gray-700">
                 Share:
               </span>
+
               {shareLinks.map(({ label, href, bg, icon }) => (
                 <Tooltip key={label}>
                   <TooltipTrigger asChild>
@@ -225,11 +279,15 @@ const QuickViewModal = ({
                       href={href}
                       target="_blank"
                       rel="noreferrer"
-                      className={`size-7 sm:size-8 rounded-full ${bg} flex items-center justify-center hover:opacity-80 transition-opacity`}
+                      className={`
+                    w-8 h-8 rounded-full ${bg}
+                    flex items-center justify-center
+                  `}
                     >
                       {icon}
                     </a>
                   </TooltipTrigger>
+
                   <TooltipContent>
                     <p>{label}</p>
                   </TooltipContent>

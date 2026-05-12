@@ -65,27 +65,42 @@ const Navbar: FC = () => {
     setSearchOpen(val.trim().length >= 2);
   };
 
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && searchQuery.trim()) {
-      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchOpen(false);
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchOpen(false);
+  };
+
+  const handleSearchSubmit = () => {
+    const query = searchQuery.trim();
+
+    if (query) {
+      router.push(`/shop?search=${encodeURIComponent(query)}`);
+    } else {
+      router.push(`/shop`);
     }
+
+    setSearchOpen(false);
+  };
+
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearchSubmit();
+    }
+
     if (e.key === "Escape") {
       setSearchOpen(false);
     }
   };
 
-  const clearSearch = () => {
-    setSearchQuery("");
-    setSearchOpen(false);
-  };
 
   return (
     <>
       {/* Header Bar */}
       <header className="w-full primaryDark dark:bg-slate-950 border-b border-slate-700 z-40 transition-colors duration-300">
         {/* ── Mobile header ── */}
-        <div className="flex lg:hidden items-center justify-between h-16 px-4 gap-2">
+        <div className="flex lg:hidden items-center container mx-auto justify-between h-16 px-4 gap-2">
           <Link href="/" aria-label="Farin Fusion home">
             <Image
               src="/assets/FRN-Logo-scaled.webp"
@@ -173,12 +188,7 @@ const Navbar: FC = () => {
               <span className="absolute right-11 top-1/2 -translate-y-1/2 h-5 w-px bg-slate-600" />
               <button
                 type="button"
-                onClick={() =>
-                  searchQuery.trim() &&
-                  router.push(
-                    `/shop?search=${encodeURIComponent(searchQuery.trim())}`,
-                  )
-                }
+                onClick={() => handleSearchSubmit()}
                 aria-label="Search"
                 className="absolute right-0 top-0 bottom-0 flex w-11 items-center justify-center rounded-r-full text-slate-400 hover:text-yellow-500 transition-colors duration-200"
               >
