@@ -65,7 +65,7 @@ export function SearchDropdown({ query, onClose }: SearchDropdownProps) {
           {/* Product rows */}
           <ul className="divide-y divide-gray-100 dark:divide-gray-800">
             {products.map((product) => {
-              const price = product.discountPrice ?? product.price ?? 0;
+              const hasDiscount = product.discountPrice && product.discountPrice > 0 ;
               return (
                 <li key={product._id}>
                   <button
@@ -104,9 +104,13 @@ export function SearchDropdown({ query, onClose }: SearchDropdownProps) {
                     {/* Price */}
                     <div className="shrink-0 text-right">
                       <p className="text-sm font-bold text-amber-500">
-                        ৳ {price.toLocaleString("en-BD", { minimumFractionDigits: 2 })}
+                        ৳{" "}
+                        {
+                          hasDiscount ? product.discountPrice : product.price
+                        .toLocaleString("en-BD", { minimumFractionDigits: 2 })}
                       </p>
-                      {product.discountPrice && product.price && product.discountPrice < product.price && (
+
+                      {hasDiscount && (
                         <p className="text-[11px] text-gray-400 line-through tabular-nums">
                           ৳ {product.price.toLocaleString("en-BD", { minimumFractionDigits: 2 })}
                         </p>
