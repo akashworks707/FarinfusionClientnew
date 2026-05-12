@@ -39,7 +39,7 @@ const CategoryByProductCard = ({ product}: ProductCardProps) => {
   const viewMode = useSelector((state: RootState) => state.viewMode.viewMode);
   const dispatch = useDispatch();
 
-  const [cardHovered, setCardHovered] = useState(false);
+  // const [cardHovered, setCardHovered] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
   // const hasDiscount =
   //   typeof discountPrice === "number" &&
@@ -50,10 +50,10 @@ const CategoryByProductCard = ({ product}: ProductCardProps) => {
   discountPrice > 0;
 
 
-  const productHref = slug ? `/product/${slug}` : "#";
+  const productHref = slug ? `/product/${slug}` : "";
   const categoryHref = category?.slug
-    ? `/shop/category/${category?.slug}`
-    : "#";
+    ? `/shop?category=${category?.slug}`
+    : "";
 
   const isOutOfStock = !product?.availableStock || product?.availableStock <= 0;
 
