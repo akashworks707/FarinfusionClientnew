@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Menu, Gift, Heart, ShoppingCart } from "lucide-react";
+import { Menu, Gift, Heart, ShoppingCart, Search, X } from "lucide-react";
 import Image from "next/image";
 import { NavbarDropdown } from "@/components/modules/NavbarDropdown";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,9 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useRouter } from "next/navigation";
 import { useGetAllCategoriesQuery } from "@/redux/features/category/category.api";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { SearchDropdown } from "./SearchDropdown";
+import { Input } from "../ui/input";
 
 const NavbarMenu: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -25,6 +28,11 @@ const NavbarMenu: React.FC = () => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const [SearchModalOpen, setSearchModalOpen] = useState(false);
 
   const cartCount = useSelector((state: RootState) => state.cart.items.length);
   const wishCount = useSelector((state: RootState) => state.wish.items.length);
@@ -46,6 +54,40 @@ const NavbarMenu: React.FC = () => {
 
   const [navHeight, setNavHeight] = useState(0);
   const navRef = useRef<HTMLElement>(null);
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setSearchOpen(val.trim().length >= 2);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchOpen(false);
+  };
+
+  const handleSearchSubmit = () => {
+    const query = searchQuery.trim();
+
+    if (query) {
+      router.push(`/shop?search=${encodeURIComponent(query)}`);
+    } else {
+      router.push(`/shop`);
+    }
+
+    setSearchOpen(false);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearchSubmit();
+    }
+
+    if (e.key === "Escape") {
+      setSearchOpen(false);
+    }
+  };
+
   // ... rest of state
 
   useEffect(() => {
@@ -59,10 +101,24 @@ const NavbarMenu: React.FC = () => {
 
   // Measure nav height once on mount
   useEffect(() => {
-    if (navRef.current) {
-      setNavHeight(navRef.current.offsetHeight);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setSearchModalOpen(false);
+        setSearchOpen(false);
+      }
+    };
+
+    if (SearchModalOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
-  }, []);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [SearchModalOpen]);
 
   return (
     <>
@@ -79,7 +135,7 @@ const NavbarMenu: React.FC = () => {
       >
         <div className="flex items-center justify-between gap-12 container mx-auto px-5">
           {/* LEFT */}
-          <div className="lg:hidden flex items-center gap-5">
+          <div className="xl:hidden flex items-center gap-5">
             <button
               onClick={() => setMobileMenuOpen(true)}
               className="text-neutral-300"
@@ -118,64 +174,129 @@ const NavbarMenu: React.FC = () => {
           </div>
 
           {/* RIGHT */}
-          {isSticky ? (
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1" >
+            {/* SEARCH */}
+            <div className="relative" >
               <button
-                onClick={() => router.push("/wishlist")}
-                className="cursor-pointer relative flex h-9 w-9 items-center justify-center text-white hover:text-[#c9a84c]"
+                onClick={() => setSearchModalOpen((prev) => !prev)}
+                className="flex items-center bg-white/10 hover:bg-white/20 transition rounded-full p-2"
+                
               >
-                <Heart className="h-5 w-5" />
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#c9a84c] text-[9px] font-bold text-black">
-                  {wishCount}
-                </span>
+                <Search size={20} className="text-white" />
               </button>
-
-              <button
-                onClick={() => router.push("/cart")}
-                className="cursor-pointer relative flex h-9 w-9 items-center justify-center text-white hover:text-[#c9a84c]"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#c9a84c] text-[9px] font-bold text-black">
-                  {cartCount}
-                </span>
-              </button>
-
-              {user ? (
-                <NavbarDropdown user={user} onLogout={logout} />
-              ) : (
-                <div className="hidden lg:block">
-                  <div className="flex items-center text-sm font-semibold text-white">
-                    <Button
-                      variant="ghost"
-                      onClick={openLogin}
-                      className="px-2 text-white hover:text-[#c9a84c] hover:bg-transparent"
-                    >
-                      Login
-                    </Button>
-
-                    <span className="text-[#96999A]">/</span>
-
-                    <Button
-                      variant="ghost"
-                      onClick={openSignup}
-                      className="px-2 text-white hover:text-[#c9a84c] hover:bg-transparent"
-                    >
-                      Register
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
-          ) : (
-            <button className="text-white">
-              <div className="flex items-center gap-2.5 px-6 py-2 rounded-full fusion-offer">
-                <Gift className="w-5 h-5" />
-                <span className="text-[13px] font-bold">
-                  SPECIAL BEAUTY DEAL
-                </span>
+            {SearchModalOpen && (
+              <div
+                ref={searchContainerRef}
+                className="absolute right-5 left-5 mx-auto top-full mt-3 w-[90vw] md:w-125  z-50"
+              >
+                <div className="relative">
+                  <Input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                    onFocus={() =>
+                      searchQuery.trim().length >= 2 && setSearchOpen(true)
+                    }
+                    placeholder="Search for products"
+                    autoComplete="off"
+                    className="w-full rounded-full py-5 pl-5 pr-24 bg-white text-sm "
+                  />
+
+                  {/* Clear button */}
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={clearSearch}
+                      className="absolute right-12 top-1/2 -translate-y-1/2 transition-colors p-1"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+
+                  {/* Divider + Search icon */}
+                  <span className="absolute right-11 top-1/2 -translate-y-1/2 h-5 w-px bg-slate-600" />
+                  <button
+                    type="button"
+                    onClick={() => handleSearchSubmit()}
+                    aria-label="Search"
+                    className="absolute right-0 top-0 bottom-0 flex w-11 items-center justify-center rounded-r-full text-slate-400 hover:text-yellow-500 transition-colors duration-200"
+                  >
+                    <Search className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Search dropdown */}
+                {searchOpen && (
+                  <SearchDropdown
+                    query={searchQuery}
+                    onClose={() => setSearchOpen(false)}
+                    // containerRef={searchContainerRef}
+                  />
+                )}
               </div>
-            </button>
-          )}
+            )}
+
+            {isSticky ? (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => router.push("/wishlist")}
+                  className="cursor-pointer relative flex h-9 w-9 items-center justify-center text-white hover:text-[#c9a84c]"
+                >
+                  <Heart className="h-5 w-5" />
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#c9a84c] text-[9px] font-bold text-black">
+                    {wishCount}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => router.push("/cart")}
+                  className="cursor-pointer relative flex h-9 w-9 items-center justify-center text-white hover:text-[#c9a84c]"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#c9a84c] text-[9px] font-bold text-black">
+                    {cartCount}
+                  </span>
+                </button>
+
+                {user ? (
+                  <NavbarDropdown user={user} onLogout={logout} />
+                ) : (
+                  <div className="hidden lg:block">
+                    <div className="flex items-center text-sm font-semibold text-white">
+                      <Button
+                        variant="ghost"
+                        onClick={openLogin}
+                        className="px-2 text-white hover:text-[#c9a84c] hover:bg-transparent"
+                      >
+                        Login
+                      </Button>
+
+                      <span className="text-[#96999A]">/</span>
+
+                      <Button
+                        variant="ghost"
+                        onClick={openSignup}
+                        className="px-2 text-white hover:text-[#c9a84c] hover:bg-transparent"
+                      >
+                        Register
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button className="text-white">
+                <div className="flex items-center gap-2.5 px-6 py-2 rounded-full fusion-offer">
+                  <Gift className="w-5 h-5" />
+                  <span className="text-[13px] font-bold">
+                    SPECIAL BEAUTY DEAL
+                  </span>
+                </div>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* MOBILE SHEET */}
