@@ -356,13 +356,31 @@ export default function AllProductList() {
   const categories = categoriesData?.data ?? [];
   const brands = brandsData?.data ?? [];
 
-  console.log("categories", categories);
-
 
   const handlePriceApply = useCallback(() => {
     setAppliedPrice(priceRange);
     setPage(1);
-  }, [priceRange]);
+
+    // remove old brand/category filters
+    params.delete("brand");
+    params.delete("category");
+
+
+
+    if (priceRange[0] > PRICE_MIN) {
+      params.set("price[gte]", String(priceRange[0]));
+    } else {
+      params.delete("price[gte]");
+    }
+
+    if (priceRange[1] < PRICE_MAX) {
+      params.set("price[lte]", String(priceRange[1]));
+    } else {
+      params.delete("price[lte]");
+    }
+
+    router.push(`/shop?${params.toString()}`);
+  }, [priceRange, router, params]);
 
   const handleBrandChange = (slug: string) => {
     setSelectedBrand(slug);

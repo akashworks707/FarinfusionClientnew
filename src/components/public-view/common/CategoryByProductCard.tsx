@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Star, Heart, ShoppingCart, ZoomIn, Divide } from "lucide-react";
+import { Star, Heart, ShoppingCart, ZoomIn, Divide, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -41,10 +41,14 @@ const CategoryByProductCard = ({ product}: ProductCardProps) => {
 
   const [cardHovered, setCardHovered] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
+  // const hasDiscount =
+  //   typeof discountPrice === "number" &&
+  //   discountPrice > 0 &&
+  //   discountPrice < price;
   const hasDiscount =
-    typeof discountPrice === "number" &&
-    discountPrice > 0 &&
-    discountPrice < price;
+  typeof discountPrice === "number" &&
+  discountPrice > 0;
+
 
   const productHref = slug ? `/product/${slug}` : "#";
   const categoryHref = category?.slug
@@ -117,10 +121,8 @@ const CategoryByProductCard = ({ product}: ProductCardProps) => {
         </div>
       )}
       <div
-        onMouseEnter={() => setCardHovered(true)}
-        onMouseLeave={() => setCardHovered(false)}
         className={cn(
-          "w-full bg-white rounded-2xl shadow-md overflow-hidden p-2 relative transition-all duration-300",
+          "group block w-full bg-white rounded-2xl shadow-md overflow-hidden relative lg:flex flex-col h-full transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg",
           viewMode === "list"
             ? "sm:flex gap-4 items-center"
             : "flex flex-col h-full",
@@ -133,14 +135,11 @@ const CategoryByProductCard = ({ product}: ProductCardProps) => {
               setModalOpen(true);
             }}
             className={cn(
-              "absolute cursor-pointer top-3 right-3 z-10 bg-white shadow-md p-2 rounded-full transition-all" +
-                " duration-300",
-              cardHovered
-                ? "translate-x-0 opacity-100"
-                : "translate-x-10 opacity-0",
+              "absolute cursor-pointer top-3 right-3 z-10 bg-white shadow-md p-2 rounded-[8px] transition-all duration-300",
+              "opacity-100 lg:opacity-0 lg:translate-x-10 lg:group-hover:opacity-100 lg:group-hover:translate-x-0"
             )}
           >
-            <ZoomIn className={cn("w-4 h-4")} />
+            <Search size={15} className="text-gray-500" />
           </TooltipTrigger>
           <TooltipContent side={"left"}>
             <p>Quick Zoom</p>
@@ -149,20 +148,17 @@ const CategoryByProductCard = ({ product}: ProductCardProps) => {
         <Tooltip>
           <TooltipTrigger
             className={cn(
-              "absolute cursor-pointer top-12 right-3 z-10 bg-white shadow-md p-2 rounded-full transition-all" +
-                " duration-300",
-              cardHovered
-                ? "translate-x-0 opacity-100"
-                : "translate-x-10 opacity-0",
-            )}
+                          "absolute cursor-pointer top-12 right-3 z-10 bg-white shadow-md p-2 rounded-[8px] transition-all duration-300",
+                          "opacity-100 lg:opacity-0 lg:translate-x-10 lg:group-hover:opacity-100 lg:group-hover:translate-x-0"
+                        )}
             onClick={onWishlist}
           >
-            <Heart
-              className={cn(
-                "w-4 h-4",
-                wished ? "fill-red-500 text-red-500" : "text-red-400",
-              )}
-            />
+            <Heart size={15}
+                          className={cn(
+                            "w-4 h-4",
+                            wished ? "fill-red-500 text-red-500" : "text-gray-500",
+                          )}
+                        />
           </TooltipTrigger>
           <TooltipContent side={"left"}>
             <p>Add to wishlist</p>
