@@ -34,6 +34,7 @@ export function OrderDetailsModal({
   });
 
   const courier = courierRes?.data;
+  // console.log(courier);
 
   if (!order) return null;
 

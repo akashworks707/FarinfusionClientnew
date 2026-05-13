@@ -302,6 +302,7 @@ export function OrderTable({
   const { data: courierRes } = useGetAllCouriersQuery([], {
     pollingInterval: 10000,
   });
+  // console.log("courierRes", courierRes);
   const courierMap = new Map<string, any>();
 
   courierRes?.data?.forEach((c: any) => {

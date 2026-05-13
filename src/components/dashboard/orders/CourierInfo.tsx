@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Truck, Copy, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Courier } from '@/types/courier';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Truck, Copy, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Courier } from "@/types/courier";
 
 interface CourierInfoProps {
   courier: Courier;
@@ -13,13 +13,15 @@ interface CourierInfoProps {
 
 export function CourierInfo({ courier }: CourierInfoProps) {
   const [copied, setCopied] = useState(false);
+  // console.log(courier);
+  const shipmentRef = courier.trackingCode || courier.consignmentId;
 
-  if (!courier.trackingCode || !courier.courierName) {
+  if (!shipmentRef || !courier.courierName) {
     return null;
   }
 
   const handleCopyTracking = () => {
-    navigator.clipboard.writeText(courier?.trackingCode || '');
+    navigator.clipboard.writeText(shipmentRef || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -40,7 +42,7 @@ export function CourierInfo({ courier }: CourierInfoProps) {
           <p className="text-sm text-muted-foreground">Tracking Number</p>
           <div className="flex items-center gap-2">
             <code className="flex-1 rounded bg-muted px-3 py-2 font-mono text-sm">
-              {courier.trackingCode}
+              {shipmentRef}
             </code>
             <Button
               size="sm"
@@ -58,7 +60,9 @@ export function CourierInfo({ courier }: CourierInfoProps) {
         </div>
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">Delivery Status</p>
-          <p className="font-medium capitalize">{courier?.deliveryStatus.replace(/_/g, ' ')}</p>
+          <p className="font-medium capitalize">
+            {courier?.deliveryStatus.replace(/_/g, " ")}
+          </p>
         </div>
       </CardContent>
     </Card>
