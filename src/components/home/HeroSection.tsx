@@ -6,7 +6,7 @@ import PromoBanner from "./PromoBanner";
 export default function HeroSection() {
     return (
         <div className={"heroBannerCover"}>
-            <section className=" container mx-auto px-5 py-8 md:py-15">
+            <section className="max-w-352 container mx-auto px-5 py-8 md:py-15">
                 {/*<div className="pointer-events-none absolute left-0 top-0 h-full w-32 z-10" />*/}
 
                 {/*<div className="pointer-events-none absolute right-0 top-0 h-full w-32 z-10" />*/}

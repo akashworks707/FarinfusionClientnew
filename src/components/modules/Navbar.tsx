@@ -137,7 +137,7 @@ const Navbar: FC = () => {
         </div>
 
         {/* ── Desktop header ── */}
-        <div className="container hidden mx-auto px-5 lg:flex items-center justify-between h-20 gap-6">
+        <div className="max-w-352 container hidden mx-auto px-5 lg:flex items-center justify-between h-20 gap-6">
           {/* Logo */}
           <Link
             href="/"

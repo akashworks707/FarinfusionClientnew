@@ -68,7 +68,7 @@ const CategoryList = () => {
   }
 
   return (
-    <section className="container mx-auto px-5 py-5 sm:py-10 w-full">
+    <section className="container max-w-352 mx-auto px-5 py-5 sm:py-10 w-full">
       {/* Heading */}
       <div className="text-center mb-8 ">
         <h2 className="text-2xl sm:text-3xl font-bold uppercase  heading-animate">

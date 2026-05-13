@@ -1,16 +1,7 @@
 "use client";
 
 import { IProduct } from "@/types";
-import {
-  Search,
-  ShoppingCart,
-  Star,
-  Facebook,
-  Twitter,
-  Linkedin,
-  Send,
-  Heart,
-} from "lucide-react";
+import { Search, ShoppingCart, Star, Heart } from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/redux/slices/CartSlice";
@@ -18,12 +9,10 @@ import { addToWish, removeFromWish } from "@/redux/slices/wishSlice";
 import { RootState } from "@/redux/store";
 import { toast } from "sonner";
 import Image from "next/image";
-import { useRouter } from "next/navigation"; // ← নতুন
+import { useRouter } from "next/navigation";
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -59,7 +48,6 @@ function IconButton({
   );
 }
 
-// ─── Main Card ────────────────────────────────────────────────────────────────
 export function CustomerFavoriteProductCard({
   product,
 }: {
@@ -107,7 +95,7 @@ export function CustomerFavoriteProductCard({
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
-    e.stopPropagation(); // ← card click block
+    e.stopPropagation();
     if (wished) {
       dispatch(removeFromWish(product._id as string));
       toast.success("Removed from wishlist");
@@ -143,10 +131,9 @@ export function CustomerFavoriteProductCard({
   return (
     <>
       {" "}
-      {/* ← Link সরিয়ে Fragment */}
       <div
         className="group bg-white h-full rounded-xl border border-gray-200 overflow-hidden flex flex-col shadow-sm cursor-pointer"
-        onClick={handleCardClick} // ← card click এ navigate
+        onClick={handleCardClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
@@ -276,7 +263,7 @@ export function CustomerFavoriteProductCard({
                 ) : (
                   <Button
                     onClick={(e) => {
-                      e.stopPropagation(); // ← card click block
+                      e.stopPropagation();
                       handleAddToCart(1);
                     }}
                     className="w-full h-full text-white text-xs font-bold gap-1 rounded-md bg-[#1a1a1a] hover:bg-[#333]"
@@ -290,7 +277,6 @@ export function CustomerFavoriteProductCard({
           </div>
         </div>
       </div>
-      {/* Modal এখন Fragment-এর ভেতরে, Link-এর বাইরে */}
       <QuickViewModal
         product={product}
         open={modalOpen}

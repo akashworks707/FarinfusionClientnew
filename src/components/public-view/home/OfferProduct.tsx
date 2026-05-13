@@ -24,7 +24,7 @@ const OfferProduct = () => {
 
   return (
       <section className="w-full bg-[#e8edf5] py-8" >
-        <div className="container mx-auto px-5">
+        <div className="max-w-352 container mx-auto px-5">
           <div className="grid gap-6 md:grid-cols-[44%_56%]">
             <div className="overflow-hidden rounded-2xl">
               <Image
@@ -50,7 +50,7 @@ const OfferProduct = () => {
                 {countdownItems.map((item) => (
                     <Card
                         key={item.label}
-                        className="w-[66px] items-center gap-1 rounded-md border border-slate-200 bg-white px-0 py-2 text-center shadow-none"
+                        className="w-16.5 items-center gap-1 rounded-md border border-slate-200 bg-white px-0 py-2 text-center shadow-none"
                     >
                   <span className="text-xl font-semibold leading-none text-gray-800">
                     {item.value}

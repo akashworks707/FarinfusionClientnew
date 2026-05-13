@@ -45,7 +45,7 @@ const blogItems = [
 const ProductBlog = () => {
   return (
     <section className="w-full  py-10 md:py-14">
-      <div className="container mx-auto px-6">
+      <div className="max-w-352 container mx-auto px-6">
         <h2 className="text-center text-3xl font-semibold tracking-tight md:text-4xl heading-animate">
           Glow Better with Our Beauty Tips
         </h2>
@@ -61,7 +61,7 @@ const ProductBlog = () => {
                 alt={item.title}
                 width={500}
                 height={500}
-                className="h-[350px] w-full object-cover cursor-pointer"
+                className="h-87.5 w-full object-cover cursor-pointer"
               />
 
               <CardContent className="px-4 py-4 text-center">

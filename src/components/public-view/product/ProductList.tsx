@@ -41,7 +41,7 @@ const ProductList = () => {
   }
 
   return (
-    <div className="container mx-auto px-5 py-5 sm:py-10 ">
+    <div className="container max-w-352 mx-auto px-5 py-5 sm:py-10 ">
       <div className={"flex items-center justify-between py-5"}>
         <div>
           <h3 className={"text-2xl font-bold heading-animate "}>
