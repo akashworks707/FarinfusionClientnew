@@ -97,6 +97,7 @@ export default function OrdersManagement() {
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
   const [courierModalOpen, setCourierModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deliveryStatus, setDeliveryStatus] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
@@ -109,6 +110,7 @@ export default function OrdersManagement() {
     limit,
     ...(searchTerm && { searchTerm: debouncedSearch }),
     ...(status && { orderStatus: status }),
+    ...(deliveryStatus && { deliveryStatus }),
     ...(dateFilter.from && {
       "createdAt[gte]": format(dateFilter.from, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
     }),
@@ -159,6 +161,7 @@ export default function OrdersManagement() {
 
   const handleReset = () => {
     setStatus("");
+    setDeliveryStatus("");
     setDateFilter({ from: undefined, to: undefined });
     setPage(1);
   };
@@ -254,6 +257,11 @@ export default function OrdersManagement() {
   const handleViewClick = (order: Order) => {
     setSelectedOrder(order);
     setDetailsOpen(true);
+  };
+
+  const handleDeliveryStatusChange = (val: string) => {
+    setDeliveryStatus(val);
+    setPage(1);
   };
 
   const handleCompleteClick = (order: Order) => {
@@ -396,7 +404,9 @@ export default function OrdersManagement() {
         statusFilter={status}
         searchFilter={searchTerm}
         dateFilter={dateFilter}
+        deliveryStatusFilter={deliveryStatus}
         onStatusChange={handleStatusChange}
+        onDeliveryStatusChange={handleDeliveryStatusChange}
         onSearchChange={handleSearchChange}
         onDateChange={handleDateChange}
         onReset={handleReset}

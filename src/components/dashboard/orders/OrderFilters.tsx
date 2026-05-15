@@ -47,9 +47,11 @@ export interface DateFilter {
 
 export interface OrderFiltersProps {
   statusFilter: OrderStatus | "";
+  deliveryStatusFilter: string;
   searchFilter: string;
   dateFilter: DateFilter;
   onStatusChange: (status: OrderStatus | "") => void;
+  onDeliveryStatusChange: (status: string) => void;
   onSearchChange: (search: string) => void;
   onDateChange: (date: DateFilter) => void;
   onReset: () => void;
@@ -68,6 +70,7 @@ const ORDER_STATUSES: {
     dot: "bg-amber-500",
     chip: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
   },
+
   {
     value: "CONFIRMED",
     label: "Confirmed",
@@ -85,6 +88,57 @@ const ORDER_STATUSES: {
     label: "Cancelled",
     dot: "bg-red-500",
     chip: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
+  },
+];
+
+const DELIVERY_STATUSES = [
+  {
+    value: "PENDING",
+    label: "Pending",
+    dot: "bg-amber-500",
+    chip: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
+  },
+  {
+    value: "NOT_SHIPPED",
+    label: "Not Shipped",
+    dot: "bg-slate-500",
+    chip: "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900/20 dark:text-slate-400 dark:border-slate-800",
+  },
+  {
+    value: "IN_TRANSIT",
+    label: "In Transit",
+    dot: "bg-blue-500",
+    chip: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
+  },
+  {
+    value: "PICKED_UP",
+    label: "Picked Up",
+    dot: "bg-cyan-500",
+    chip: "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800",
+  },
+  {
+    value: "DELIVERED",
+    label: "Delivered",
+    dot: "bg-emerald-500",
+    chip: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
+  },
+  {
+    value: "PARTIAL",
+    label: "Partial Delivered",
+    dot: "bg-violet-500",
+    chip: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800",
+  },
+  {
+    value: "CANCELLED",
+    label: "Cancelled",
+    dot: "bg-red-500",
+    chip: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
+  },
+  {
+    value: "HOLD",
+    label: "On Hold",
+    dot: "bg-orange-500",
+    chip: "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800",
   },
 ];
 
@@ -149,6 +203,8 @@ export function OrderFilters({
   dateFilter,
   onStatusChange,
   onSearchChange,
+  deliveryStatusFilter,
+  onDeliveryStatusChange,
   onDateChange,
   onReset,
   totalResults,
@@ -210,13 +266,20 @@ export function OrderFilters({
     }
   };
 
+  const activeDeliveryStatus = DELIVERY_STATUSES.find(
+    (s) => s.value === deliveryStatusFilter,
+  );
+
   const clearDate = () => {
     setCalendarRange(undefined);
     onDateChange({ from: undefined, to: undefined });
   };
 
   const hasActiveFilters =
-    !!statusFilter || !!searchFilter || !!dateFilter.from;
+    !!statusFilter ||
+    !!deliveryStatusFilter ||
+    !!searchFilter ||
+    !!dateFilter.from;
   const activeStatus = ORDER_STATUSES.find((s) => s.value === statusFilter);
   const activeDateLabel = getActivePresetLabel(dateFilter.from, dateFilter.to);
   const dateDisplayLabel = dateFilter.from
@@ -271,6 +334,36 @@ export function OrderFilters({
                   <div className="flex items-center gap-2">
                     <span className={cn("h-2 w-2 rounded-full", s.dot)} />
                     {s.label}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={deliveryStatusFilter || "all"}
+            onValueChange={(val) =>
+              onDeliveryStatusChange(val === "all" ? "" : val)
+            }
+          >
+            <SelectTrigger className="h-10 w-44 rounded-lg border-gray-200 bg-gray-50/60 text-sm focus:border-blue-400 dark:border-gray-700 dark:bg-gray-800/60 dark:focus:border-blue-500 transition-colors">
+              <SelectValue placeholder="Delivery Status" />
+            </SelectTrigger>
+
+            <SelectContent className="rounded-xl">
+              <SelectItem value="all" className="cursor-pointer text-sm">
+                All Deliveries
+              </SelectItem>
+
+              {DELIVERY_STATUSES.map((status) => (
+                <SelectItem
+                  key={status.value}
+                  value={status.value}
+                  className="cursor-pointer text-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={cn("h-2 w-2 rounded-full", status.dot)} />
+                    {status.label}
                   </div>
                 </SelectItem>
               ))}
@@ -455,6 +548,31 @@ export function OrderFilters({
               <button
                 onClick={() => onStatusChange("")}
                 aria-label="Remove status"
+                className="ml-0.5"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+
+          {activeDeliveryStatus && (
+            <Badge
+              variant="outline"
+              className={cn(
+                "flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                activeDeliveryStatus.chip,
+              )}
+            >
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  activeDeliveryStatus.dot,
+                )}
+              />
+              {activeDeliveryStatus.label}
+              <button
+                onClick={() => onDeliveryStatusChange("")}
+                aria-label="Remove delivery status"
                 className="ml-0.5"
               >
                 <X className="h-3 w-3" />

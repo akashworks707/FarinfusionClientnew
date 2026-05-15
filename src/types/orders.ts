@@ -11,7 +11,7 @@ export interface GetQueryParams {
   [key: string]: any;
 }
 
-export type OrderStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "DAMAGE" | "PARTIAL";
+export type OrderStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "NOT_SHIPPED" | "COMPLETED" | "DAMAGE" | "PARTIAL";
 export type DeliveryStatus =
   | "NOT_SHIPPED"
   | "IN_TRANSIT"

@@ -859,7 +859,7 @@ import {
   useGetMyScheduledOrdersQuery,
 } from "@/redux/features/orders/myOrdersApi";
 import { useGetMeQuery } from "@/redux/features/user/user.api";
-import { useCreateCourierMutation, useDeleteOrderMutation, } from "@/lib/hooks";
+import { useCreateCourierMutation, useDeleteOrderMutation } from "@/lib/hooks";
 import { AssignCourierModal } from "@/components/dashboard/orders/AssignCourierModal";
 import { MyOrdersTable, type UserRole } from "./MyOrdersTable";
 import { MyOrderDetailModal } from "./MyOrderDetailModal";
@@ -951,6 +951,57 @@ const STATUS_OPTIONS: {
   },
 ];
 
+const DELIVERY_STATUSES = [
+  {
+    value: "PENDING",
+    label: "Pending",
+    dot: "bg-amber-500",
+    chip: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
+  },
+  {
+    value: "NOT_SHIPPED",
+    label: "Not Shipped",
+    dot: "bg-slate-500",
+    chip: "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900/20 dark:text-slate-400 dark:border-slate-800",
+  },
+  {
+    value: "IN_TRANSIT",
+    label: "In Transit",
+    dot: "bg-blue-500",
+    chip: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
+  },
+  {
+    value: "PICKED_UP",
+    label: "Picked Up",
+    dot: "bg-cyan-500",
+    chip: "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800",
+  },
+  {
+    value: "DELIVERED",
+    label: "Delivered",
+    dot: "bg-emerald-500",
+    chip: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
+  },
+  {
+    value: "PARTIAL",
+    label: "Partial Delivered",
+    dot: "bg-violet-500",
+    chip: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800",
+  },
+  {
+    value: "CANCELLED",
+    label: "Cancelled",
+    dot: "bg-red-500",
+    chip: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
+  },
+  {
+    value: "HOLD",
+    label: "On Hold",
+    dot: "bg-orange-500",
+    chip: "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800",
+  },
+];
+
 function formatDateLabel(from: Date | undefined, to: Date | undefined): string {
   if (!from) return "Filter by date";
   if (!to || isSameDay(from, to)) return format(from, "MMM d, yyyy");
@@ -1022,6 +1073,7 @@ export default function MyOrders() {
   const [courierOrder, setCourierOrder] = useState<Order | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [timingOrder, setTimingOrder] = useState<Order | null>(null);
+  const [deliveryStatus, setDeliveryStatus] = useState("");
   const [orderTimingOpen, setOrderTimingOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [courierOpen, setCourierOpen] = useState(false);
@@ -1046,6 +1098,7 @@ export default function MyOrders() {
     limit: LIMIT,
     ...(search.trim() && { searchTerm: search.trim() }),
     ...(orderStatus && { orderStatus }),
+    ...(deliveryStatus && { deliveryStatus }),
     ...(dateFrom && {
       "createdAt[gte]": new Date(dateFrom).toISOString(),
     }),
@@ -1065,34 +1118,50 @@ export default function MyOrders() {
   });
 
   const {
-    data : holdOrdersData,
-    isLoading : holdLoading,
-    error : holdError,
-    refetch : refetchHold
+    data: holdOrdersData,
+    isLoading: holdLoading,
+    error: holdError,
+    refetch: refetchHold,
   } = useGetMyHoldOrdersQuery({
-    page, limit : LIMIT
+    page,
+    limit: LIMIT,
   });
-
-  
 
   const [createCourier] = useCreateCourierMutation();
   const [deleteOrder] = useDeleteOrderMutation();
 
   const orders: Order[] =
     activeTab === "instant"
-      ? (instantOrdersData?.data as Order[]) || [] : activeTab === "scheduled" 
-      ? (scheduledOrdersData?.data as Order[]) || [] : (holdOrdersData?.data as Order[]) || [];
+      ? (instantOrdersData?.data as Order[]) || []
+      : activeTab === "scheduled"
+        ? (scheduledOrdersData?.data as Order[]) || []
+        : (holdOrdersData?.data as Order[]) || [];
 
   const meta =
     activeTab === "instant"
       ? instantOrdersData?.meta
       : scheduledOrdersData?.meta;
 
-  const isLoading = activeTab === "instant" ? instantLoading : activeTab === "scheduled" ? scheduledLoading : holdLoading;
+  const isLoading =
+    activeTab === "instant"
+      ? instantLoading
+      : activeTab === "scheduled"
+        ? scheduledLoading
+        : holdLoading;
 
-  const error = activeTab === "instant" ? instantError : activeTab === "scheduled" ? scheduledError : holdError;
+  const error =
+    activeTab === "instant"
+      ? instantError
+      : activeTab === "scheduled"
+        ? scheduledError
+        : holdError;
 
-  const refetch = activeTab === "instant" ? refetchInstant : activeTab === "scheduled" ? refetchScheduled : refetchHold;
+  const refetch =
+    activeTab === "instant"
+      ? refetchInstant
+      : activeTab === "scheduled"
+        ? refetchScheduled
+        : refetchHold;
   // const totalCount = meta?.total ?? 0;
 
   // const pendingCount = orders.filter((o) => o.orderStatus === "PENDING").length;
@@ -1156,6 +1225,11 @@ export default function MyOrders() {
     }
   };
 
+  const handleDeliveryStatusChange = (val: string) => {
+    setDeliveryStatus(val);
+    setPage(1);
+  };
+
   const handleCalSelect = (range: DateRange | undefined) => {
     setCalRange(range);
     if (range?.from && range?.to) {
@@ -1185,6 +1259,7 @@ export default function MyOrders() {
     setLocalSearch("");
     setSearch("");
     setOrderStatus("");
+    setDeliveryStatus("");
     setCalRange(undefined);
     setDateFrom(undefined);
     setDateTo(undefined);
@@ -1199,12 +1274,11 @@ export default function MyOrders() {
     setEditOrder(order);
     setEditOpen(true);
   };
-  
 
   const handleOrderTiming = (order: Order) => {
-  setTimingOrder(order);
-  setOrderTimingOpen(true);
-};
+    setTimingOrder(order);
+    setOrderTimingOpen(true);
+  };
 
   const handleAssignCourier = (order: Order) => {
     setCourierOrder(order);
@@ -1214,11 +1288,12 @@ export default function MyOrders() {
   const handleCourierSubmit = async () => {
     if (!courierOrder) return;
     try {
-      await createCourier({ courierName: courierOrder.courierName as CourierProvider,
-        orderId: courierOrder._id
-       }).unwrap();
+      await createCourier({
+        courierName: courierOrder.courierName as CourierProvider,
+        orderId: courierOrder._id,
+      }).unwrap();
       toast.success("Courier assigned successfully");
-    setCourierOpen(false);
+      setCourierOpen(false);
       setCourierOrder(null);
       refetch();
     } catch (err: any) {
@@ -1226,8 +1301,12 @@ export default function MyOrders() {
     }
   };
 
-  const hasFilters = !!search || !!orderStatus || !!dateFrom;
+  const hasFilters =
+    !!search || !!orderStatus || !!dateFrom || !!deliveryStatus;
   const activeStatus = STATUS_OPTIONS.find((s) => s.value === orderStatus);
+  const activeDeliveryStatus = DELIVERY_STATUSES.find(
+    (s) => s.value === deliveryStatus,
+  );
   const activeDateLabel = getPresetLabel(dateFrom, dateTo);
   const dateChipLabel = dateFrom
     ? (activeDateLabel ?? formatDateLabel(dateFrom, dateTo))
@@ -1325,6 +1404,38 @@ export default function MyOrders() {
                     <div className="flex items-center gap-2">
                       <span className={cn("h-2 w-2 rounded-full", s.dot)} />
                       {s.label}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={deliveryStatus || "all"}
+              onValueChange={(val) =>
+                handleDeliveryStatusChange(val === "all" ? "" : val)
+              }
+            >
+              <SelectTrigger className="h-10 w-44 rounded-lg border-gray-200 bg-gray-50/60 text-sm focus:border-blue-400 dark:border-gray-700 dark:bg-gray-800/60 dark:focus:border-blue-500 transition-colors">
+                <SelectValue placeholder="Delivery Status" />
+              </SelectTrigger>
+
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all" className="cursor-pointer text-sm">
+                  All Deliveries
+                </SelectItem>
+
+                {DELIVERY_STATUSES.map((status) => (
+                  <SelectItem
+                    key={status.value}
+                    value={status.value}
+                    className="cursor-pointer text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn("h-2 w-2 rounded-full", status.dot)}
+                      />
+                      {status.label}
                     </div>
                   </SelectItem>
                 ))}
@@ -1509,6 +1620,31 @@ export default function MyOrders() {
               </Badge>
             )}
 
+            {activeDeliveryStatus && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                  activeDeliveryStatus.chip,
+                )}
+              >
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    activeDeliveryStatus.dot,
+                  )}
+                />
+                {activeDeliveryStatus.label}
+                <button
+                  onClick={() => handleDeliveryStatusChange("")}
+                  aria-label="Remove delivery status"
+                  className="ml-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+
             {/* Date chip */}
             {dateChipLabel && (
               <Badge
@@ -1661,7 +1797,7 @@ export default function MyOrders() {
       />
 
       {/* order time change */}
-      <OrderModeChangeModal 
+      <OrderModeChangeModal
         open={orderTimingOpen}
         order={timingOrder}
         onOpenChange={setOrderTimingOpen}
