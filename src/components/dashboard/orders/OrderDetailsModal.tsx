@@ -12,11 +12,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import { CourierInfo } from "./CourierInfo";
-import { User, Mail, Phone, MapPin, Clock, Car, Zap, Wallet, Banknote } from "lucide-react";
+import { User, Mail, Phone, MapPin, Clock, Car, Zap, Wallet, Banknote, User2 } from "lucide-react";
 import { format } from "date-fns";
 import type { Order } from "@/types/orders";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useGetCourierByOrderIdQuery } from "@/lib/hooks";
+import { OrderStats } from "./OrderStats";
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -70,6 +71,27 @@ export function OrderDetailsModal({
                     <OrderStatusBadge status={order.orderStatus} type="order" />
                   </div>
                 </div>
+                {
+                  order.confirmedBy && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Confirmed By
+                      </p>
+
+                      <div className="mt-1">
+                        <Badge
+                          variant="outline"
+                          className="bg-yellow-100 text-yellow-700"
+                        >
+                          <User2 className="h-3.5 w-3.5" />
+                          <span className="font-medium">
+                            {order?.confirmedBy?.name}
+                          </span>
+                        </Badge>
+                      </div>
+                    </div>
+                  )
+                }
                 <div>
                   <p className="text-xs text-muted-foreground">
                     Delivery Status
@@ -181,14 +203,14 @@ export function OrderDetailsModal({
               </div>
             </div>
 
-            
+
             <div className="space-y-3 rounded-lg border p-4 bg-white dark:bg-gray-900">
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                 Advance Payment
               </p>
 
               <div className="flex items-center justify-between space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                
+
                 <p className="flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-amber-500" />
                   <span className="font-medium">Method:</span>

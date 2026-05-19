@@ -55,6 +55,11 @@ export interface Order {
     role?: string;
     email?: string;
   };
+  confirmedBy?: {
+    name?: string;
+    role?: string;
+    email?: string;
+  };
   shippingCost?: number;
   note: string;
   couponCode?: string;
@@ -63,13 +68,13 @@ export interface Order {
   scheduleType?: "INSTANT" | "SCHEDULED" | "HOLD";
   scheduledAt?: Date;
   paymentMethod?:
-    | "COD"
-    | "ONLINE"
-    | "POS"
-    | "BKASH"
-    | "ROCKET"
-    | "NAGAD"
-    | "BANK";
+  | "COD"
+  | "ONLINE"
+  | "POS"
+  | "BKASH"
+  | "ROCKET"
+  | "NAGAD"
+  | "BANK";
   orderId?: string;
   customerName: string;
   totalAmount?: number;
