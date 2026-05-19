@@ -26,7 +26,8 @@ export function AssignCourierModal({
   onSubmit,
   loading,
 }: AssignCourierModalProps) {
-  const [selected, setSelected] = useState("STEADFAST");
+const [selected, setSelected] =
+  useState<CourierProvider>("STEADFAST");
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -55,7 +56,7 @@ export function AssignCourierModal({
             return (
               <button
                 key={provider.value}
-                onClick={() => setSelected(provider.value)}
+               onClick={() => setSelected(provider.value as CourierProvider)}
                 className={cn(
                   "group hover:cursor-pointer w-full rounded-lg border text-left transition-all duration-150",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-1",

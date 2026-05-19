@@ -1,6 +1,6 @@
 import { DeliveryStatus } from "./orders";
 
-export type CourierProvider = "STEADFAST" | "PATHAO";
+export type CourierProvider = "STEADFAST" | "PATHAO" | "PAPERFLY";
 export interface Courier {
   id: string;
   orderID: string;

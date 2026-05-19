@@ -4,6 +4,7 @@ import {
   Clock,
   Shield,
   MapPinned,
+  Building2,
 } from "lucide-react";
 
 export const COURIER_PROVIDERS = [
@@ -53,6 +54,31 @@ export const COURIER_PROVIDERS = [
       {
         icon: MapPinned,
         title: "Wide Network",
+      },
+    ],
+  },
+  {
+    value: "PAPERFLY",
+    name: "Paperfly Courier",
+    description:
+      "Trusted e-commerce delivery partner with nationwide coverage and COD support",
+    badge: "Trusted",
+    features: [
+      {
+        icon: Building2,
+        title: "Nationwide Coverage",
+      },
+      {
+        icon: Package,
+        title: "Order Tracking",
+      },
+      {
+        icon: Shield,
+        title: "COD Support",
+      },
+      {
+        icon: Clock,
+        title: "Merchant Pickup",
       },
     ],
   },
