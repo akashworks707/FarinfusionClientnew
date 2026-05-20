@@ -96,6 +96,18 @@ const deliveryIcons: Record<string, React.ReactNode> = {
   NOT_SHIPPED: <FileCheck className="h-3 w-3" />,
 };
 
+const formatStatusLabel = (status: string) => {
+  const customLabels: Record<string, string> = {
+    COURIERASSIGNED: "COURIER ASSIGNED",
+    IN_TRANSIT: "IN TRANSIT",
+    PICKED_UP: "PICKED UP",
+    IN_REVIEW: "IN REVIEW",
+    NOT_SHIPPED: "NOT SHIPPED",
+  };
+
+  return customLabels[status] || status.replace(/_/g, " ");
+};
+
 export function OrderStatusBadge({
   status,
   type = "order",
@@ -110,7 +122,7 @@ export function OrderStatusBadge({
       ? (orderIcons[status] ?? null)
       : (deliveryIcons[status] ?? null);
 
-  const label = status.replace(/_/g, " ");
+  const label = formatStatusLabel(status);
 
   return (
     <Badge
