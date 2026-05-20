@@ -11,9 +11,17 @@ export interface GetQueryParams {
   [key: string]: any;
 }
 
-export type OrderStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "NOT_SHIPPED" | "COMPLETED" | "DAMAGE" | "PARTIAL";
+export type OrderStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "CANCELLED"
+  | "NOT_SHIPPED"
+  | "COMPLETED"
+  | "DAMAGE"
+  | "PARTIAL";
 export type DeliveryStatus =
   | "NOT_SHIPPED"
+  | "COURIERASSIGNED"
   | "IN_TRANSIT"
   | "DELIVERED"
   | "FAILED"
@@ -49,7 +57,7 @@ export type CreateOrderPayload = {
 export interface Order {
   _id: string;
   customOrderId?: string;
-  payment?: string
+  payment?: string;
   seller: {
     name?: string;
     role?: string;
@@ -68,13 +76,13 @@ export interface Order {
   scheduleType?: "INSTANT" | "SCHEDULED" | "HOLD";
   scheduledAt?: Date;
   paymentMethod?:
-  | "COD"
-  | "ONLINE"
-  | "POS"
-  | "BKASH"
-  | "ROCKET"
-  | "NAGAD"
-  | "BANK";
+    | "COD"
+    | "ONLINE"
+    | "POS"
+    | "BKASH"
+    | "ROCKET"
+    | "NAGAD"
+    | "BANK";
   orderId?: string;
   customerName: string;
   totalAmount?: number;
@@ -90,9 +98,9 @@ export interface Order {
     phone: string;
   };
   advanceDetails: {
-    option: string,
-    amount: number,
-  },
+    option: string;
+    amount: number;
+  };
   customerPhone: string;
   totalPrice: number;
   products: {
@@ -136,8 +144,8 @@ export interface UpdateOrderRequest {
     address: string;
   };
   advanceDetails?: {
-    option?: string,
-    amount?: number,
+    option?: string;
+    amount?: number;
   };
   paymentMethod?: string;
   shippingCost?: number;
