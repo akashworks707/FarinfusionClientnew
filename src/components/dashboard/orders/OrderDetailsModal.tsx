@@ -17,7 +17,6 @@ import { format } from "date-fns";
 import type { Order } from "@/types/orders";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useGetCourierByOrderIdQuery } from "@/lib/hooks";
-import { OrderStats } from "./OrderStats";
 
 interface OrderDetailsModalProps {
   order: Order | null;

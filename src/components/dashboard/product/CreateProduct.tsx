@@ -142,7 +142,7 @@ export default function CreateProduct() {
         brand: data.brand,
         category: data.category,
         price: data.price,
-        availableStock: data.availableStock,
+
         discountPrice: data.discountPrice,
         status: data.status,
         description: data.description,
@@ -151,6 +151,7 @@ export default function CreateProduct() {
 
       if (role !== "MANAGER") {
         payloadData.buyingPrice = data.buyingPrice;
+        payloadData.availableStock = data.availableStock;
       }
 
       formData.append("data", JSON.stringify(payloadData));
@@ -283,17 +284,19 @@ export default function CreateProduct() {
                   <Input type="number" {...register("discountPrice")} />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Stock</Label>
-                  <Input
-                    type="number"
-                    onWheel={(e) => e.preventDefault()}
-                    {...register("availableStock")}
-                  />
-                  <p className="text-red-500 text-xs">
-                    {errors.availableStock?.message}
-                  </p>
-                </div>
+                {role !== "MANAGER" && (
+                  <div className="space-y-2">
+                    <Label>Stock</Label>
+                    <Input
+                      type="number"
+                      onWheel={(e) => e.preventDefault()}
+                      {...register("availableStock")}
+                    />
+                    <p className="text-red-500 text-xs">
+                      {errors.availableStock?.message}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* DESCRIPTION */}

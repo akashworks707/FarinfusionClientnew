@@ -201,7 +201,6 @@ const UpdateProduct = () => {
 
   const onSubmit = async (data: FormValues) => {
     try {
-
       if (currentStock + adjustValue < 0) {
         toast.error("Stock cannot be negative");
         return;
@@ -442,57 +441,59 @@ const UpdateProduct = () => {
             </div>
 
             {/* STOCK ADJUSTMENT */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-              <div className="space-y-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Adjust Stock
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Current stock:{" "}
-                    <span className="font-bold text-blue-600 dark:text-blue-400">
-                      {productData?.data?.availableStock || 0}
-                    </span>{" "}
-                    units
-                  </p>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Adjust By (Add/Subtract)</Label>
-                    <Input
-                      type="number"
-                      onWheel={(e) => e.currentTarget.blur()}
-                      placeholder="e.g., 5 to add, -5 to subtract"
-                      {...register("adjustStock")}
-                      className="border-amber-200 focus:border-amber-400 dark:border-amber-800/40 dark:focus:border-amber-600"
-                    />
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                      Enter positive number to add stock, negative to remove
+            {role !== "MANAGER" && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      Adjust Stock
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Current stock:{" "}
+                      <span className="font-bold text-blue-600 dark:text-blue-400">
+                        {productData?.data?.availableStock || 0}
+                      </span>{" "}
+                      units
                     </p>
-                    {errors.adjustStock && (
-                      <p className="text-red-500 text-xs">
-                        {errors.adjustStock.message}
-                      </p>
-                    )}
                   </div>
-                  <div className="space-y-2">
-                    <Label>New Stock Total</Label>
-                    <div className="relative">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Adjust By (Add/Subtract)</Label>
                       <Input
                         type="number"
-                        onWheel={(e) => e.preventDefault()}
-                        disabled
-                        value={newStock}
-                        className="bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold"
+                        onWheel={(e) => e.currentTarget.blur()}
+                        placeholder="e.g., 5 to add, -5 to subtract"
+                        {...register("adjustStock")}
+                        className="border-amber-200 focus:border-amber-400 dark:border-amber-800/40 dark:focus:border-amber-600"
                       />
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-                        Calculated automatically
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                        Enter positive number to add stock, negative to remove
                       </p>
+                      {errors.adjustStock && (
+                        <p className="text-red-500 text-xs">
+                          {errors.adjustStock.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label>New Stock Total</Label>
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          onWheel={(e) => e.preventDefault()}
+                          disabled
+                          value={newStock}
+                          className="bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold"
+                        />
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                          Calculated automatically
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* DESCRIPTION */}
             <div className={"space-y-2"}>
