@@ -11,6 +11,15 @@ export interface ILead {
     role: string;
     email: string;
   };
+  fraudProfile: {
+    totalOrders: number;
+    deliveredOrders: number;
+    cancelledOrders: number;
+    successRate: number;
+    cancelRate: number;
+    risk: "SAFE" | "MEDIUM" | "HIGH" | "FAKE";
+    isFakeCustomer: boolean;
+  };
   status?: string;
   priority?: string;
   notes?: string;
@@ -23,7 +32,7 @@ export type LeadInput = {
   email: string;
   phone: string;
   address: string;
-  social : string;
+  social: string;
   notes?: string;
 };
 

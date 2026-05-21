@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -40,15 +41,16 @@ import {
   FaTiktok,
 } from "react-icons/fa";
 
-
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   leadId: string | null;
 };
 
-
-const SOCIAL_MAP: Record<string, { label: string; icon: React.ReactNode; cls: string }> = {
+const SOCIAL_MAP: Record<
+  string,
+  { label: string; icon: React.ReactNode; cls: string }
+> = {
   Facebook: {
     label: "Facebook",
     icon: <FaFacebookF className="h-3.5 w-3.5 text-blue-600" />,
@@ -104,7 +106,10 @@ const STATUS_MAP: Record<string, { label: string; cls: string }> = {
   },
 };
 
-const PRIORITY_MAP: Record<string, { label: string; dot: string; cls: string }> = {
+const PRIORITY_MAP: Record<
+  string,
+  { label: string; dot: string; cls: string }
+> = {
   HIGH: {
     label: "High",
     dot: "bg-red-500",
@@ -161,7 +166,11 @@ function InfoRow({
           {label}
         </p>
         <div className="mt-0.5 text-sm font-medium text-gray-800 dark:text-gray-200">
-          {value ?? <span className="text-gray-400 dark:text-gray-600 italic font-normal">—</span>}
+          {value ?? (
+            <span className="text-gray-400 dark:text-gray-600 italic font-normal">
+              —
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -176,8 +185,8 @@ export function LeadDetailModal({ open, onOpenChange, leadId }: Props) {
   });
 
   const lead = data?.data;
-
-   const social = SOCIAL_MAP[lead?.social ?? ""];
+  const fraud: any = lead?.fraudProfile;
+  const social = SOCIAL_MAP[lead?.social ?? ""];
   const status = STATUS_MAP[lead?.status ?? "NEW"] ?? STATUS_MAP.NEW;
   const priority = PRIORITY_MAP[lead?.priority ?? "LOW"] ?? PRIORITY_MAP.LOW;
 
@@ -196,186 +205,232 @@ export function LeadDetailModal({ open, onOpenChange, leadId }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-    <ScrollArea className="max-h-[90vh] pr-4">
-          <DialogContent className="sm:max-w-3xl p-0 overflow-hidden rounded-2xl border-gray-200/80 dark:border-gray-700/60">
-        {/* ── Top accent bar ── */}
-        <div className="h-1 w-full bg-linear-to-r from-blue-500 via-violet-500 to-emerald-500" />
+        <DialogContent className="sm:max-w-3xl p-0 overflow-hidden rounded-2xl border-gray-200/80 dark:border-gray-700/60">
+      <ScrollArea className="max-h-[90vh] pr-4">
+          {/* ── Top accent bar ── */}
+          <div className="h-1 w-full bg-linear-to-r from-blue-500 via-violet-500 to-emerald-500" />
 
-        <div className="px-6 pt-5 pb-0">
-          <DialogHeader>
-            <DialogTitle className="sr-only">Lead Details</DialogTitle>
-            <DialogDescription className="sr-only">
-              View selected lead information.
-            </DialogDescription>
-          </DialogHeader>
+          <div className="px-6 pt-5 pb-0">
+            <DialogHeader>
+              <DialogTitle className="sr-only">Lead Details</DialogTitle>
+              <DialogDescription className="sr-only">
+                View selected lead information.
+              </DialogDescription>
+            </DialogHeader>
 
-          {isLoading ? (
-            <div className="pb-6">
-              <LeadDetailSkeleton />
-            </div>
-          ) : isError ? (
-            <div className="flex flex-col items-center gap-2 py-12 text-center">
-              <div className="rounded-full bg-red-50 p-3 dark:bg-red-900/20">
-                <Activity className="h-6 w-6 text-red-500" />
+            {isLoading ? (
+              <div className="pb-6">
+                <LeadDetailSkeleton />
               </div>
-              <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                Failed to load lead data
-              </p>
-            </div>
-          ) : lead ? (
-            <div className="pb-4">
-              {/* ── Profile hero ── */}
-              <div className="flex items-center gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
-                <LeadAvatar name={lead.name ?? "?"} />
-                <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-lg font-bold text-gray-900 dark:text-gray-50">
-                    {lead.name}
-                  </h2>
-                  <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-                    {lead.email}
-                  </p>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-                        status.cls,
-                      )}
-                    >
-                      {status.label}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-                        priority.cls,
-                      )}
-                    >
-                      <span
+            ) : isError ? (
+              <div className="flex flex-col items-center gap-2 py-12 text-center">
+                <div className="rounded-full bg-red-50 p-3 dark:bg-red-900/20">
+                  <Activity className="h-6 w-6 text-red-500" />
+                </div>
+                <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                  Failed to load lead data
+                </p>
+              </div>
+            ) : lead ? (
+              <div className="pb-4">
+                {/* ── Profile hero ── */}
+                <div className="flex items-center gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+                  <LeadAvatar name={lead.name ?? "?"} />
+                  <div className="min-w-0 flex-1">
+                    <h2 className="truncate text-lg font-bold text-gray-900 dark:text-gray-50">
+                      {lead.name}
+                    </h2>
+                    <p className="truncate text-sm text-gray-500 dark:text-gray-400">
+                      {lead.email}
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <Badge
+                        variant="outline"
                         className={cn(
-                          "mr-1 inline-block h-1.5 w-1.5 rounded-full",
-                          priority.dot,
+                          "rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                          status.cls,
                         )}
-                      />
-                      {priority.label} Priority
-                    </Badge>
+                      >
+                        {status.label}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                          priority.cls,
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "mr-1 inline-block h-1.5 w-1.5 rounded-full",
+                            priority.dot,
+                          )}
+                        />
+                        {priority.label} Priority
+                      </Badge>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* ── Detail rows ── */}
-              <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                <InfoRow icon={PhoneIcon} label="Phone" value={lead.phone} />
-                <InfoRow icon={Mail} label="Email" value={lead.email} />
-                <InfoRow icon={MapPinIcon} label="Address" value={lead.address} />
-                <InfoRow
-                  icon={Activity}
-                  label="Status"
-                  value={
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-                        status.cls,
-                      )}
-                    >
-                      {status.label}
-                    </Badge>
-                  }
-                />
-                <InfoRow
-                  icon={Flag}
-                  label="Priority"
-                  value={
-                    <div className="flex items-center gap-1.5">
-                      <span className={cn("h-2 w-2 rounded-full", priority.dot)} />
-                      {priority.label}
-                    </div>
-                  }
-                />
-                {lead.notes && (
+                {/* ── Detail rows ── */}
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <InfoRow icon={PhoneIcon} label="Phone" value={lead.phone} />
+                  <InfoRow icon={Mail} label="Email" value={lead.email} />
                   <InfoRow
-                    icon={StickyNote}
-                    label="Notes"
+                    icon={MapPinIcon}
+                    label="Address"
+                    value={lead.address}
+                  />
+                  <InfoRow
+                    icon={Activity}
+                    label="Status"
                     value={
-                      <span className="whitespace-pre-wrap leading-relaxed text-gray-600 dark:text-gray-400 font-normal">
-                        {lead.notes}
-                      </span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                          status.cls,
+                        )}
+                      >
+                        {status.label}
+                      </Badge>
                     }
                   />
-                )}
-                {lead.createdAt && (
                   <InfoRow
-                    icon={Calendar}
-                    label="Created"
-                    value={new Date(lead.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                    icon={Activity}
+                    label="Fraud Check"
+                    value={
+                      fraud ? (
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap gap-2">
+                            <Badge
+                              className={
+                                fraud.isFakeCustomer
+                                  ? "bg-red-100 text-red-700 border-red-200"
+                                  : fraud.risk === "HIGH"
+                                    ? "bg-orange-100 text-orange-700 border-orange-200"
+                                    : fraud.risk === "MEDIUM"
+                                      ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                      : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                              }
+                            >
+                              {fraud.isFakeCustomer
+                                ? "Fake Customer"
+                                : fraud.risk}
+                            </Badge>
+                          </div>
+
+                          <div className="text-sm space-y-1">
+                            <p>Total Orders: {fraud.total}</p>
+                            <p>Delivered: {fraud.delivered}</p>
+                            <p>Cancelled: {fraud.cancelled}</p>
+                            <p>Cancel Rate: {fraud.cancelRate}%</p>
+                            <p>Success Rate: {fraud.successRate}%</p>
+                          </div>
+                        </div>
+                      ) : (
+                        "-"
+                      )
+                    }
                   />
-                )}
-                {/* SOCIAL */}
-                <InfoRow
-                  icon={Globe}
-                  label="Source"
-                  value={
-                    social ? (
-                      <div className={`inline-flex items-center gap-2 px-2 py-1 rounded ${social.cls}`}>
-                        {social.icon}
-                        {social.label}
+                  <InfoRow
+                    icon={Flag}
+                    label="Priority"
+                    value={
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={cn("h-2 w-2 rounded-full", priority.dot)}
+                        />
+                        {priority.label}
                       </div>
-                    ) : (
-                      <>
-                        {lead?.social}
-                      </>
-                    )
-                  }
-                />
+                    }
+                  />
+                  {lead.notes && (
+                    <InfoRow
+                      icon={StickyNote}
+                      label="Notes"
+                      value={
+                        <span className="whitespace-pre-wrap leading-relaxed text-gray-600 dark:text-gray-400 font-normal">
+                          {lead.notes}
+                        </span>
+                      }
+                    />
+                  )}
+                  {lead.createdAt && (
+                    <InfoRow
+                      icon={Calendar}
+                      label="Created"
+                      value={new Date(lead.createdAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        },
+                      )}
+                    />
+                  )}
+                  {/* SOCIAL */}
+                  <InfoRow
+                    icon={Globe}
+                    label="Source"
+                    value={
+                      social ? (
+                        <div
+                          className={`inline-flex items-center gap-2 px-2 py-1 rounded ${social.cls}`}
+                        >
+                          {social.icon}
+                          {social.label}
+                        </div>
+                      ) : (
+                        <>{lead?.social}</>
+                      )
+                    }
+                  />
+                </div>
               </div>
-            </div>
-          ) : null}
-        </div>
+            ) : null}
+          </div>
 
-        {/* ── Footer ── */}
-        <DialogFooter className="flex gap-2 my-1 items-center border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-          <DialogClose asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 sm:flex-none rounded-lg"
-            >
-              Close
-            </Button>
-          </DialogClose>
+          {/* ── Footer ── */}
+          <DialogFooter className="flex gap-2 my-1 items-center border-t border-gray-100 px-6 py-4 dark:border-gray-800">
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none rounded-lg"
+              >
+                Close
+              </Button>
+            </DialogClose>
 
-          {lead && (
-            <button
-              onClick={handleSell}
-              className={cn(
-                "group hover:cursor-pointer relative flex-1 sm:flex-none overflow-hidden",
-                "inline-flex items-center justify-center gap-1.5 rounded-lg",
-                "bg-emerald-600 px-4 py-2 text-sm font-semibold text-white",
-                "transition-all duration-200",
-                "hover:bg-emerald-700 hover:shadow-[0_2px_14px_--theme(--color-emerald-500/30%)]",
-                "active:scale-95",
-                "dark:bg-emerald-700 dark:hover:bg-emerald-600",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1",
-              )}
-            >
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-white/20 transition-transform duration-500 group-hover:translate-x-[200%]"
-              />
-              <ShoppingBagIcon className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-px group-hover:scale-110" />
-              Sell to Lead
-              <ArrowUpRight className="-translate-x-0.5 h-3.5 w-3.5 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100" />
-            </button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-      <ScrollBar orientation="vertical" />
-    </ScrollArea>
+            {lead && (
+              <button
+                onClick={handleSell}
+                className={cn(
+                  "group hover:cursor-pointer relative flex-1 sm:flex-none overflow-hidden",
+                  "inline-flex items-center justify-center gap-1.5 rounded-lg",
+                  "bg-emerald-600 px-4 py-2 text-sm font-semibold text-white",
+                  "transition-all duration-200",
+                  "hover:bg-emerald-700 hover:shadow-[0_2px_14px_--theme(--color-emerald-500/30%)]",
+                  "active:scale-95",
+                  "dark:bg-emerald-700 dark:hover:bg-emerald-600",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1",
+                )}
+              >
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-white/20 transition-transform duration-500 group-hover:translate-x-[200%]"
+                />
+                <ShoppingBagIcon className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-px group-hover:scale-110" />
+                Sell to Lead
+                <ArrowUpRight className="-translate-x-0.5 h-3.5 w-3.5 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100" />
+              </button>
+            )}
+          </DialogFooter>
+        <ScrollBar orientation="vertical" />
+      </ScrollArea>
+        </DialogContent>
     </Dialog>
   );
 }

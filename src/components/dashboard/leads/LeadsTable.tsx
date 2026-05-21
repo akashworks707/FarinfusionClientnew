@@ -149,6 +149,91 @@ function StatCard({
   );
 }
 
+function FraudBadge({
+  fraud,
+}: {
+  fraud?: {
+    totalOrders: number;
+    deliveredOrders: number;
+    cancelledOrders: number;
+    cancelRate: number;
+    successRate: number;
+    isFakeCustomer: boolean;
+    risk: string;
+  };
+}) {
+  if (!fraud || fraud.totalOrders === 0) {
+    return (
+      <div className="space-y-1">
+        <Badge
+          variant="outline"
+          className="rounded-full border-slate-200 bg-slate-50 text-slate-600"
+        >
+          New Customer
+        </Badge>
+        <p className="text-[10px] text-gray-400">No order history</p>
+      </div>
+    );
+  }
+
+  if (fraud.isFakeCustomer) {
+    return (
+      <div className="space-y-1">
+        <Badge className="rounded-full bg-red-50 text-red-700 border-red-200 font-semibold">
+          Fake Customer
+        </Badge>
+
+        <div className="space-y-0.5">
+          <p className="text-[10px] text-gray-500">
+            {fraud.cancelledOrders} cancellations
+          </p>
+          <p className="text-[10px] font-medium text-red-500">
+            {fraud.cancelRate}% cancel rate
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fraud.risk === "HIGH") {
+    return (
+      <div className="space-y-1">
+        <Badge className="rounded-full bg-orange-50 text-orange-700 border-orange-200">
+          High Risk
+        </Badge>
+
+        <p className="text-[10px] text-gray-500">
+          {fraud.cancelRate}% cancel rate
+        </p>
+      </div>
+    );
+  }
+
+  if (fraud.risk === "MEDIUM") {
+    return (
+      <div className="space-y-1">
+        <Badge className="rounded-full bg-yellow-50 text-yellow-700 border-yellow-200">
+          Medium Risk
+        </Badge>
+
+        <p className="text-[10px] text-gray-500">
+          {fraud.cancelRate}% cancel rate
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      <Badge className="rounded-full bg-emerald-50 text-emerald-700 border-emerald-200">
+        Trusted
+      </Badge>
+
+      <p className="text-[10px] text-gray-500">{fraud.successRate}% success</p>
+    </div>
+  );
+}
+
 const LeadsTable: React.FC = () => {
   const router = useRouter();
 
@@ -338,6 +423,9 @@ const LeadsTable: React.FC = () => {
                   <TableHead className="hidden text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 lg:table-cell">
                     Priority
                   </TableHead>
+                  <TableHead className="hidden text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 lg:table-cell">
+                    Customer Quality
+                  </TableHead>
                   <TableHead className="hidden text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 xl:table-cell">
                     Added By
                   </TableHead>
@@ -379,6 +467,7 @@ const LeadsTable: React.FC = () => {
                     const assignedByName =
                       item.assignedBy?.name ?? item.assignedBy?.email ?? null;
                     const assignedByRole = item.assignedBy?.role ?? null;
+                    const fraud = item.fraudProfile;
 
                     return (
                       <TableRow
@@ -481,6 +570,10 @@ const LeadsTable: React.FC = () => {
                             />
                             {priority.label}
                           </Badge>
+                        </TableCell>
+
+                        <TableCell className="hidden lg:table-cell">
+                          <FraudBadge fraud={fraud} />
                         </TableCell>
 
                         {/* Added By — xl+ only */}
