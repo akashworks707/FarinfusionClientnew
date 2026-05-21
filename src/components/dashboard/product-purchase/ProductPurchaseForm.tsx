@@ -100,6 +100,7 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
   );
   const [productSearch, setProductSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const phoneRegex = /^(\+8801|01)[3-9]\d{8}$/;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
@@ -195,12 +196,7 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
             : p,
         );
       }
-      const defaultPrice =
-        Number(
-          product.discountPrice && product.discountPrice > 0
-            ? product.discountPrice
-            : product.price,
-        ) || 0;
+      const defaultPrice = Number(product.buyingPrice) || 0;
       return [
         ...prev,
         {
@@ -283,7 +279,7 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
       newErrors.supplierName = "Supplier name is required";
     if (!formData.supplierPhone.trim())
       newErrors.supplierPhone = "Supplier phone is required";
-    else if (formData.supplierPhone.length < 10)
+    else if (!phoneRegex.test(formData.supplierPhone.trim()))
       newErrors.supplierPhone = "Valid phone number required";
     if (!formData.purchaseDate)
       newErrors.purchaseDate = "Purchase date is required";
@@ -298,6 +294,7 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!validateForm()) {
       showToast.error("Please fix the errors above");
       return;
@@ -459,7 +456,7 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
                                         ·{" "}
                                         {product.availableStock === 0
                                           ? "Out of stock"
-                                          : `${product.availableStock} in stock`}
+                                          : `${product.availableStock} available · ${product.totalAddedStock || 0} purchased`}
                                       </span>
                                     </p>
                                   </div>
@@ -781,6 +778,7 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
                     <Input
                       id="purchaseDate"
                       type="date"
+                      max={new Date().toISOString().split("T")[0]}
                       value={formData.purchaseDate}
                       onChange={(e) =>
                         setFormData({

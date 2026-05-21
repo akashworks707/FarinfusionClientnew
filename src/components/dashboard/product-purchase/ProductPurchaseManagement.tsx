@@ -58,8 +58,10 @@ const ProductPurchaseManagement = () => {
     limit,
   });
 
-  const { data: productsData } = useGetAllProductsQuery({ limit: 1000 });
-  const { data: statsData } = useGetPurchaseStatsQuery(undefined);
+  const { data: productsData, refetch: refetchProducts } =
+    useGetAllProductsQuery({ limit: 1000 });
+  const { data: statsData, refetch: refetchStats } =
+    useGetPurchaseStatsQuery(undefined);
 
   // Modal and delete states
   const [selectedPurchase, setSelectedPurchase] =
@@ -116,6 +118,8 @@ const ProductPurchaseManagement = () => {
       const res = await deleteProductPurchase(purchase._id).unwrap();
       if (res.success) {
         toast.success("Purchase deleted successfully");
+        await refetchStats();
+        await refetchProducts();
       }
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to delete purchase");
@@ -131,12 +135,16 @@ const ProductPurchaseManagement = () => {
           data: formData,
         }).unwrap();
         if (res.success) {
+          await refetchStats();
+          await refetchProducts();
           toast.success("Purchase updated successfully");
         }
       } else {
         // Create new purchase
         const res = await createProductPurchase(formData).unwrap();
         if (res.success) {
+          await refetchStats();
+          await refetchProducts();
           toast.success("Purchase created successfully");
         }
       }
@@ -167,6 +175,8 @@ const ProductPurchaseManagement = () => {
       const res = await updatePurchaseStatus(payload).unwrap();
 
       if (res.success) {
+        await refetchStats();
+        await refetchProducts();
         toast.success("Status updated successfully");
       }
     } catch (error: any) {
@@ -257,7 +267,7 @@ const ProductPurchaseManagement = () => {
         <DeleteAlert
           open={openDeleteAlert}
           onOpenChange={setOpenDeleteAlert}
-          description={`Are you sure you want to delete this purchase from ${purchaseToDelete.supplierName}? This action cannot be undone.`}
+          description={`Are you sure you want to delete this purchase from ${purchaseToDelete.supplierName}? Deleting this purchase will reverse inventory stock updates permanently.`}
           onConfirm={async () => {
             await handleDelete(purchaseToDelete);
             setOpenDeleteAlert(false);
