@@ -1,4 +1,3 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -12,7 +11,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import { CourierInfo } from "./CourierInfo";
-import { User, Mail, Phone, MapPin, Clock, Car, Zap, Wallet, Banknote, User2 } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  Car,
+  Zap,
+  Wallet,
+  Banknote,
+  User2,
+  MinusCircle,
+} from "lucide-react";
 import { format } from "date-fns";
 import type { Order } from "@/types/orders";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -70,27 +81,25 @@ export function OrderDetailsModal({
                     <OrderStatusBadge status={order.orderStatus} type="order" />
                   </div>
                 </div>
-                {
-                  order.confirmedBy && (
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Confirmed By
-                      </p>
+                {order.confirmedBy && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Confirmed By
+                    </p>
 
-                      <div className="mt-1">
-                        <Badge
-                          variant="outline"
-                          className="bg-yellow-100 text-yellow-700"
-                        >
-                          <User2 className="h-3.5 w-3.5" />
-                          <span className="font-medium">
-                            {order?.confirmedBy?.name}
-                          </span>
-                        </Badge>
-                      </div>
+                    <div className="mt-1">
+                      <Badge
+                        variant="outline"
+                        className="bg-yellow-100 text-yellow-700"
+                      >
+                        <User2 className="h-3.5 w-3.5" />
+                        <span className="font-medium">
+                          {order?.confirmedBy?.name}
+                        </span>
+                      </Badge>
                     </div>
-                  )
-                }
+                  </div>
+                )}
                 <div>
                   <p className="text-xs text-muted-foreground">
                     Delivery Status
@@ -200,8 +209,18 @@ export function OrderDetailsModal({
                 </div>
                 <p className="text-xl font-bold">৳{order?.shippingCost}</p>
               </div>
-            </div>
 
+              {(order?.discount ?? 0) > 0 && (
+               <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MinusCircle className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Discount</span>
+                </div>
+                <p className="text-xl text-gray-700 font-semibold">- ৳{order?.discount}</p>
+              </div>
+
+              )}
+            </div>
 
             <div className="space-y-3 rounded-lg border p-4 bg-white dark:bg-gray-900">
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
@@ -209,7 +228,6 @@ export function OrderDetailsModal({
               </p>
 
               <div className="flex items-center justify-between space-y-2 text-sm text-gray-600 dark:text-gray-400">
-
                 <p className="flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-amber-500" />
                   <span className="font-medium">Method:</span>
@@ -218,14 +236,15 @@ export function OrderDetailsModal({
                   </span>
                 </p>
 
-                <p className="flex items-center gap-2">
-                  <Banknote className="w-4 h-4 text-green-500" />
-                  <span className="font-medium">Amount:</span>
-                  <span className="font-semibold text-green-600">
-                    ৳{order?.advanceDetails?.amount ?? 0}
-                  </span>
-                </p>
-
+                {order?.advanceDetails?.amount > 0 && (
+                  <p className="flex items-center gap-2">
+                    <Banknote className="w-4 h-4 text-green-500" />
+                    <span className="font-medium">Amount:</span>
+                    <span className="font-semibold text-green-600">
+                      ৳{order?.advanceDetails?.amount ?? 0}
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
 
@@ -237,6 +256,7 @@ export function OrderDetailsModal({
                 </div>
                 <p className="text-xl font-bold">৳{order?.total?.toFixed(2)}</p>
               </div>
+
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
                 <span>

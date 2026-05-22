@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-} from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { format } from "date-fns";
 
 import type { Order } from "@/types/orders";
@@ -301,17 +295,13 @@ export function InvoicePDF({ order }: InvoicePDFProps) {
           <View style={styles.companyInfo}>
             <Text style={styles.companyName}>FARIN FUSION</Text>
 
-            <Text style={styles.companySubtitle}>
-              Premium Quality Products
-            </Text>
+            <Text style={styles.companySubtitle}>Premium Quality Products</Text>
 
             <Text style={styles.companyDetails}>
               Email: info@farinfusion.com
             </Text>
 
-            <Text style={styles.companyDetails}>
-              Phone: +880-1-XXX-XXXXXX
-            </Text>
+            <Text style={styles.companyDetails}>Phone: +880-1-XXX-XXXXXX</Text>
 
             <Text style={styles.companyDetails}>
               Website: www.farinfusion.com
@@ -330,16 +320,12 @@ export function InvoicePDF({ order }: InvoicePDFProps) {
             </Text>
 
             <Text style={styles.invoiceMeta}>
-              Order ID:{" "}
-              {order.customOrderId || formatInvoiceNumber(order._id)}
+              Order ID: {order.customOrderId || formatInvoiceNumber(order._id)}
             </Text>
 
             <Text style={styles.invoiceMeta}>
               Date:{" "}
-              {format(
-                new Date(order.createdAt || new Date()),
-                "MMM dd, yyyy"
-              )}
+              {format(new Date(order.createdAt || new Date()), "MMM dd, yyyy")}
             </Text>
 
             <View style={styles.badgeWrapper}>
@@ -398,29 +384,17 @@ export function InvoicePDF({ order }: InvoicePDFProps) {
         <View style={styles.table}>
           {/* TABLE HEADER */}
           <View style={styles.tableHeader}>
-            <Text
-              style={[styles.tableHeaderCell, styles.productHeader]}
-            >
+            <Text style={[styles.tableHeaderCell, styles.productHeader]}>
               Product
             </Text>
 
             <Text style={styles.tableHeaderCell}>Qty</Text>
 
-            <Text
-              style={[
-                styles.tableHeaderCell,
-                styles.tableHeaderRight,
-              ]}
-            >
+            <Text style={[styles.tableHeaderCell, styles.tableHeaderRight]}>
               Unit Price
             </Text>
 
-            <Text
-              style={[
-                styles.tableHeaderCell,
-                styles.tableHeaderRight,
-              ]}
-            >
+            <Text style={[styles.tableHeaderCell, styles.tableHeaderRight]}>
               Subtotal
             </Text>
           </View>
@@ -428,12 +402,9 @@ export function InvoicePDF({ order }: InvoicePDFProps) {
           {/* TABLE ROWS */}
           {order.products?.map((item: any, index: number) => {
             const product =
-              typeof item.product === "object"
-                ? item.product
-                : {};
+              typeof item.product === "object" ? item.product : {};
 
-            const lineTotal =
-              (item.price || 0) * (item.quantity || 1);
+            const lineTotal = (item.price || 0) * (item.quantity || 1);
 
             return (
               <View
@@ -444,31 +415,17 @@ export function InvoicePDF({ order }: InvoicePDFProps) {
                     : styles.tableRow
                 }
               >
-                <Text
-                  style={[styles.tableCell, styles.productCell]}
-                >
+                <Text style={[styles.tableCell, styles.productCell]}>
                   {product.title || item.title || "N/A"}
                 </Text>
 
-                <Text style={styles.tableCell}>
-                  {item.quantity}
-                </Text>
+                <Text style={styles.tableCell}>{item.quantity}</Text>
 
-                <Text
-                  style={[
-                    styles.tableCell,
-                    styles.tableCellRight,
-                  ]}
-                >
+                <Text style={[styles.tableCell, styles.tableCellRight]}>
                   {formatCurrencyForPDF(item.price || 0)}
                 </Text>
 
-                <Text
-                  style={[
-                    styles.tableCell,
-                    styles.tableCellRight,
-                  ]}
-                >
+                <Text style={[styles.tableCell, styles.tableCellRight]}>
                   {formatCurrencyForPDF(lineTotal)}
                 </Text>
               </View>
@@ -489,20 +446,25 @@ export function InvoicePDF({ order }: InvoicePDFProps) {
 
             {discount > 0 && (
               <View style={styles.totalRow}>
-                <Text style={styles.totalDiscount}>
-                  Discount:
-                </Text>
+                <Text style={styles.totalDiscount}>Discount:</Text>
 
                 <Text style={styles.totalDiscount}>
                   -{formatCurrencyForPDF(discount)}
                 </Text>
               </View>
             )}
+            {order.advanceDetails?.amount > 0 && (
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Advance Paid:</Text>
+
+                <Text style={styles.totalValue}>
+                  {formatCurrencyForPDF(order.advanceDetails?.amount || 0)}
+                </Text>
+              </View>
+            )}
 
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>
-                Delivery Charge:
-              </Text>
+              <Text style={styles.totalLabel}>Delivery Charge:</Text>
 
               <Text style={styles.totalValue}>
                 {deliveryCharge > 0
@@ -514,9 +476,7 @@ export function InvoicePDF({ order }: InvoicePDFProps) {
             <View style={styles.divider} />
 
             <View style={styles.totalAmount}>
-              <Text style={styles.totalAmountLabel}>
-                Total Amount:
-              </Text>
+              <Text style={styles.totalAmountLabel}>Total Amount:</Text>
 
               <Text style={styles.totalAmountValue}>
                 {formatCurrencyForPDF(grandTotal)}
@@ -528,32 +488,24 @@ export function InvoicePDF({ order }: InvoicePDFProps) {
         {/* FOOTER */}
         <View style={styles.footer}>
           <View style={styles.footerCenter}>
-            <Text style={styles.footerTitle}>
-              Payment Information
+            <Text style={styles.footerTitle}>Payment Information</Text>
+
+            <Text style={styles.footerText}>
+              Delivery Status: {order.deliveryStatus || "N/A"}
             </Text>
 
             <Text style={styles.footerText}>
-              Delivery Status:{" "}
-              {order.deliveryStatus || "N/A"}
-            </Text>
-
-            <Text style={styles.footerText}>
-              Payment Status:{" "}
-              {order.payment ? "PAID" : "PENDING"}
+              Payment Status: {order.payment ? "PAID" : "PENDING"}
             </Text>
 
             <Text
-              style={[
-                styles.footerText,
-                { marginTop: 8, marginBottom: 8 },
-              ]}
+              style={[styles.footerText, { marginTop: 8, marginBottom: 8 }]}
             >
               Thank you for your purchase at Farin Fusion!
             </Text>
 
             <Text style={styles.footerText}>
-              For support, contact us at
-              info@farinfusion.com
+              For support, contact us at info@farinfusion.com
             </Text>
 
             <Text style={styles.footerTitle}>

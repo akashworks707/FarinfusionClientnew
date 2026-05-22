@@ -196,6 +196,15 @@ export const ordersApi = baseApi.injectEndpoints({
       invalidatesTags: ["ORDERS", "PRODUCTS"],
     }),
 
+    updateManualDeliveryStatus: builder.mutation({
+      query: ({ id, deliveryStatus }) => ({
+        url: `/order/manual-delivery-status/${id}`,
+        method: "PATCH",
+        data: { deliveryStatus },
+      }),
+      invalidatesTags: ["ORDERS"],
+    }),
+
     updateDeliveryStatus: builder.mutation<
       OrderResponse,
       {
@@ -229,6 +238,7 @@ export const {
   useGetAllDamagedProductsQuery,
   useUpdateDeliveryStatusMutation,
   usePartialUpdateOrderMutation,
+  useUpdateManualDeliveryStatusMutation,
   useExchangeOrderMutation,
   useMarkDamageMutation,
   useUpdateSellerMutation,

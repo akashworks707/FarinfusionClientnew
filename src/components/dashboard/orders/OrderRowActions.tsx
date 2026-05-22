@@ -69,11 +69,13 @@ interface OrderRowActionsProps {
   onMarkDamage?: (order: Order) => void;
   onMarkExchange?: (order: Order) => void;
   onPartialUpdate?: (order: Order) => void;
+  onManualDeliveryUpdate?: (order: Order) => void;
 }
 
 export function OrderRowActions({
   order,
   courier,
+  onManualDeliveryUpdate,
   refetch,
   onConfirm,
   onPartialUpdate,
@@ -123,6 +125,7 @@ export function OrderRowActions({
   const withoutTellicelss = userRole && ["ADMIN", "MANAGER"].includes(userRole);
 
   const [sellerDialogOpen, setSellerDialogOpen] = useState(false);
+  const [manualDeliveryModalOpen, setManualDeliveryModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedSellerId, setSelectedSellerId] = useState<string>(
     (order.seller as any)?._id ?? order.seller ?? "",
@@ -194,6 +197,20 @@ export function OrderRowActions({
               >
                 <FileText className="h-3.5 w-3.5" />
                 View Invoice
+              </DropdownMenuItem>
+            )}
+
+          {order.isPublished &&
+            hasAccess &&
+            isConfirmed &&
+            !hasCourier &&
+            onManualDeliveryUpdate && (
+              <DropdownMenuItem
+                className="gap-2 text-sm cursor-pointer text-emerald-600 focus:text-emerald-600 dark:text-emerald-400"
+                onClick={() => setManualDeliveryModalOpen(true)}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Mark as Delivered
               </DropdownMenuItem>
             )}
 
@@ -348,18 +365,21 @@ export function OrderRowActions({
           )}
 
           {/* Mark as Damage */}
-          {order.isPublished && hasAccess && (isCompleted || isCanceled ) && onMarkDamage && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="gap-2 text-sm cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400"
-                onClick={() => onMarkDamage(order)}
-              >
-                <AlertTriangle className="h-3.5 w-3.5" />
-                Mark as Damage
-              </DropdownMenuItem>
-            </>
-          )}
+          {order.isPublished &&
+            hasAccess &&
+            (isCompleted || isCanceled) &&
+            onMarkDamage && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="gap-2 text-sm cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400"
+                  onClick={() => onMarkDamage(order)}
+                >
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Mark as Damage
+                </DropdownMenuItem>
+              </>
+            )}
 
           {/* Mark as Exchange */}
           {order.isPublished && hasAccess && isCompleted && onMarkExchange && (
@@ -399,6 +419,97 @@ export function OrderRowActions({
           onCancelOrder?.(order);
         }}
       />
+
+      <Dialog
+        open={manualDeliveryModalOpen}
+        onOpenChange={setManualDeliveryModalOpen}
+      >
+        <DialogContent className="sm:max-w-md gap-0 p-0 overflow-hidden rounded-2xl border-gray-200/80 dark:border-gray-700/60">
+          {/* Top gradient */}
+          <div className="h-1 w-full bg-linear-to-r from-emerald-500 via-green-500 to-teal-500" />
+
+          {/* Header */}
+          <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-5 dark:border-gray-800">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-900/20">
+              <Truck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+
+            <div>
+              <DialogTitle className="text-lg font-bold text-gray-900 dark:text-gray-50">
+                Confirm Manual Delivery
+              </DialogTitle>
+
+              <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">
+                Update this order as successfully delivered
+              </DialogDescription>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="px-6 py-5 space-y-4">
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 dark:border-emerald-800/40 dark:bg-emerald-900/10">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Order ID</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-50">
+                    {order.customOrderId}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Customer</span>
+                  <span className="font-medium">
+                    {order.billingDetails?.fullName}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Phone</span>
+                  <span>{order.billingDetails?.phone}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Amount</span>
+                  <span className="font-bold text-emerald-600">
+                    ৳{order.total}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800/40 dark:bg-amber-900/10">
+              <p className="text-xs leading-relaxed text-amber-700 dark:text-amber-300">
+                This will automatically:
+                <br />• Set delivery status → <strong>DELIVERED</strong>
+                <br />• Set order status → <strong>COMPLETED</strong>
+                <br />• Trigger salary/report calculations
+              </p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <DialogFooter className="border-t mb-1 border-gray-100 px-6 py-3 dark:border-gray-800">
+            <Button
+              variant="outline"
+              className="rounded-xl hover:cursor-pointer"
+              onClick={() => setManualDeliveryModalOpen(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              className="rounded-xl hover:cursor-pointer bg-emerald-600 hover:bg-emerald-700"
+              onClick={async () => {
+                await onManualDeliveryUpdate?.(order);
+                setManualDeliveryModalOpen(false);
+              }}
+            >
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Confirm Delivery
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Assign Seller Dialog ── */}
       <Dialog open={sellerDialogOpen} onOpenChange={setSellerDialogOpen}>

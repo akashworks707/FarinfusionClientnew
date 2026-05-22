@@ -37,7 +37,13 @@ export function InvoiceDialog({
   const invoiceRef = useRef<HTMLDivElement>(null);
   const deliveryCharge = order.shippingCost ?? 0;
   const discount = order.discount ?? 0;
-  const grandTotal = (order.total || 0) - discount;
+  const grandTotal = order.total || 0;
+
+  const productsSubtotal: any = order.products?.reduce((sum, item) => {
+    const price = item.price || item.discountPrice || 0;
+    const quantity = item.quantity || 1;
+    return sum + price * quantity;
+  }, 0);
 
   const handlePrint = () => {
     if (!invoiceRef.current) {
@@ -515,10 +521,10 @@ export function InvoiceDialog({
               <div className="w-full sm:w-80 space-y-2 p-4 bg-amber-50/50 dark:bg-amber-900/10 rounded-lg border border-amber-200 dark:border-amber-900/30">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-700 dark:text-gray-300">
-                    Subtotal:
+                    Products Subtotal:
                   </span>
                   <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {formatCurrency(order.total || 0)}
+                    {productsSubtotal}
                   </span>
                 </div>
 
@@ -539,6 +545,13 @@ export function InvoiceDialog({
                       : "FREE"}
                   </span>
                 </div>
+
+                {order.advanceDetails?.amount > 0 && (
+                  <div className="flex justify-between text-sm text-blue-600 font-medium">
+                    <span>Advance Paid:</span>
+                    <span>-{formatCurrency(order.advanceDetails.amount)}</span>
+                  </div>
+                )}
 
                 <Separator className="my-2 dark:bg-gray-700" />
 

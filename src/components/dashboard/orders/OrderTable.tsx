@@ -1,4 +1,3 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -30,6 +29,7 @@ interface OrderTableProps {
   setDeleteOpen?: (open: boolean) => void;
   onPartialUpdate?: (order: Order) => void;
   onViewInvoice?: (order: Order) => void;
+  onManualDeliveryUpdate?: (order: Order) => void;
   onExchange?: (order: Order) => void;
   onMarkDamage?: (order: Order) => void;
   refetch: () => void;
@@ -46,6 +46,7 @@ export function OrderTable({
   onAssignCourier,
   onViewOrder,
   onPartialUpdate,
+  onManualDeliveryUpdate,
   onExchange,
   onMarkDamage,
   setDeleteTarget,
@@ -252,7 +253,7 @@ export function OrderTable({
                   </div>
                 </TableCell>
                 <TableCell className="text-center">
-                  <OrderRowActions 
+                  <OrderRowActions
                     order={order}
                     refetch={refetch}
                     courier={courier}
@@ -262,11 +263,12 @@ export function OrderTable({
                     onPartialUpdate={onPartialUpdate}
                     onMarkExchange={onExchange}
                     onMarkDamage={onMarkDamage}
-                      onCancelOrder={onCancelOrder}
+                    onCancelOrder={onCancelOrder}
                     setDeleteTarget={setDeleteTarget}
                     onViewInvoice={onViewInvoice}
                     setDeleteOpen={setDeleteOpen}
                     onComplete={onCompleteOrder}
+                    onManualDeliveryUpdate={onManualDeliveryUpdate}
                   />
                 </TableCell>
               </TableRow>

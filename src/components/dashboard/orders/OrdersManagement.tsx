@@ -16,6 +16,7 @@ import {
   useMarkDamageMutation,
   useGetAllDamagedProductsQuery,
   useCancelOrderMutation,
+  useUpdateManualDeliveryStatusMutation,
 } from "@/redux/features/orders/ordersApi";
 import { useCreateCourierMutation } from "@/lib/hooks";
 import { OrderStats } from "./OrderStats";
@@ -149,6 +150,7 @@ export default function OrdersManagement() {
 
   const [confirmOrder, { isLoading: isConfirming, error: confirmError }] =
     useConfirmOrderMutation();
+  const [updateManualDeliveryStatus] = useUpdateManualDeliveryStatusMutation();
 
   const [completeOrder, { isLoading: isCompleting, error: completeError }] =
     useCompleteOrderMutation();
@@ -205,6 +207,22 @@ export default function OrdersManagement() {
       refetch();
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to cancel order");
+    }
+  };
+
+  const handleManualDeliveryUpdate = async (order: Order) => {
+    try {
+      const res = await updateManualDeliveryStatus({
+        id: order._id,
+        deliveryStatus: "PICKED_UP",
+      }).unwrap();
+
+      if (res) {
+        toast.success("Order delivered successfully");
+        refetch();
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update");
     }
   };
 
@@ -492,6 +510,7 @@ export default function OrdersManagement() {
             onViewInvoice={handleViewInvoice}
             onExchange={handleExchange}
             onCancelOrder={handleCancelOrder}
+            onManualDeliveryUpdate={handleManualDeliveryUpdate}
             onMarkDamage={handleMarkDamage}
             onViewOrder={handleViewClick}
             onAssignCourier={handleOpenCourierModal}
