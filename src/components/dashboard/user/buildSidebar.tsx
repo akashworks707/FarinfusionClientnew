@@ -20,6 +20,7 @@ import {
   Target,
   Store,
   Box,
+  ArrowLeft,
 } from "lucide-react";
 
 export interface SidebarItem {
@@ -41,6 +42,7 @@ const iconMap: Record<PageAccess, React.ReactNode> = {
   "customer-management": <User className="h-5 w-5" />,
   "my-customers": <User className="h-5 w-5" />,
   "product-management": <ShoppingCart className="h-5 w-5" />,
+  "returns": <ArrowLeft className="h-5 w-5" />,
   "purchase-products": <Box className="h-5 w-5" />,
   "category-management": <Folder className="h-5 w-5" />,
   "brand-management": <Tag className="h-5 w-5" />,
@@ -56,6 +58,7 @@ const pageHrefMap: Record<any, string> = {
   "category-management": "/staff/dashboard/admin/category-management",
   "brand-management": "/staff/dashboard/admin/brand-management",
   "purchase-products": "/staff/dashboard/admin/purchase-products",
+  "returns": "/staff/dashboard/admin/returns",
   coupons: "/staff/dashboard/coupons",
   "staff-management": "/staff/dashboard/admin/user-management",
   "customer-management": "/staff/dashboard/admin/customer-management",
@@ -82,6 +85,7 @@ export const buildSidebarItems = (
     management: [
       "product-management",
       "purchase-products",
+      "returns",
       "category-management",
       "brand-management",
       "coupons",

@@ -14,6 +14,8 @@ export const baseApi = createApi({
     "BRANDS",
     "POSSTATS",
     "CATEGORIES",
+    "RETURNS",
+    "RETURN",
     "CATEGORY",
     "LEADS",
     "LEAD",

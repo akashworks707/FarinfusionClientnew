@@ -93,6 +93,7 @@ export function OrderRowActions({
   const isConfirmed = order.orderStatus === "CONFIRMED";
   const isCompleted = order.orderStatus === "COMPLETED";
   const isCanceled = order.orderStatus === "CANCELLED";
+  const isPartial = order.orderStatus === "PARTIAL";
   const isDelivered = courier?.deliveryStatus === "DELIVERED";
   const canComplete = isConfirmed && isDelivered && !isCompleted;
   const { data } = useGetMeQuery(undefined);
@@ -367,7 +368,7 @@ export function OrderRowActions({
           {/* Mark as Damage */}
           {order.isPublished &&
             hasAccess &&
-            (isCompleted || isCanceled) &&
+            (isPartial || isCanceled) &&
             onMarkDamage && (
               <>
                 <DropdownMenuSeparator />
