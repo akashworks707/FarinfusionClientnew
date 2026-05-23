@@ -15,6 +15,8 @@ export const baseApi = createApi({
     "POSSTATS",
     "CATEGORIES",
     "RETURNS",
+    "COURIER_SETTINGS",
+    "COURIER_SETTING",
     "RETURN",
     "CATEGORY",
     "LEADS",

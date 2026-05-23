@@ -206,8 +206,7 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
 
       return (
         productId?.toLowerCase().includes(searchLower) ||
-        fullProduct?.title?.toLowerCase().includes(searchLower) 
-       
+        fullProduct?.title?.toLowerCase().includes(searchLower)
       );
     });
 
@@ -297,8 +296,7 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
                                     .includes(searchLower) ||
                                   fullProduct?.title
                                     ?.toLowerCase()
-                                    .includes(searchLower) 
-                                 
+                                    .includes(searchLower)
                                 );
                               },
                             );
@@ -501,18 +499,30 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
                                   ) : (
                                     getFilteredOrderProducts(index).map(
                                       (item: any) => {
+                                        const productId =
+                                          typeof item.product === "string"
+                                            ? item.product
+                                            : item.product?._id;
+
                                         const selected =
-                                          product.product === item.product._id;
+                                          product.product === productId;
+
+                                        const productData =
+                                          typeof item.product === "string"
+                                            ? products.find(
+                                                (p) => p._id === item.product,
+                                              )
+                                            : item.product;
 
                                         return (
                                           <button
-                                            key={item.product._id}
+                                            key={productId}
                                             type="button"
                                             onClick={() => {
                                               handleProductChange(
                                                 index,
                                                 "product",
-                                                item.product._id,
+                                                productId,
                                               );
                                               updateProductSearch(
                                                 index,
@@ -534,10 +544,13 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
                                               <div className="relative h-12 w-12 overflow-hidden rounded-lg border bg-white">
                                                 <Image
                                                   src={
-                                                    item.product.images?.[0] ||
+                                                    productData?.images?.[0] ||
                                                     "/placeholder-product.png"
                                                   }
-                                                  alt={item.product.title}
+                                                  alt={
+                                                    productData?.title ||
+                                                    "Product"
+                                                  }
                                                   fill
                                                   className="object-cover"
                                                 />
@@ -545,20 +558,20 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
 
                                               <div className="min-w-0 flex-1">
                                                 <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                                                  {item.product.title}
+                                                  {productData?.title ||
+                                                    "Unknown Product"}
                                                 </p>
 
                                                 <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-500">
                                                   <span>
                                                     Ordered: {item.quantity}
                                                   </span>
-                                                  <span>
+                                                  {/* <span>
                                                     Stock:{" "}
                                                     {
-                                                      item.product
-                                                        .availableStock
+                                                     selected?.availableStock
                                                     }
-                                                  </span>
+                                                  </span> */}
                                                   {/* <span>
                                                     ৳{item.product.price}
                                                   </span> */}
