@@ -155,6 +155,28 @@ const ProductPurchaseManagement = () => {
     }
   };
 
+  const uniqueSuppliers = React.useMemo(() => {
+    const purchases = data?.data || [];
+
+    const supplierMap = new Map();
+
+    purchases.forEach((purchase: IPurchase) => {
+      if (!purchase.supplierName?.trim()) return;
+
+      const key = purchase.supplierPhone || purchase.supplierName;
+
+      if (!supplierMap.has(key)) {
+        supplierMap.set(key, {
+          supplierName: purchase.supplierName,
+          supplierPhone: purchase.supplierPhone || "",
+          supplierAddress: purchase.supplierAddress || "",
+        });
+      }
+    });
+
+    return Array.from(supplierMap.values());
+  }, [data]);
+
   const handleStatusChange = async (
     purchaseId: string,
     statusType: "purchase" | "payment",
@@ -249,6 +271,7 @@ const ProductPurchaseManagement = () => {
         open={openFormModal}
         onOpenChange={setOpenFormModal}
         initialData={editingPurchase}
+        suppliers={uniqueSuppliers}
         products={productsData?.data || []}
         onSubmit={handleFormSubmit}
       />

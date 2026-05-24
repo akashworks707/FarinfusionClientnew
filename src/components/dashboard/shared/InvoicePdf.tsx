@@ -1,281 +1,317 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  Font,
+} from "@react-pdf/renderer";
 import { format } from "date-fns";
-
 import type { Order } from "@/types/orders";
-
 import {
   generatePDFFileName,
   formatInvoiceNumber,
   formatCurrencyForPDF,
-  BRAND_COLOR_DARK,
 } from "@/lib/invoice";
 
-const styles = StyleSheet.create({
+Font.register({
+  family: "NotoSansBengali",
+  fonts: [
+    {
+      src: "/fonts/NotoSansBengali-Regular.ttf",
+      fontWeight: 400,
+    },
+    {
+      src: "/fonts/NotoSansBengali-Bold.ttf",
+      fontWeight: 700,
+    },
+  ],
+});
+
+const GOLD = "#B45309";
+const GOLD_LIGHT = "#fef3c7";
+const GOLD_MID = "#fbbf24";
+const DARK_TEXT = "#1f2937";
+const MUTED = "#6b7280";
+const ROW_ALT = "#fffbeb";
+const BORDER = "#e5e7eb";
+
+const BN = "NotoSansBengali";
+const EN = "Helvetica";
+
+const S = StyleSheet.create({
   page: {
-    paddingTop: 40,
+    paddingTop: 36,
     paddingBottom: 40,
-    paddingHorizontal: 35,
+    paddingHorizontal: 36,
     backgroundColor: "#ffffff",
     fontSize: 10,
-    color: "#1f2937",
-    fontFamily: "Helvetica",
+    color: DARK_TEXT,
+    fontFamily: EN,
+    position: "relative",
   },
 
-  headerSection: {
+  watermark: {
+    position: "absolute",
+    top: "22%",
+    left: "2%",
+    width: 640,
+    height: 470,
+    opacity: 0.15,
+  },
+
+  topBar: {
+    backgroundColor: GOLD,
+    height: 5,
+    marginBottom: 20,
+    borderRadius: 2,
+  },
+  bottomBar: {
+    backgroundColor: GOLD,
+    height: 4,
+    marginTop: 14,
+    borderRadius: 2,
+  },
+
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 24,
+    alignItems: "flex-start",
+    marginBottom: 20,
     paddingBottom: 16,
     borderBottomWidth: 2,
-    borderBottomColor: BRAND_COLOR_DARK,
+    borderBottomColor: GOLD,
   },
-
-  companyInfo: {
-    flex: 1,
-    paddingRight: 20,
-  },
-
+  logoArea: { flex: 1 },
+  logoImage: { width: 150, height: 40, marginBottom: 6 },
   companyName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: BRAND_COLOR_DARK,
-    marginBottom: 4,
+    fontSize: 18,
+    fontFamily: "Helvetica-Bold",
+    color: GOLD,
+    letterSpacing: 1.5,
+    marginBottom: 2,
   },
-
-  companySubtitle: {
-    fontSize: 10,
-    color: "#666666",
-    marginBottom: 10,
+  companyTagline: {
+    fontSize: 8,
+    color: MUTED,
+    marginBottom: 8,
+    letterSpacing: 0.5,
   },
-
-  companyDetails: {
-    fontSize: 9,
-    color: "#666666",
-    marginBottom: 3,
+  companyDetail: {
+    fontSize: 8,
+    color: MUTED,
+    marginBottom: 2,
     lineHeight: 1.5,
   },
 
-  invoiceHeader: {
-    minWidth: 180,
-  },
-
+  invoiceRight: { alignItems: "flex-end", minWidth: 190 },
   invoiceTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: BRAND_COLOR_DARK,
+    fontSize: 32,
+    fontFamily: "Helvetica-Bold",
+    color: GOLD,
+    letterSpacing: 3,
     marginBottom: 10,
-    textAlign: "right",
   },
-
-  invoiceMeta: {
-    fontSize: 10,
-    color: "#666666",
-    marginBottom: 4,
-    textAlign: "right",
-  },
-
-  badgeWrapper: {
-    marginTop: 10,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-
-  badge: {
-    backgroundColor: "#fef3c7",
+  metaLine: { fontSize: 9, color: MUTED, marginBottom: 3, textAlign: "right" },
+  metaValue: { fontFamily: "Helvetica-Bold", color: DARK_TEXT },
+  statusBadge: {
+    marginTop: 8,
+    backgroundColor: GOLD_LIGHT,
     borderRadius: 4,
-    paddingVertical: 4,
+    paddingVertical: 3,
     paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: GOLD_MID,
+  },
+  statusText: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    color: GOLD,
+    letterSpacing: 0.5,
   },
 
-  badgeText: {
-    color: BRAND_COLOR_DARK,
-    fontSize: 9,
-    fontWeight: "bold",
-  },
-
-  infoGrid: {
-    flexDirection: "row",
-    marginBottom: 25,
-  },
-
-  infoColumnLeft: {
+  infoGrid: { flexDirection: "row", marginBottom: 20, gap: 16 },
+  infoCol: {
     flex: 1,
-    paddingRight: 12,
+    borderWidth: 1,
+    borderColor: "#fde68a",
+    borderRadius: 6,
+    padding: 10,
+    // backgroundColor: "#fffbf0",
   },
-
-  infoColumnRight: {
-    flex: 1,
-    paddingLeft: 12,
-  },
-
   sectionTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: BRAND_COLOR_DARK,
-    marginBottom: 10,
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: GOLD,
+    marginBottom: 8,
     paddingBottom: 4,
     borderBottomWidth: 1,
-    borderBottomColor: "#fef3c7",
+    borderBottomColor: GOLD_LIGHT,
+    letterSpacing: 0.3,
   },
-
   infoLabel: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: "#666666",
-    marginBottom: 2,
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    color: MUTED,
+    marginBottom: 1,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
   },
-
-  infoText: {
-    fontSize: 10,
-    color: "#1f2937",
-    marginBottom: 6,
-    lineHeight: 1.4,
-  },
+  infoText: { fontSize: 9, color: DARK_TEXT, marginBottom: 6, lineHeight: 1.4 },
 
   table: {
-    marginTop: 10,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: BORDER,
+    borderRadius: 4,
+    overflow: "hidden",
+    marginBottom: 20,
   },
-
-  tableHeader: {
+  tableHead: {
     flexDirection: "row",
-    backgroundColor: "#fef3c7",
-    borderBottomWidth: 2,
-    borderBottomColor: BRAND_COLOR_DARK,
-    paddingVertical: 10,
+    backgroundColor: GOLD_LIGHT,
+    paddingVertical: 9,
     paddingHorizontal: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: GOLD,
   },
-
-  tableHeaderCell: {
-    flex: 1,
-    fontSize: 10,
-    fontWeight: "bold",
-    color: BRAND_COLOR_DARK,
-  },
-
-  tableHeaderRight: {
-    textAlign: "right",
-  },
-
-  productHeader: {
+  thProduct: {
     flex: 3,
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    color: GOLD,
   },
-
+  thCell: { flex: 1, fontSize: 9, fontFamily: "Helvetica-Bold", color: GOLD },
+  thRight: { textAlign: "right" },
   tableRow: {
     flexDirection: "row",
-    paddingVertical: 10,
+    paddingVertical: 9,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
+    borderBottomColor: BORDER,
   },
+  tableRowAlt: { backgroundColor: ROW_ALT },
+  tdProduct: { flex: 3, fontSize: 9, color: DARK_TEXT },
+  tdCell: { flex: 1, fontSize: 9, color: DARK_TEXT },
+  tdRight: { textAlign: "right" },
+  tdSku: { fontSize: 7, color: MUTED, marginTop: 1 },
 
-  tableRowAlt: {
-    backgroundColor: "#faf8f3",
-  },
-
-  tableCell: {
-    flex: 1,
-    fontSize: 9,
-    color: "#1f2937",
-  },
-
-  productCell: {
-    flex: 3,
-  },
-
-  tableCellRight: {
-    textAlign: "right",
-  },
-
-  totalsWrapper: {
-    marginTop: 25,
+  totalsRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
+    marginBottom: 20,
   },
-
-  totalsSection: {
-    minWidth: 230,
+  totalsBox: {
+    width: 240,
     borderWidth: 1,
-    borderColor: "#fbbf24",
-    backgroundColor: "#faf8f3",
+    borderColor: GOLD_MID,
+    borderRadius: 6,
+    backgroundColor: "#fffbf0",
     padding: 14,
   },
-
-  totalRow: {
+  totalLine: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginBottom: 7,
+  },
+  totalLbl: { fontSize: 9, color: MUTED },
+  totalVal: { fontSize: 9, fontFamily: "Helvetica-Bold", color: DARK_TEXT },
+  totalDiscount: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    color: "#059669",
+  },
+  totalAdvance: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#2563eb" },
+  divider: { borderBottomWidth: 1, borderBottomColor: GOLD, marginVertical: 8 },
+  grandLine: { flexDirection: "row", justifyContent: "space-between" },
+  grandLbl: { fontSize: 12, fontFamily: "Helvetica-Bold", color: GOLD },
+  grandVal: { fontSize: 12, fontFamily: "Helvetica-Bold", color: GOLD },
+
+  termsBox: {
+    borderWidth: 1,
+    borderColor: "#fde68a",
+    borderRadius: 6,
+    backgroundColor: "#fffbf0",
+    padding: 12,
+    marginBottom: 18,
+  },
+  termsTitle: {
+    fontSize: 10,
+    fontFamily: BN,
+    fontWeight: 700,
+    color: GOLD,
     marginBottom: 8,
   },
-
-  totalLabel: {
-    fontSize: 10,
-    color: "#666666",
-  },
-
-  totalValue: {
-    fontSize: 10,
-    color: "#1f2937",
-    fontWeight: "bold",
-  },
-
-  totalDiscount: {
-    fontSize: 10,
-    color: "#059669",
-    fontWeight: "bold",
-  },
-
-  divider: {
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_COLOR_DARK,
-    marginVertical: 8,
-  },
-
-  totalAmount: {
+  termRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
+    marginBottom: 5,
+    alignItems: "flex-start",
   },
-
-  totalAmountLabel: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: BRAND_COLOR_DARK,
+  termBullet: {
+    fontSize: 9,
+    fontFamily: BN,
+    color: "#059669",
+    fontWeight: 700,
+    marginRight: 4,
+    marginTop: 1,
+    width: 12,
   },
-
-  totalAmountValue: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: BRAND_COLOR_DARK,
+  termText: {
+    flex: 1,
+    fontSize: 8.5,
+    fontFamily: BN,
+    color: DARK_TEXT,
+    lineHeight: 1.6,
   },
 
   footer: {
-    marginTop: 35,
-    paddingTop: 15,
-    borderTopWidth: 1,
-    borderTopColor: "#e5e7eb",
+    marginTop: 10,
+    paddingTop: 14,
+    borderTopWidth: 2,
+    borderTopColor: GOLD,
+    alignItems: "center",
   },
-
-  footerCenter: {
-    textAlign: "center",
+  footerThank: {
+    fontSize: 11,
+    fontFamily: BN,
+    fontWeight: 700,
+    color: GOLD,
+    marginBottom: 5,
   },
-
-  footerTitle: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: BRAND_COLOR_DARK,
-    marginBottom: 6,
-  },
-
-  footerText: {
-    fontSize: 9,
-    color: "#666666",
+  footerLine: {
+    fontSize: 8,
+    fontFamily: EN,
+    color: MUTED,
     marginBottom: 3,
     lineHeight: 1.5,
+    textAlign: "center",
+  },
+  footerSlogan: {
+    marginTop: 8,
+    fontSize: 9,
+    fontFamily: EN,
+    color: GOLD,
+    letterSpacing: 0.5,
+    textAlign: "center",
+  },
+  footerTagline: {
+    marginTop: 4,
+    fontSize: 8,
+    fontFamily: BN,
+    color: MUTED,
+    textAlign: "center",
   },
 });
+
+const TERMS = [
+  "প্রোডাক্ট হাতে পাওয়ার সময় কুরিয়ার ম্যানের সামনে পার্সেল পলি খোলার আগ থেকেই ভিডিও করুন। পার্সেল পলি খুলে প্রডাক্ট নষ্ট/সিল খোলা হলে সেই দায়ভার সম্পূর্ণ ক্রেতার।",
+  "স্কিন কেয়ার প্রোডাক্টের ফলাফল ব্যক্তিভেদে ভিন্ন হতে পারে।",
+  "ব্যবহৃত বা সিল খোলা প্রোডাক্ট / ড্যামেজ প্রডাক্ট রিটার্ন / এক্সচেঞ্জ গ্রহণযোগ্য নয়।",
+  "সরাসরি রোদ ও অতিরিক্ত গরম স্থান থেকে দূরে সংরক্ষণ করুন।",
+  "প্রোডাক্ট ব্যবহারের নির্দেশনা অনুসরণ করুন।",
+];
 
 interface InvoicePDFProps {
   order: Order;
@@ -284,148 +320,126 @@ interface InvoicePDFProps {
 export function InvoicePDF({ order }: InvoicePDFProps) {
   const deliveryCharge = order.shippingCost ?? 0;
   const discount = order.discount ?? 0;
-  const subtotal = order.total || 0;
-  const grandTotal = subtotal;
+  const grandTotal = order.total ?? 0;
+  const productsSubtotal =
+    order.products?.reduce(
+      (sum: number, item: any) =>
+        sum + Number(item.discountPrice > 0 ? item.discountPrice : item.price || 0) * Number(item.quantity || 1),
+      0,
+    ) ?? 0;
 
   return (
     <Document title={generatePDFFileName(order)}>
-      <Page size="A4" style={styles.page}>
-        {/* HEADER */}
-        <View style={styles.headerSection}>
-          <View style={styles.companyInfo}>
-            <Text style={styles.companyName}>FARIN FUSION</Text>
+      <Page size="A4" style={S.page}>
+        <Image src="/assets/Farin-Fusion-01.png" style={S.watermark} />
 
-            <Text style={styles.companySubtitle}>Premium Quality Products</Text>
+        <View style={S.topBar} />
 
-            <Text style={styles.companyDetails}>
-              Email: info@farinfusion.com
-            </Text>
-
-            <Text style={styles.companyDetails}>Phone: +880-1-XXX-XXXXXX</Text>
-
-            <Text style={styles.companyDetails}>
-              Website: www.farinfusion.com
-            </Text>
-
-            <Text style={styles.companyDetails}>
-              Address: Dhaka, Bangladesh
-            </Text>
+        <View style={S.header}>
+          <View style={S.logoArea}>
+            <Image src="/assets/Farin-Fusion-Logo.jpeg" style={S.logoImage} />
+            <Text style={S.companyName}>FARIN FUSION</Text>
+            <Text style={S.companyTagline}>Premium Quality Products</Text>
+            <Text style={S.companyDetail}>Email: info@farinfusion.com</Text>
+            <Text style={S.companyDetail}>Phone: +8801805564602</Text>
+            <Text style={S.companyDetail}>Website: www.farinfusion.com</Text>
+            <Text style={S.companyDetail}>Address: Dhaka, Bangladesh</Text>
           </View>
 
-          <View style={styles.invoiceHeader}>
-            <Text style={styles.invoiceTitle}>INVOICE</Text>
-
-            <Text style={styles.invoiceMeta}>
-              Invoice No: {formatInvoiceNumber(order._id)}
+          {/* Right: invoice meta */}
+          <View style={S.invoiceRight}>
+            <Text style={S.invoiceTitle}>INVOICE</Text>
+            <Text style={S.metaLine}>
+              Invoice No:{" "}
+              <Text style={S.metaValue}>{formatInvoiceNumber(order._id)}</Text>
             </Text>
-
-            <Text style={styles.invoiceMeta}>
-              Order ID: {order.customOrderId || formatInvoiceNumber(order._id)}
+            <Text style={S.metaLine}>
+              Order ID:{" "}
+              <Text style={S.metaValue}>
+                {order.customOrderId || formatInvoiceNumber(order._id)}
+              </Text>
             </Text>
-
-            <Text style={styles.invoiceMeta}>
+            <Text style={S.metaLine}>
               Date:{" "}
-              {format(new Date(order.createdAt || new Date()), "MMM dd, yyyy")}
+              <Text style={S.metaValue}>
+                {format(new Date(order.createdAt || new Date()), "dd MMM yyyy")}
+              </Text>
             </Text>
-
-            <View style={styles.badgeWrapper}>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>
-                  {order.orderStatus || "PENDING"}
-                </Text>
-              </View>
+            <Text style={S.metaLine}>
+              Payment:{" "}
+              <Text style={S.metaValue}>
+                {order.payment ? "PAID" : "PENDING"}
+              </Text>
+            </Text>
+            <View style={S.statusBadge}>
+              <Text style={S.statusText}>{order.orderStatus || "PENDING"}</Text>
             </View>
           </View>
         </View>
 
-        {/* BILLING INFO */}
-        <View style={styles.infoGrid}>
-          <View style={styles.infoColumnLeft}>
-            <Text style={styles.sectionTitle}>Bill To</Text>
-
-            <Text style={styles.infoLabel}>Customer Name</Text>
-            <Text style={styles.infoText}>
+        {/* ══ BILLING / SHIPPING ══ */}
+        <View style={S.infoGrid}>
+          <View style={S.infoCol}>
+            <Text style={S.sectionTitle}>Bill To</Text>
+            <Text style={S.infoLabel}>Customer Name</Text>
+            <Text style={S.infoText}>
               {order.billingDetails?.fullName || "N/A"}
             </Text>
-
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoText}>
+            <Text style={S.infoLabel}>Email</Text>
+            <Text style={S.infoText}>
               {order.billingDetails?.email || "N/A"}
             </Text>
-
-            <Text style={styles.infoLabel}>Phone</Text>
-            <Text style={styles.infoText}>
+            <Text style={S.infoLabel}>Phone</Text>
+            <Text style={S.infoText}>
               {order.billingDetails?.phone || "N/A"}
             </Text>
           </View>
-
-          <View style={styles.infoColumnRight}>
-            <Text style={styles.sectionTitle}>Ship To</Text>
-
-            <Text style={styles.infoText}>
-              {order.shippingAddress || "N/A"}
-            </Text>
-
-            <Text style={styles.infoText}>
+          <View style={S.infoCol}>
+            <Text style={S.sectionTitle}>Ship To</Text>
+            <Text style={S.infoLabel}>Shipping Address</Text>
+            <Text style={S.infoText}>{order.shippingAddress || "N/A"}</Text>
+            <Text style={S.infoLabel}>Billing Address</Text>
+            <Text style={S.infoText}>
               {order.billingDetails?.address || "N/A"}
             </Text>
-
-            <Text style={styles.infoLabel}>Delivery Method</Text>
-
-            <Text style={styles.infoText}>
-              {order.paymentMethod || "Standard"}
+            <Text style={S.infoLabel}>Delivery Method</Text>
+            <Text style={S.infoText}>
+              {order.courierName || order.paymentMethod || "Standard"}
             </Text>
+            <Text style={S.infoLabel}>Delivery Status</Text>
+            <Text style={S.infoText}>{order.deliveryStatus || "N/A"}</Text>
           </View>
         </View>
 
-        {/* ORDER TABLE */}
-        <Text style={styles.sectionTitle}>Order Details</Text>
-
-        <View style={styles.table}>
-          {/* TABLE HEADER */}
-          <View style={styles.tableHeader}>
-            <Text style={[styles.tableHeaderCell, styles.productHeader]}>
-              Product
-            </Text>
-
-            <Text style={styles.tableHeaderCell}>Qty</Text>
-
-            <Text style={[styles.tableHeaderCell, styles.tableHeaderRight]}>
-              Unit Price
-            </Text>
-
-            <Text style={[styles.tableHeaderCell, styles.tableHeaderRight]}>
-              Subtotal
-            </Text>
+        {/* ══ ORDER ITEMS ══ */}
+        <Text style={S.sectionTitle}>Order Details</Text>
+        <View style={S.table}>
+          <View style={S.tableHead}>
+            <Text style={S.thProduct}>Product</Text>
+            <Text style={S.thCell}>Qty</Text>
+            <Text style={[S.thCell, S.thRight]}>Unit Price</Text>
+            <Text style={[S.thCell, S.thRight]}>Subtotal</Text>
           </View>
-
-          {/* TABLE ROWS */}
-          {order.products?.map((item: any, index: number) => {
+          {order.products?.map((item: any, i: number) => {
             const product =
               typeof item.product === "object" ? item.product : {};
-
             const lineTotal = (item.price || 0) * (item.quantity || 1);
-
             return (
               <View
-                key={index}
-                style={
-                  index % 2 === 1
-                    ? [styles.tableRow, styles.tableRowAlt]
-                    : styles.tableRow
-                }
+                key={i}
+                style={i % 2 === 1 ? [S.tableRow, S.tableRowAlt] : S.tableRow}
               >
-                <Text style={[styles.tableCell, styles.productCell]}>
-                  {product.title || item.title || "N/A"}
-                </Text>
-
-                <Text style={styles.tableCell}>{item.quantity}</Text>
-
-                <Text style={[styles.tableCell, styles.tableCellRight]}>
+                <View style={S.tdProduct}>
+                  <Text>{product.title || item.title || "N/A"}</Text>
+                  {product.sku && (
+                    <Text style={S.tdSku}>SKU: {product.sku}</Text>
+                  )}
+                </View>
+                <Text style={S.tdCell}>{item.quantity}</Text>
+                <Text style={[S.tdCell, S.tdRight]}>
                   {formatCurrencyForPDF(item.price || 0)}
                 </Text>
-
-                <Text style={[styles.tableCell, styles.tableCellRight]}>
+                <Text style={[S.tdCell, S.tdRight]}>
                   {formatCurrencyForPDF(lineTotal)}
                 </Text>
               </View>
@@ -433,86 +447,81 @@ export function InvoicePDF({ order }: InvoicePDFProps) {
           })}
         </View>
 
-        {/* TOTALS */}
-        <View style={styles.totalsWrapper}>
-          <View style={styles.totalsSection}>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Subtotal:</Text>
-
-              <Text style={styles.totalValue}>
-                {formatCurrencyForPDF(subtotal)}
+        {/* ══ TOTALS ══ */}
+        <View style={S.totalsRow}>
+          <View style={S.totalsBox}>
+            <View style={S.totalLine}>
+              <Text style={S.totalLbl}>Products Subtotal:</Text>
+              <Text style={S.totalVal}>
+                {formatCurrencyForPDF(productsSubtotal as any)}
               </Text>
             </View>
-
             {discount > 0 && (
-              <View style={styles.totalRow}>
-                <Text style={styles.totalDiscount}>Discount:</Text>
-
-                <Text style={styles.totalDiscount}>
+              <View style={S.totalLine}>
+                <Text style={S.totalDiscount}>Discount:</Text>
+                <Text style={S.totalDiscount}>
                   -{formatCurrencyForPDF(discount)}
                 </Text>
               </View>
             )}
-            {order.advanceDetails?.amount > 0 && (
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Advance Paid:</Text>
-
-                <Text style={styles.totalValue}>
-                  {formatCurrencyForPDF(order.advanceDetails?.amount || 0)}
+            {(order.advanceDetails?.amount ?? 0) > 0 && (
+              <View style={S.totalLine}>
+                <Text style={S.totalAdvance}>Advance Paid:</Text>
+                <Text style={S.totalAdvance}>
+                  -{formatCurrencyForPDF(order.advanceDetails?.amount || 0)}
                 </Text>
               </View>
             )}
-
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Delivery Charge:</Text>
-
-              <Text style={styles.totalValue}>
+            <View style={S.totalLine}>
+              <Text style={S.totalLbl}>Delivery Charge:</Text>
+              <Text style={S.totalVal}>
                 {deliveryCharge > 0
                   ? formatCurrencyForPDF(deliveryCharge)
                   : "FREE"}
               </Text>
             </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.totalAmount}>
-              <Text style={styles.totalAmountLabel}>Total Amount:</Text>
-
-              <Text style={styles.totalAmountValue}>
-                {formatCurrencyForPDF(grandTotal)}
-              </Text>
+            <View style={S.divider} />
+            <View style={S.grandLine}>
+              <Text style={S.grandLbl}>Total Amount:</Text>
+              <Text style={S.grandVal}>{formatCurrencyForPDF(grandTotal)}</Text>
             </View>
           </View>
         </View>
 
-        {/* FOOTER */}
-        <View style={styles.footer}>
-          <View style={styles.footerCenter}>
-            <Text style={styles.footerTitle}>Payment Information</Text>
+        <View style={S.termsBox}>
+          <Text style={S.termsTitle}>প্রোডাক্ট নির্দেশনা ও শর্তাবলী:</Text>
 
-            <Text style={styles.footerText}>
-              Delivery Status: {order.deliveryStatus || "N/A"}
-            </Text>
-
-            <Text style={styles.footerText}>
-              Payment Status: {order.payment ? "PAID" : "PENDING"}
-            </Text>
-
-            <Text
-              style={[styles.footerText, { marginTop: 8, marginBottom: 8 }]}
-            >
-              Thank you for your purchase at Farin Fusion!
-            </Text>
-
-            <Text style={styles.footerText}>
-              For support, contact us at info@farinfusion.com
-            </Text>
-
-            <Text style={styles.footerTitle}>
-              Quality Products, Premium Service
-            </Text>
-          </View>
+          {TERMS.map((term, i) => (
+            <View key={i} style={S.termRow}>
+              <Text style={S.termBullet}>✓</Text>
+              <Text style={S.termText}>{term}</Text>
+            </View>
+          ))}
         </View>
+
+        {/* ══ FOOTER ══ */}
+        <View style={S.footer}>
+          <Text style={S.footerThank}>
+            ধন্যবাদ আমাদের সাথে কেনাকাটা করার জন্য!
+          </Text>
+
+          <Text style={S.footerLine}>
+            Thank you for your purchase at Farin Fusion. We appreciate your
+            trust in our products.
+          </Text>
+          <Text style={S.footerLine}>
+            Support: info@farinfusion.com | www.farinfusion.com
+          </Text>
+          <Text style={S.footerSlogan}>Quality Products, Premium Service</Text>
+
+          {/* Bangla tagline — needs BN */}
+          <Text style={S.footerTagline}>
+            ফারিন ফিউশন পন্য নয়, সমাধান বিক্রি করে।
+          </Text>
+        </View>
+
+        {/* ── Bottom gold bar ── */}
+        <View style={S.bottomBar} />
       </Page>
     </Document>
   );

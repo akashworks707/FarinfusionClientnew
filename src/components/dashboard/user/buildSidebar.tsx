@@ -43,8 +43,7 @@ const iconMap: Record<PageAccess, React.ReactNode> = {
   "customer-management": <User className="h-5 w-5" />,
   "my-customers": <User className="h-5 w-5" />,
   "product-management": <ShoppingCart className="h-5 w-5" />,
-  "returns": <ArrowLeft className="h-5 w-5" />,
-  "courier-settings": <Settings className="h-5 w-5" />,
+  returns: <ArrowLeft className="h-5 w-5" />,
   "purchase-products": <Box className="h-5 w-5" />,
   "category-management": <Folder className="h-5 w-5" />,
   "brand-management": <Tag className="h-5 w-5" />,
@@ -52,6 +51,7 @@ const iconMap: Record<PageAccess, React.ReactNode> = {
   coupons: <Ticket className="h-5 w-5" />,
   leads: <Target className="h-5 w-5" />,
   pos: <Store className="h-5 w-5" />,
+  "courier-settings": <Settings className="h-5 w-5" />,
 };
 
 const pageHrefMap: Record<any, string> = {
@@ -60,8 +60,7 @@ const pageHrefMap: Record<any, string> = {
   "category-management": "/staff/dashboard/admin/category-management",
   "brand-management": "/staff/dashboard/admin/brand-management",
   "purchase-products": "/staff/dashboard/admin/purchase-products",
-  "returns": "/staff/dashboard/admin/returns",
-  "courier-settings": "/staff/dashboard/admin/courier-settings",
+  returns: "/staff/dashboard/admin/returns",
   coupons: "/staff/dashboard/coupons",
   "staff-management": "/staff/dashboard/admin/user-management",
   "customer-management": "/staff/dashboard/admin/customer-management",
@@ -70,6 +69,7 @@ const pageHrefMap: Record<any, string> = {
   leads: "/staff/dashboard/leads",
   "my-orders": "/staff/dashboard/my-orders",
   pos: "/staff/dashboard/pos",
+  "courier-settings": "/staff/dashboard/admin/courier-settings",
 };
 
 export const buildSidebarItems = (
@@ -89,7 +89,6 @@ export const buildSidebarItems = (
       "product-management",
       "purchase-products",
       "returns",
-      "courier-settings",
       "category-management",
       "brand-management",
       "coupons",
@@ -97,7 +96,13 @@ export const buildSidebarItems = (
       "customer-management",
       "my-customers",
     ],
-    operations: ["orders-management", "leads", "my-orders", "pos"],
+    operations: [
+      "orders-management",
+      "leads",
+      "my-orders",
+      "pos",
+      "courier-settings",
+    ],
   };
 
   // Build sidebar items organized by sections, then add profile and logout

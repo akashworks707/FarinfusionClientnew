@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { CourierSettings } from "@/types/courierSettings";
 import { useUpdateCourierSettingsMutation } from "@/redux/features/courierSettings/courierSettingsApi";
@@ -36,6 +36,14 @@ export function UpdateCourierSettingsModal({
 }: UpdateCourierSettingsModalProps) {
   const [updateCourierSettings, { isLoading }] =
     useUpdateCourierSettingsMutation();
+  const [showSecrets, setShowSecrets] = useState<Record<number, boolean>>({});
+
+  const toggleSecretVisibility = (index: number) => {
+    setShowSecrets((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
 
   const [formData, setFormData] = useState({
     displayName: "",
@@ -345,7 +353,6 @@ export function UpdateCourierSettingsModal({
               </div>
             </Card>
 
-            {/* Configuration */}
             <Card className="border-0 bg-linear-to-br from-emerald-50/50 to-teal-50/30 p-4 dark:from-emerald-950/20 dark:to-teal-950/20">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -363,38 +370,80 @@ export function UpdateCourierSettingsModal({
                   </Button>
                 </div>
 
+                {formData.configFields.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No config fields yet. Click &ldquo;Add Config&rdquo; to add
+                    one.
+                  </p>
+                )}
+
                 <div className="space-y-3">
-                  {formData.configFields.map((field, index) => (
-                    <div
-                      key={index}
-                      className="flex gap-2 rounded-lg bg-white/50 p-3 dark:bg-gray-800/30"
-                    >
-                      <Input
-                        placeholder="Key"
-                        value={field.key}
-                        onChange={(e) =>
-                          handleConfigChange(index, "key", e.target.value)
-                        }
-                        className="rounded-lg"
-                      />
-                      <Input
-                        placeholder="Value"
-                        value={field.value}
-                        onChange={(e) =>
-                          handleConfigChange(index, "value", e.target.value)
-                        }
-                        className="rounded-lg"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveConfig(index)}
-                        className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/30"
+                  {formData.configFields.map((field, index) => {
+                    // Treat keys that look like secrets as password fields
+                    const isSecret =
+                      field.key.toLowerCase().includes("secret") ||
+                      field.key.toLowerCase().includes("token") ||
+                      field.key.toLowerCase().includes("key") ||
+                      field.key.toLowerCase().includes("username") ||
+                      field.key.toLowerCase().includes("password");
+
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 rounded-lg bg-white/50 p-3 dark:bg-gray-800/30"
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                        {/* Key input */}
+                        <Input
+                          placeholder="Key"
+                          value={field.key}
+                          onChange={(e) =>
+                            handleConfigChange(index, "key", e.target.value)
+                          }
+                          className="rounded-lg w-[40%] shrink-0"
+                        />
+
+                        {/* Value input — password-masked when the key looks like a secret */}
+                        <div className="relative flex-1">
+                          <Input
+                            type={
+                              isSecret && !showSecrets[index]
+                                ? "password"
+                                : "text"
+                            }
+                            placeholder="Value"
+                            value={field.value}
+                            onChange={(e) =>
+                              handleConfigChange(index, "value", e.target.value)
+                            }
+                            className="rounded-lg pr-10"
+                          />
+                          {isSecret && (
+                            <button
+                              type="button"
+                              onClick={() => toggleSecretVisibility(index)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600"
+                            >
+                              {showSecrets[index] ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Remove row */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveConfig(index)}
+                          className="shrink-0 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/30"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </Card>
@@ -412,7 +461,7 @@ export function UpdateCourierSettingsModal({
           <Button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="gap-2 rounded-lg bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-50"
+            className="gap-2 hover:cursor-pointer rounded-lg bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-50"
           >
             {isLoading ? "Updating..." : "Update Settings"}
           </Button>

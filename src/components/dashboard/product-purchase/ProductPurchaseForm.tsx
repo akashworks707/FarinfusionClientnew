@@ -60,10 +60,17 @@ interface PurchaseFormData {
   notes?: string;
 }
 
+interface SupplierOption {
+  supplierName: string;
+  supplierPhone: string;
+  supplierAddress?: string;
+}
+
 interface ProductPurchaseFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: any;
+  suppliers?: SupplierOption[];
   products?: any[];
   onSubmit: (data: PurchaseFormData) => Promise<void>;
 }
@@ -89,6 +96,7 @@ function SectionLabel({
 export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
   open,
   onOpenChange,
+  suppliers = [],
   initialData,
   products = [],
   onSubmit,
@@ -98,6 +106,7 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>(
     [],
   );
+  const [selectedSupplier, setSelectedSupplier] = useState("");
   const [productSearch, setProductSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const phoneRegex = /^(\+8801|01)[3-9]\d{8}$/;
@@ -223,6 +232,23 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
     setSelectedProducts((prev) =>
       prev.filter((p) => p.productId !== productId),
     );
+  };
+
+  const handleSupplierSelect = (value: string) => {
+    setSelectedSupplier(value);
+
+    const supplier = suppliers.find(
+      (item) => `${item.supplierName}-${item.supplierPhone}` === value,
+    );
+
+    if (!supplier) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      supplierName: supplier.supplierName,
+      supplierPhone: supplier.supplierPhone,
+      supplierAddress: supplier.supplierAddress || "",
+    }));
   };
 
   const updateQty = (productId: string, value: number) => {
@@ -640,6 +666,34 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
               <div className="border-t border-gray-100 dark:border-gray-800" />
 
               {/* ── Supplier Info ── */}
+              {!initialData && suppliers.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                    Select Existing Supplier
+                  </Label>
+
+                  <Select
+                    value={selectedSupplier}
+                    onValueChange={handleSupplierSelect}
+                  >
+                    <SelectTrigger className={inputCls}>
+                      <SelectValue placeholder="Choose saved supplier" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {suppliers.map((supplier) => {
+                        const value = `${supplier.supplierName}-${supplier.supplierPhone}`;
+
+                        return (
+                          <SelectItem key={value} value={value}>
+                            {supplier.supplierName} ({supplier.supplierPhone})
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <SectionLabel icon={<span className="text-[11px]">👤</span>}>
                   Supplier Information

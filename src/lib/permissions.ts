@@ -4,7 +4,6 @@ export type PageAccess =
   | "user-management"
   | "purchase-products"
   | "staff-management"
-  | "courier-settings"
   | "product-management"
   | "returns"
   | "category-management"
@@ -14,7 +13,8 @@ export type PageAccess =
   | "my-customers"
   | "orders-management"
   | "leads"
-  | "pos";
+  | "pos"
+  | "courier-settings";
 
 export type UserRole =
   | "ADMIN"
@@ -39,7 +39,6 @@ export const defaultRolePermissions: Record<UserRole, PageAccess[]> = {
     "returns",
     "category-management",
     "brand-management",
-    "courier-settings",
     "coupons",
     "staff-management",
     "customer-management",
@@ -48,6 +47,7 @@ export const defaultRolePermissions: Record<UserRole, PageAccess[]> = {
     "leads",
     "my-orders",
     "pos",
+    "courier-settings",
   ],
   MANAGER: [
     "dashboard",
@@ -83,7 +83,6 @@ export const availablePages: { id: PageAccess; label: string; icon: string }[] =
     { id: "coupons", label: "Coupons", icon: "🎁" },
     { id: "purchase-products", label: "Purchase Products", icon: "🛒" },
     { id: "returns", label: "Returns", icon: "📦" },
-    { id: "courier-settings", label: "Courier Settings", icon: "🧰" },
     { id: "staff-management", label: "Staffs", icon: "👥" },
     { id: "customer-management", label: "Customers", icon: "👤" },
     { id: "my-customers", label: "My Customers", icon: "💼" },
@@ -91,8 +90,9 @@ export const availablePages: { id: PageAccess; label: string; icon: string }[] =
     { id: "leads", label: "Leads", icon: "🎯" },
     { id: "my-orders", label: "My Orders", icon: "📋" },
     { id: "pos", label: "POS", icon: "🛒" },
-
+    
     { id: "user-management", label: "User Management", icon: "🔐" },
+    { id: "courier-settings", label: "Courier Settings", icon: "🧰" },
   ];
 
 export const hasPageAccess = (
