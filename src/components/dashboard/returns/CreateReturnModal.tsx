@@ -43,6 +43,7 @@ interface CreateReturnModalProps {
   onOpenChange: (open: boolean) => void;
   products: IProduct[];
   orders: Order[];
+  ordersLoading: boolean;
   onSuccess: () => void;
 }
 
@@ -51,6 +52,7 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
   onOpenChange,
   products,
   orders,
+  ordersLoading,
   onSuccess,
 }) => {
   const [createReturn, { isLoading }] = useCreateReturnMutation();
@@ -269,7 +271,32 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
                   <div className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-64 rounded-xl border border-gray-200/80 bg-white shadow-lg dark:border-gray-700/60 dark:bg-gray-900">
                     <ScrollArea className="h-64">
                       <div className="p-2">
-                        {filteredOrders.length === 0 ? (
+                        {ordersLoading ? (
+                          <div className="space-y-2">
+                            {Array.from({ length: 4 }).map((_, index) => (
+                              <div
+                                key={index}
+                                className="animate-pulse rounded-xl border border-gray-200 p-4 dark:border-gray-700"
+                              >
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <div className="h-4 w-28 rounded bg-gray-200 dark:bg-gray-700" />
+                                    <div className="h-5 w-16 rounded bg-gray-200 dark:bg-gray-700" />
+                                  </div>
+
+                                  <div className="h-3 w-40 rounded bg-gray-200 dark:bg-gray-700" />
+                                  <div className="h-3 w-32 rounded bg-gray-200 dark:bg-gray-700" />
+                                  <div className="h-3 w-full rounded bg-gray-200 dark:bg-gray-700" />
+
+                                  <div className="flex gap-2 pt-2">
+                                    <div className="h-5 w-16 rounded bg-gray-200 dark:bg-gray-700" />
+                                    <div className="h-5 w-20 rounded bg-gray-200 dark:bg-gray-700" />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : filteredOrders.length === 0 ? (
                           <p className="px-3 py-6 text-center text-xs text-gray-400">
                             No orders found
                           </p>

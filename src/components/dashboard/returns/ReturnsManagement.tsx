@@ -55,7 +55,7 @@ const ReturnsManagement = () => {
   });
 
   const { data: productsData } = useGetAllProductsQuery({ limit: 1000 });
-  const { data: ordersData } = useGetAllOrdersQuery({ limit: 1000 });
+  const { data: ordersData, isLoading: ordersLoading } = useGetAllOrdersQuery({ limit: 1000 });
 
   // Modal states
   const [selectedReturn, setSelectedReturn] = useState<any>(null);
@@ -260,6 +260,7 @@ const ReturnsManagement = () => {
       <CreateReturnModal
         open={openCreateModal}
         onOpenChange={setOpenCreateModal}
+        ordersLoading={ordersLoading}
         products={productsData?.data || []}
         orders={eligibleReturnOrders}
         onSuccess={() => {
