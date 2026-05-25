@@ -40,6 +40,17 @@ import { IPurchase } from "@/types/purchase";
 //   purchaseDate: string;
 // }
 
+const getPaymentTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    FULL: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300",
+    ADVANCE:
+      "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+    DUE: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300",
+  };
+
+  return colors[type] || colors.DUE;
+};
+
 interface ProductPurchaseTableProps {
   purchases: IPurchase[];
   isLoading?: boolean;
@@ -157,7 +168,7 @@ export const ProductPurchaseTable: React.FC<ProductPurchaseTableProps> = ({
                   Purchase Status
                 </TableHead>
                 <TableHead className="text-amber-900 dark:text-amber-100 font-bold text-center">
-                  Payment Status
+                  Payment
                 </TableHead>
                 <TableHead className="text-amber-900 dark:text-amber-100 font-bold text-right">
                   Action
@@ -273,25 +284,47 @@ export const ProductPurchaseTable: React.FC<ProductPurchaseTableProps> = ({
                       </button>
                     </TableCell>
                     <TableCell className="text-center">
-                      <button
-                        onClick={() =>
-                          handleStatusChangeClick(
-                            purchase._id,
-                            purchase.paymentStatus,
-                            "payment",
-                          )
-                        }
-                        className="inline-block hover:opacity-80 transition-opacity"
-                        title="Click to change status"
-                      >
-                        <Badge
-                          className={`${getPaymentStatusColor(
-                            purchase.paymentStatus,
-                          )} cursor-pointer`}
+                      <div className="flex flex-col items-center gap-1.5">
+                        <button
+                          onClick={() =>
+                            handleStatusChangeClick(
+                              purchase._id,
+                              purchase.paymentStatus,
+                              "payment",
+                            )
+                          }
+                          className="hover:opacity-80"
                         >
-                          {purchase.paymentStatus}
+                          <Badge
+                            className={getPaymentStatusColor(
+                              purchase.paymentStatus,
+                            )}
+                          >
+                            {purchase.paymentStatus}
+                          </Badge>
+                        </button>
+
+                        <Badge
+                          className={getPaymentTypeColor(purchase.paymentType)}
+                        >
+                          {purchase.paymentType}
                         </Badge>
-                      </button>
+
+                        <div className="text-[11px] leading-tight">
+                          {purchase.paidAmount > 0 && (
+                            <p className="text-emerald-600 font-semibold">
+                              Paid: ৳
+                              {(purchase.paidAmount || 0).toLocaleString()}
+                            </p>
+                          )}
+
+                          {(purchase.dueAmount || 0) > 0 && (
+                            <p className="text-red-500 font-semibold">
+                              Due: ৳{purchase.dueAmount.toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

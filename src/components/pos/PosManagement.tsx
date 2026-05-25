@@ -1,13 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import { toast } from "sonner";
-import { Search, Filter, ShoppingCart, X } from "lucide-react";
+import { Search, Filter, ShoppingCart, X, Barcode } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { POSProductListCard } from "./PosProductListCard";
-import { AdvanceData, POSCartSidebar, type CustomerData } from "./PosCartSidebar";
+import {
+  AdvanceData,
+  POSCartSidebar,
+  type CustomerData,
+} from "./PosCartSidebar";
 import { useGetAllProductsQuery } from "@/redux/features/product/product.api";
 import type { POSCartItem, OrderType } from "@/types/pos";
 import { IProduct } from "@/types";
@@ -15,14 +25,21 @@ import { useCreateOrderMutation } from "@/lib/hooks";
 import { useGetMeQuery } from "@/redux/features/user/user.api";
 import { useGetAllCategoriesQuery } from "@/redux/features/category/category.api";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
+import { BarcodeCameraScannerModal } from "./BarcodeCameraScannerModal";
 
 export default function POSManagement() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [category, setCategory] = React.useState("");
   const [cartItems, setCartItems] = useState<POSCartItem[]>([]);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  const [cameraModalOpen, setCameraModalOpen] = useState(false);
+  const searchParams = useSearchParams();
+
+  const scannedBarcode = searchParams.get("barcode");
+  const productId = searchParams.get("productId");
   const [schedule, setSchedule] = useState<{
     type: "INSTANT" | "SCHEDULED" | "HOLD";
     scheduledAt?: string;
@@ -47,6 +64,7 @@ export default function POSManagement() {
     () => productsData?.data || [],
     [productsData],
   );
+
   const categories = categoriesData?.data || [];
   const filteredProducts = useMemo(() => {
     let result = allProducts;
@@ -56,7 +74,8 @@ export default function POSManagement() {
       result = result.filter(
         (p) =>
           p.title?.toLowerCase().includes(q) ||
-          p.description?.toLowerCase().includes(q),
+          p.description?.toLowerCase().includes(q) ||
+          p.barcode?.toLowerCase().includes(q),
       );
     }
 
@@ -94,27 +113,22 @@ export default function POSManagement() {
   //   toast.success(`${product.title} added to cart!`);
   // };
 
-  const handleAddToCart = (product: IProduct) => {
-    const stock = product.availableStock || 0;
-
-    const existing = cartItems.find(
-      (item) => item.product._id === product._id,
-    );
-
-    // no stock
-    if (stock <= 0) {
-      toast.error("Product out of stock");
-      return;
-    }
-
-    // stock limit check
-    if (existing && existing.quantity >= stock) {
-      toast.error(`Only ${stock} items available`);
-      return;
-    }
-
-    // update cart
+  const handleAddToCart = useCallback((product: IProduct) => {
     setCartItems((prev) => {
+      const stock = product.availableStock || 0;
+
+      const existing = prev.find((item) => item.product._id === product._id);
+
+      if (stock <= 0) {
+        toast.error("Product out of stock");
+        return prev;
+      }
+
+      if (existing && existing.quantity >= stock) {
+        toast.error(`Only ${stock} items available`);
+        return prev;
+      }
+
       if (existing) {
         return prev.map((item) =>
           item.product._id === product._id
@@ -126,14 +140,11 @@ export default function POSManagement() {
       return [...prev, { product, quantity: 1, selectedExtras: [] }];
     });
 
-    // only success if passed all checks
     toast.success(`${product.title} added to cart!`);
-};
+  }, []);
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
-    const cartItem = cartItems.find(
-      (item) => item.product._id === productId,
-    );
+    const cartItem = cartItems.find((item) => item.product._id === productId);
 
     if (!cartItem) return;
 
@@ -151,12 +162,34 @@ export default function POSManagement() {
 
     setCartItems((prev) =>
       prev.map((item) =>
-        item.product._id === productId
-          ? { ...item, quantity }
-          : item,
+        item.product._id === productId ? { ...item, quantity } : item,
       ),
     );
   };
+
+  const handleBarcodeScan = useCallback(
+    (barcode: string) => {
+      const cleanBarcode = barcode.trim().toLowerCase();
+
+      const product = allProducts.find(
+        (p) => p.barcode?.trim().toLowerCase() === cleanBarcode,
+      );
+
+      if (!product) {
+        toast.error("Product not found");
+        return;
+      }
+
+      handleAddToCart(product);
+    },
+    [allProducts, handleAddToCart],
+  );
+
+  // Setup USB barcode scanner listener
+  useBarcodeScanner({
+    onBarcodeScanned: handleBarcodeScan,
+    timeout: 100,
+  });
 
   const handleRemoveFromCart = (productId: string) => {
     setCartItems((prev) =>
@@ -167,7 +200,7 @@ export default function POSManagement() {
 
   const handleCheckout = async (
     customerData: CustomerData,
-    advanceDetails : AdvanceData,
+    advanceDetails: AdvanceData,
     orderType: OrderType,
     totalAmount: number,
     discountAmount: number,
@@ -247,6 +280,36 @@ export default function POSManagement() {
     }
   };
 
+  const hasAutoAddedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasAutoAddedRef.current || allProducts.length === 0) return;
+
+    let product: IProduct | undefined;
+
+    if (productId) {
+      product = allProducts.find((p) => p._id === productId);
+    }
+
+    if (!product && scannedBarcode) {
+      product = allProducts.find(
+        (p) =>
+          p.barcode?.trim().toLowerCase() ===
+          scannedBarcode.trim().toLowerCase(),
+      );
+    }
+
+    if (!product) return;
+
+    hasAutoAddedRef.current = true;
+
+    router.replace("/staff/dashboard/pos");
+
+    requestAnimationFrame(() => {
+      handleAddToCart(product);
+    });
+  }, [productId, scannedBarcode, allProducts, handleAddToCart, router]);
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* ── Main Content ── */}
@@ -305,6 +368,18 @@ export default function POSManagement() {
                     </option>
                   ))}
               </select>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCameraModalOpen(true)}
+                title="Scan barcode with camera"
+                className="hover:cursor-pointer h-10 w-10"
+              >
+                <Barcode className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
@@ -374,19 +449,19 @@ export default function POSManagement() {
                 )}
               </div>
             ) : (
-                <ScrollArea className="max-h-[60vh]">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {filteredProducts.map((product) => (
-                  <POSProductListCard
-                    key={product._id}
-                    product={product}
-                    onAddToCart={() => handleAddToCart(product)}
-                    isLoading={isCreatingOrder}
-                  />
-                ))}
-              </div>
+              <ScrollArea className="max-h-[60vh]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {filteredProducts.map((product) => (
+                    <POSProductListCard
+                      key={product._id}
+                      product={product}
+                      onAddToCart={() => handleAddToCart(product)}
+                      isLoading={isCreatingOrder}
+                    />
+                  ))}
+                </div>
                 <ScrollBar orientation="vertical" />
-                </ScrollArea>
+              </ScrollArea>
             )}
           </div>
         </div>
@@ -434,6 +509,13 @@ export default function POSManagement() {
             <X className="h-4 w-4" />
           </button>
         </div>
+
+        {/* Barcode Camera Scanner Modal */}
+        <BarcodeCameraScannerModal
+          open={cameraModalOpen}
+          onOpenChange={setCameraModalOpen}
+          onBarcodeScanned={handleBarcodeScan}
+        />
 
         <div className="flex-1 overflow-hidden">
           <POSCartSidebar

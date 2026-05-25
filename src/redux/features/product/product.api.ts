@@ -89,6 +89,14 @@ export const productApi = baseApi.injectEndpoints({
       invalidatesTags: ["PRODUCTS"],
     }),
 
+    assignMissingBarcodes: builder.mutation({
+      query: () => ({
+        url: "/product/assign-missing-barcodes",
+        method: "POST",
+      }),
+      invalidatesTags: ["PRODUCTS"],
+    }),
+
     // ⭐ TRASH UPDATE PRODUCT and Restore both work
     trashUpdateProduct: builder.mutation<IResponse<IProduct>, { _id: string }>({
       query: ({ _id }) => ({
@@ -111,6 +119,7 @@ export const {
   useDeleteProductMutation,
   useGetAllProductsQuery,
   useToggleFeaturedMutation,
+  useAssignMissingBarcodesMutation,
   useGetAllTrashProductsQuery,
   useTrashUpdateProductMutation,
 } = productApi;

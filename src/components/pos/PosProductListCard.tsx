@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, Plus, PackageX } from "lucide-react";
+import { Star, Plus, PackageX, BarcodeIcon } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { IProduct } from "@/types";
@@ -28,10 +28,10 @@ export function POSProductListCard({
 
   const discountPercent = hasDiscount
     ? Math.round(
-      (((product.price ?? 0) - (product.discountPrice ?? 0)) /
-        (product.price ?? 0)) *
-      100,
-    )
+        (((product.price ?? 0) - (product.discountPrice ?? 0)) /
+          (product.price ?? 0)) *
+          100,
+      )
     : 0;
 
   const isOutOfStock = (product.availableStock ?? 0) <= 0;
@@ -52,13 +52,13 @@ export function POSProductListCard({
         isOutOfStock || isLoading
           ? "opacity-60 cursor-not-allowed border-gray-200 dark:border-gray-800"
           : [
-            "cursor-[url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"%230f172a\" opacity=\"0.85\"/><line x1=\"12\" y1=\"7\" x2=\"12\" y2=\"17\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"7\" y1=\"12\" x2=\"17\" y2=\"12\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>'),_pointer]",
-            "border-gray-200 dark:border-gray-700/60",
-            "hover:border-blue-400 dark:hover:border-blue-500",
-            "hover:shadow-[0_0_0_1px_var(--color-blue-400)] dark:hover:shadow-[0_0_0_1px_var(--color-blue-500)]",
-            "active:scale-[0.992] active:shadow-none",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
-          ],
+              'cursor-[url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="%230f172a" opacity="0.85"/><line x1="12" y1="7" x2="12" y2="17" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>\'),_pointer]',
+              "border-gray-200 dark:border-gray-700/60",
+              "hover:border-blue-400 dark:hover:border-blue-500",
+              "hover:shadow-[0_0_0_1px_var(--color-blue-400)] dark:hover:shadow-[0_0_0_1px_var(--color-blue-500)]",
+              "active:scale-[0.992] active:shadow-none",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
+            ],
       )}
     >
       {/* ── Left: Image ── */}
@@ -96,6 +96,13 @@ export function POSProductListCard({
         <p className="text-sm font-semibold leading-snug text-gray-900 dark:text-gray-50 sm:text-[15px]">
           {product.title}
         </p>
+
+        {product.barcode && (
+          <code className="flex items-center gap-2 text-sm font-mono px-4 py-2 rounded-full select-all">
+            <BarcodeIcon className="h-4 w-4 opacity-60" />
+            {product.barcode}
+          </code>
+        )}
 
         {/* Meta row: rating + stock */}
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
@@ -135,7 +142,7 @@ export function POSProductListCard({
 
       <div className="flex shrink-0 flex-col items-end justify-center gap-2 pr-3 sm:pr-4">
         {/* Price stack */}
-    
+
         <div className="flex flex-col items-end">
           <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-50">
             ৳{displayPrice?.toLocaleString()}

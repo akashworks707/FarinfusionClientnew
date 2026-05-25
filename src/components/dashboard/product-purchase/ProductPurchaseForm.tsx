@@ -46,6 +46,8 @@ interface PurchaseProduct {
   totalAmount: number;
 }
 
+type PaymentType = "FULL" | "ADVANCE" | "DUE";
+
 interface PurchaseFormData {
   products: PurchaseProduct[];
   supplierName: string;
@@ -57,6 +59,10 @@ interface PurchaseFormData {
   purchaseDate: string;
   purchaseStatus: string;
   paymentStatus: string;
+  paymentType: "FULL" | "ADVANCE" | "DUE";
+  paymentMethod?: string;
+  paidAmount: number;
+  dueAmount: number;
   notes?: string;
 }
 
@@ -121,6 +127,10 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
     purchaseDate: new Date().toISOString().split("T")[0],
     purchaseStatus: "PENDING",
     paymentStatus: "UNPAID",
+    paymentType: "DUE" as PaymentType,
+    paymentMethod: "",
+    paidAmount: 0,
+    dueAmount: 0,
     notes: "",
   });
 
@@ -152,6 +162,10 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
           : new Date().toISOString().split("T")[0],
         purchaseStatus: initialData.purchaseStatus || "PENDING",
         paymentStatus: initialData.paymentStatus || "UNPAID",
+        paymentType: initialData.paymentType || "DUE",
+        paymentMethod: initialData.paymentMethod || "",
+        paidAmount: initialData.paidAmount || 0,
+        dueAmount: initialData.dueAmount || 0,
         notes: initialData.notes || "",
       });
 
@@ -182,6 +196,10 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
         purchaseDate: new Date().toISOString().split("T")[0],
         purchaseStatus: "PENDING",
         paymentStatus: "UNPAID",
+        paymentType: "DUE",
+        paymentMethod: "",
+        paidAmount: 0,
+        dueAmount: 0,
         notes: "",
       });
       setSelectedProducts([]);
@@ -287,6 +305,44 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
     0,
   );
 
+  // Handle payment type change and auto-calculate amounts
+  const handlePaymentTypeChange = (type: "FULL" | "ADVANCE" | "DUE") => {
+    setFormData((prev) => {
+      let paidAmount = 0;
+      let dueAmount = grandTotal;
+
+      if (type === "FULL") {
+        paidAmount = grandTotal;
+        dueAmount = 0;
+      } else if (type === "ADVANCE") {
+        paidAmount = prev.paidAmount || 0;
+        dueAmount = Math.max(0, grandTotal - paidAmount);
+      } else {
+        // DUE
+        paidAmount = 0;
+        dueAmount = grandTotal;
+      }
+
+      return {
+        ...prev,
+        paymentType: type,
+        paidAmount,
+        dueAmount,
+        paymentMethod: type === "DUE" ? "" : prev.paymentMethod,
+      };
+    });
+  };
+
+  // Handle paid amount change
+  const handlePaidAmountChange = (amount: number) => {
+    const paidAmount = Math.max(0, Math.min(amount, grandTotal));
+    setFormData((prev) => ({
+      ...prev,
+      paidAmount,
+      dueAmount: Math.max(0, grandTotal - paidAmount),
+    }));
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -313,6 +369,33 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
       newErrors.purchaseStatus = "Purchase status is required";
     if (!formData.paymentStatus)
       newErrors.paymentStatus = "Payment status is required";
+
+    // Payment validation
+    if (!formData.paymentType)
+      newErrors.paymentType = "Payment type is required";
+
+    if (
+      (formData.paymentType === "FULL" || formData.paymentType === "ADVANCE") &&
+      !formData.paymentMethod
+    ) {
+      newErrors.paymentMethod = "Payment method is required";
+    }
+
+    if (formData.paymentType === "FULL" && formData.paidAmount !== grandTotal) {
+      newErrors.paidAmount = "Full payment must equal grand total";
+    }
+
+    if (formData.paymentType === "ADVANCE" && formData.paidAmount <= 0) {
+      newErrors.paidAmount = "Advance payment amount required";
+    }
+
+    if (formData.paymentType === "DUE" && formData.paidAmount > 0) {
+      newErrors.paidAmount = "Due purchase cannot have paid amount";
+    }
+
+    if (formData.paidAmount > grandTotal) {
+      newErrors.paidAmount = "Paid amount cannot exceed grand total";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -941,6 +1024,162 @@ export const ProductPurchaseForm: React.FC<ProductPurchaseFormProps> = ({
                       {errors.paymentStatus}
                     </p>
                   )}
+                </div>
+              </div>
+
+              {/* ── Payment Information ── */}
+              <div className="rounded-xl border border-amber-100 bg-amber-50/40 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+                <SectionLabel
+                  icon={
+                    <Package className="h-3 w-3 text-amber-500 dark:text-amber-400" />
+                  }
+                >
+                  Payment Information
+                </SectionLabel>
+
+                {/* Payment Type Selection */}
+                <div className="mb-4 space-y-2">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                    Payment Type <span className="text-red-400">*</span>
+                  </Label>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {(["FULL", "ADVANCE", "DUE"] as const).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => handlePaymentTypeChange(type)}
+                        className={cn(
+                          "rounded-lg border-2 px-4 py-2 text-sm font-semibold transition-all",
+                          formData.paymentType === type
+                            ? "border-amber-500 bg-amber-50 text-amber-700 dark:border-amber-400 dark:bg-amber-900/20 dark:text-amber-300"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-amber-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:border-amber-800",
+                        )}
+                      >
+                        {type === "FULL" && "Full Payment"}
+                        {type === "ADVANCE" && "Advance Payment"}
+                        {type === "DUE" && "Due (No Payment)"}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.paymentType && (
+                    <p className="text-[10px] text-red-500">
+                      {errors.paymentType}
+                    </p>
+                  )}
+                </div>
+
+                {/* Payment Method - Only for FULL/ADVANCE */}
+                {(formData.paymentType === "FULL" ||
+                  formData.paymentType === "ADVANCE") && (
+                  <div className="mb-4">
+                    <Label
+                      htmlFor="paymentMethod"
+                      className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 block"
+                    >
+                      Payment Method <span className="text-red-400">*</span>
+                    </Label>
+                    <Select
+                      value={formData.paymentMethod || ""}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          paymentMethod: value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger
+                        id="paymentMethod"
+                        className={cn(
+                          inputCls,
+                          errors.paymentMethod && "border-red-500",
+                        )}
+                      >
+                        <SelectValue placeholder="Select payment method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CASH">Cash</SelectItem>
+                        <SelectItem value="BANK_TRANSFER">
+                          Bank Transfer
+                        </SelectItem>
+                        <SelectItem value="CHEQUE">Cheque</SelectItem>
+                        <SelectItem value="CARD">Card</SelectItem>
+                        <SelectItem value="MOBILE_BANKING">
+                          Mobile Banking
+                        </SelectItem>
+                        <SelectItem value="OTHER">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.paymentMethod && (
+                      <p className="mt-1 text-[10px] text-red-500">
+                        {errors.paymentMethod}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Amount Fields */}
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                      Grand Total
+                    </Label>
+                    <div className="flex items-center h-9 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 font-bold tabular-nums text-amber-700 dark:text-amber-400 text-sm">
+                      ৳{grandTotal.toFixed(2)}
+                    </div>
+                  </div>
+
+                  {formData.paymentType !== "DUE" && (
+                    <div className="space-y-1.5">
+                      <Label
+                        htmlFor="paidAmount"
+                        className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400"
+                      >
+                        Paid Amount{" "}
+                        {formData.paymentType === "FULL" && "(Auto)"}
+                      </Label>
+                      <Input
+                        id="paidAmount"
+                        type="number"
+                        min="0"
+                        max={grandTotal}
+                        step="0.01"
+                        value={formData.paidAmount}
+                        onChange={(e) =>
+                          handlePaidAmountChange(Number(e.target.value))
+                        }
+                        disabled={formData.paymentType === "FULL"}
+                        className={cn(
+                          inputCls,
+                          errors.paidAmount && "border-red-500",
+                          formData.paymentType === "FULL" &&
+                            "opacity-50 cursor-not-allowed",
+                        )}
+                        placeholder="Enter paid amount"
+                      />
+                      {errors.paidAmount && (
+                        <p className="text-[10px] text-red-500">
+                          {errors.paidAmount}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                      Due Amount {formData.paymentType !== "DUE" && "(Auto)"}
+                    </Label>
+                    <div className="flex items-center h-9 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 font-bold tabular-nums text-sm">
+                      <span
+                        className={cn(
+                          formData.dueAmount > 0
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-green-600 dark:text-green-400",
+                        )}
+                      >
+                        ৳{formData.dueAmount.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 

@@ -62,7 +62,7 @@ export const ProductPurchaseStats: React.FC<ProductPurchaseStatsProps> = ({
         return (
           <Card
             key={index}
-            className={`border ${stat.borderColor} ${stat.bgColor} hover:shadow-lg transition-shadow`}
+          className={`border ${stat.borderColor} hover:shadow-lg transition-shadow`}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">

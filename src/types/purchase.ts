@@ -37,6 +37,10 @@ export interface IPurchase {
   products: IPurchaseProduct[];
 
   supplierName: string;
+  paymentType: "FULL" | "ADVANCE" | "DUE";
+  paymentMethod?: string;
+  paidAmount: number;
+  dueAmount: number;
   supplierPhone?: string;
   supplierAddress?: string;
 
@@ -90,11 +94,7 @@ export interface IProductPurchase {
 
   paymentStatus: "PAID" | "PARTIAL" | "UNPAID";
 
-  paymentMethod?:
-    | "CASH"
-    | "BANK"
-    | "MOBILE_BANKING"
-    | "CARD";
+  paymentMethod?: "CASH" | "BANK" | "MOBILE_BANKING" | "CARD";
 
   shippingCost?: number;
 
