@@ -163,7 +163,7 @@ const ProductPurchaseManagement = () => {
     purchases.forEach((purchase: IPurchase) => {
       if (!purchase.supplierName?.trim()) return;
 
-      const key = purchase.supplierPhone || purchase.supplierName;
+      const key = purchase.supplierName;
 
       if (!supplierMap.has(key)) {
         supplierMap.set(key, {
