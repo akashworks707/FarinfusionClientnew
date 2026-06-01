@@ -380,23 +380,6 @@ const UpdateProduct = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Barcode</Label>
-
-                <div className="flex gap-2">
-                  <Input placeholder="Barcode" {...register("barcode")} />
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setValue("barcode", generateBarcode())}
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Generate
-                  </Button>
-                </div>
-              </div>
-
               <div className={"space-y-2"}>
                 <Label>Favorite Status</Label>
 
@@ -522,6 +505,24 @@ const UpdateProduct = () => {
                 </div>
               </div>
             )}
+            
+             <div className="space-y-2">
+                <Label>Barcode</Label>
+
+                <div className="flex gap-2">
+                  <Input placeholder="Barcode" {...register("barcode")} />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setValue("barcode", generateBarcode())}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Generate
+                  </Button>
+                </div>
+              </div>
+
 
             {/* DESCRIPTION */}
             <div className={"space-y-2"}>
