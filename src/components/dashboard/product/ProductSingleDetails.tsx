@@ -177,14 +177,11 @@ export default function ProductSingleDetails() {
       toast.error(err?.data?.message || "Failed to generate barcode");
     }
   };
-
+  
   const handleOpenPOS = () => {
-    if (!product?._id) {
-      toast.error("Product not found");
-      return;
-    }
-
-    router.push(`/staff/dashboard/pos?productId=${product._id}`);
+    router.push(
+      `/staff/dashboard/pos?barcode=${encodeURIComponent(product?.barcode ?? "")}`,
+    );
   };
 
   if (isLoading) {
@@ -321,20 +318,18 @@ export default function ProductSingleDetails() {
                   <span className="text-sm font-semibold">Product Barcode</span>
                 </div>
 
-               
-
                 {hasBarcode && (
                   <div className="flex items-center gap-1.5">
-                     <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleOpenPOS}
-                  className="hover:cursor-pointer h-8 gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700"
-                  title="Open POS and add product"
-                >
-                  <ScanLine className="h-3.5 w-3.5" />
-                  POS
-                </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleOpenPOS}
+                      className="hover:cursor-pointer h-8 gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700"
+                      title="Open POS and add product"
+                    >
+                      <ScanLine className="h-3.5 w-3.5" />
+                      POS
+                    </Button>
 
                     <Button
                       variant="outline"

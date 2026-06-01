@@ -22,7 +22,7 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { uploadMultipleToCloudinary } from "@/utils/cloudinary";
 
@@ -69,6 +69,7 @@ const schema = z.object({
   description: z.string(),
   images: z.any().optional(),
   isCusFavorite: z.enum(["true", "false"]),
+  barcode: z.string().optional(),
   adjustStock: z.preprocess(
     (v) => (v === "" || v === undefined ? 0 : Number(v)),
     z.number().optional(),
@@ -76,6 +77,14 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
+
+export const generateBarcode = () => {
+  const prefix = "FF";
+  const timestamp = Date.now().toString().slice(-8);
+  const random = Math.floor(1000 + Math.random() * 9000);
+
+  return `${prefix}${timestamp}${random}`;
+};
 
 const UpdateProduct = () => {
   const router = useRouter();
@@ -140,6 +149,7 @@ const UpdateProduct = () => {
         totalAddedStock: p.totalAddedStock,
         status: p.status,
         description: p.description,
+        barcode: p.barcode || "",
         isCusFavorite: p?.isCusFavorite === true ? "true" : "false",
       });
 
@@ -228,6 +238,7 @@ const UpdateProduct = () => {
         description: data.description,
         isCusFavorite: data.isCusFavorite === "true",
         images: allImages,
+        barcode: data.barcode,
       };
 
       // Add stock adjustment if provided
@@ -367,6 +378,23 @@ const UpdateProduct = () => {
                     </Select>
                   )}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Barcode</Label>
+
+                <div className="flex gap-2">
+                  <Input placeholder="Barcode" {...register("barcode")} />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setValue("barcode", generateBarcode())}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Generate
+                  </Button>
+                </div>
               </div>
 
               <div className={"space-y-2"}>

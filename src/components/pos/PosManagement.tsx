@@ -9,7 +9,7 @@ import React, {
   useRef,
 } from "react";
 import { toast } from "sonner";
-import { Search, Filter, ShoppingCart, X, Barcode } from "lucide-react";
+import { Search, Filter, ShoppingCart, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { POSProductListCard } from "./PosProductListCard";
@@ -315,7 +315,7 @@ export default function POSManagement() {
       {/* ── Main Content ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <div className="border-b border-gray-200 dark:border-gray-700 p-4 md:p-6 shrink-0">
+        <div className="p-4 md:p-6 shrink-0">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
               POS System
@@ -370,7 +370,7 @@ export default function POSManagement() {
               </select>
             </div>
 
-            <div className="flex justify-end">
+            {/* <div className="flex justify-end">
               <Button
                 variant="outline"
                 size="icon"
@@ -380,7 +380,7 @@ export default function POSManagement() {
               >
                 <Barcode className="h-4 w-4" />
               </Button>
-            </div>
+            </div> */}
           </div>
 
           {/* Active filter chip */}

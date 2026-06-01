@@ -22,7 +22,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { uploadMultipleToCloudinary } from "@/utils/cloudinary";
 
@@ -39,6 +39,14 @@ const ProductEditor = dynamic(
   () => import("@/components/dashboard/product/ProductEditor"),
   { ssr: false },
 );
+
+export const generateBarcode = () => {
+  const prefix = "FF";
+  const timestamp = Date.now().toString().slice(-8);
+  const random = Math.floor(1000 + Math.random() * 9000);
+
+  return `${prefix}${timestamp}${random}`;
+};
 
 // ENUM
 export enum ProductStatus {
@@ -61,6 +69,7 @@ const schema = z.object({
   status: z.nativeEnum(ProductStatus),
   description: z.string().min(10, "Description required"),
   images: z.array(z.instanceof(File)).min(1, "At least one image required"),
+  barcode: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -147,6 +156,7 @@ export default function CreateProduct() {
         status: data.status,
         description: data.description,
         images: imageUrls,
+        barcode: data.barcode,
       };
 
       if (role !== "MANAGER") {
@@ -297,6 +307,26 @@ export default function CreateProduct() {
                     </p>
                   </div>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Barcode</Label>
+
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter barcode or auto generate"
+                    {...register("barcode")}
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setValue("barcode", generateBarcode())}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Generate
+                  </Button>
+                </div>
               </div>
 
               {/* DESCRIPTION */}
