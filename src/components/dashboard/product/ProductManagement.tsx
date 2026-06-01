@@ -481,7 +481,7 @@ export default function ProductManagement() {
     : null;
 
   return (
-    <div className="min-h-screen space-y-6 bg-background p-4 md:p-8">
+    <div className="min-h-screen space-y-6 bg-background p-3 md:p-4">
       {/* ── Header ── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>

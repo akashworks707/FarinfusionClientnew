@@ -965,6 +965,18 @@ const DELIVERY_STATUSES = [
     chip: "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900/20 dark:text-slate-400 dark:border-slate-800",
   },
   {
+    value: "IN_REVIEW",
+    label: "In Review",
+    dot: "bg-purple-500",
+    chip: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800",
+  },
+  {
+    value: "COURIERASSIGNED",
+    label: "Courier Assigned",
+    dot: "bg-violet-500",
+    chip: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800",
+  },
+  {
     value: "IN_TRANSIT",
     label: "In Transit",
     dot: "bg-blue-500",

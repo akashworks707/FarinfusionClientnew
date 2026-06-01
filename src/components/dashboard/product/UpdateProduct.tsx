@@ -282,7 +282,7 @@ const UpdateProduct = () => {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-3 max-w-5xl mx-auto">
       <Card>
         <CardHeader className={"text-center"}>
           <DashboardPageHeader title={"Update Product"} />
@@ -505,7 +505,7 @@ const UpdateProduct = () => {
                 </div>
               </div>
             )}
-            
+
              <div className="space-y-2">
                 <Label>Barcode</Label>
 

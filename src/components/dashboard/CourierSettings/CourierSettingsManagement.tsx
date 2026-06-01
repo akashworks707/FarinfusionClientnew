@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -23,7 +23,7 @@ import { Card } from "@/components/ui/card";
 import { Plus, Search, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { CourierSettingsStats } from "./CourierSettingsStats";
-import { CourierSettingsTable } from "./CourierSettingsTable";
+import { CourierSettingsGrid } from "./CourierSettingsGrid";
 import { CreateCourierSettingsModal } from "./CreateCourierSettingsModal";
 import { UpdateCourierSettingsModal } from "./UpdateCourierSettingsModal";
 import type { CourierSettings } from "@/types/courierSettings";
@@ -59,6 +59,7 @@ export function CourierSettingsManagement({
     null,
   );
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const {
     data: response,
@@ -68,7 +69,7 @@ export function CourierSettingsManagement({
     ...initialParams,
     page,
     limit,
-    search: searchTerm || undefined,
+    ...(searchTerm && { searchTerm: debouncedSearch }),
   });
 
   const [toggleStatus] = useToggleCourierSettingsStatusMutation();
@@ -85,6 +86,14 @@ export function CourierSettingsManagement({
     if (filterSandbox === "live" && setting.isSandbox) return false;
     return true;
   });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const handleToggleStatus = async (id: string) => {
     try {
@@ -217,16 +226,14 @@ export function CourierSettingsManagement({
         </div>
       </Card>
 
-      {/* Table */}
-      <Card className="rounded-2xl border-0 shadow-sm dark:bg-gray-900/50">
-        <CourierSettingsTable
-          data={filteredData}
-          isLoading={isLoading}
-          onEdit={handleEdit}
-          onDelete={handleDeleteClick}
-          onToggleStatus={handleToggleStatus}
-        />
-      </Card>
+      {/* Settings Grid */}
+      <CourierSettingsGrid
+        data={filteredData}
+        isLoading={isLoading}
+        onEdit={handleEdit}
+        onDelete={handleDeleteClick}
+        onToggleStatus={handleToggleStatus}
+      />
 
       {/* Pagination */}
       {meta && meta.totalPage > 1 && (

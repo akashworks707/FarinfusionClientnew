@@ -205,7 +205,7 @@ export default function ProductSingleDetails() {
   const hasBarcode = Boolean(product?.barcode);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 space-y-6">
       {/* Breadcrumb */}
       <Breadcrumb>
         <BreadcrumbList>
@@ -224,7 +224,7 @@ export default function ProductSingleDetails() {
       </Breadcrumb>
 
       {/* MAIN GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-[30%_70%] gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* ── LEFT: Gallery ── */}
         <Card className="p-4 space-y-4">
           {product && <ProductGallery product={product} />}

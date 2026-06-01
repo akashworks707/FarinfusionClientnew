@@ -185,7 +185,7 @@ export default function CreateProduct() {
 
   return (
     <div>
-      <div className={"p-6"}>
+      <div className={"p-3"}>
         <div className={"mb-6"}>
           <BreadCrumbPage
             BreadcrumbTitle={"Product Management"}
