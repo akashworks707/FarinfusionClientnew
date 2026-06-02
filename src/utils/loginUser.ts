@@ -21,7 +21,7 @@ export const loginUser = async (data: any): Promise<any> => {
 
         const result = await res.json();
 
-        console.log(result)
+        // console.log(result)
  
         if (!result.success) {
             return {
