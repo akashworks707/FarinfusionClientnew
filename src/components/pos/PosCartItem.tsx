@@ -18,7 +18,7 @@ export function POSCartItemComponent({
 }: POSCartItemProps) {
   const { product, quantity } = item;
   const itemTotal = (product.discountPrice || product.price) * quantity;
-  const isMaxStockReached = quantity >= (product.availableStock || 0);
+  // const isMaxStockReached = quantity >= (product.availableStock || 0);
 
   return (
     <div className="flex gap-3 rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">

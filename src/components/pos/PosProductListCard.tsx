@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, Plus, PackageX, BarcodeIcon } from "lucide-react";
+import { Star, Plus, PackageX } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { IProduct } from "@/types";
@@ -97,12 +97,12 @@ export function POSProductListCard({
           {product.title}
         </p>
 
-        {product.barcode && (
+        {/* {product.barcode && (
           <code className="flex items-center gap-2 text-sm font-mono px-4 py-2 rounded-full select-all">
             <BarcodeIcon className="h-4 w-4 opacity-60" />
             {product.barcode}
           </code>
-        )}
+        )} */}
 
         {/* Meta row: rating + stock */}
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">

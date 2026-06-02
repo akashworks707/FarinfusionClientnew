@@ -14,7 +14,7 @@ import type { FC } from "react";
 import { NavbarDropdown } from "./NavbarDropdown";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { SearchDropdown } from "./SearchDropdown";
 
 const Navbar: FC = () => {
@@ -23,6 +23,7 @@ const Navbar: FC = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
+  const searchParams = useSearchParams();
 
   const { user, logout } = useUser();
   const router = useRouter();
@@ -82,7 +83,6 @@ const Navbar: FC = () => {
     setSearchOpen(false);
   };
 
-
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -94,6 +94,13 @@ const Navbar: FC = () => {
     }
   };
 
+  useEffect(() => {
+    const auth = searchParams.get("auth");
+
+    if (auth === "login") {
+      setTimeout(() => setLoginOpen(true), 100);
+    }
+  }, [searchParams]);
 
   return (
     <>

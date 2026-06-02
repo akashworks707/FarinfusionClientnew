@@ -49,14 +49,14 @@ const roleRoutes: Record<string, UserRole[]> = {
 function getDashboardRoute(role: UserRole) {
   switch (role) {
     case UserRole.ADMIN:
-      return "/staff/dashboard/admin";
+      return "/staff/dashboard";
 
     case UserRole.MANAGER:
       return "/staff/dashboard/orders-management";
 
     case UserRole.MODERATOR:
     case UserRole.TELLICELSS:
-      return "/staff/dashboard/pos";
+      return "/staff/dashboard/my-orders";
 
     default:
       return "/";
@@ -87,19 +87,19 @@ export async function middleware(req: NextRequest) {
   }
 
   if (!accessToken) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/?auth=login", req.url));
   }
 
   const payload: any = await verifyToken(accessToken);
 
   if (!payload) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/?auth=login", req.url));
   }
 
   const role = payload?.role || payload?.user?.role;
 
   if (!role) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/?auth=login", req.url));
   }
 
   for (const route in roleRoutes) {
