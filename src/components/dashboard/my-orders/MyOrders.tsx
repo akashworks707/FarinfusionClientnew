@@ -1112,10 +1112,10 @@ export default function MyOrders() {
     ...(orderStatus && { orderStatus }),
     ...(deliveryStatus && { deliveryStatus }),
     ...(dateFrom && {
-      "createdAt[gte]": new Date(dateFrom).toISOString(),
+      "updatedAt[gte]": new Date(dateFrom).toISOString(),
     }),
     ...(dateTo && {
-      "createdAt[lte]": new Date(dateTo).toISOString(),
+      "updatedAt[lte]": new Date(dateTo).toISOString(),
     }),
   });
 

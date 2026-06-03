@@ -20,7 +20,7 @@ import {
 } from "@/redux/features/orders/ordersApi";
 import { useCreateCourierMutation } from "@/lib/hooks";
 import { OrderStats } from "./OrderStats";
-import { OrderFilters, type DateFilter } from "./OrderFilters";
+import { OrderFilters, type DateFilter, type DateType } from "./OrderFilters";
 import { OrderTable } from "./OrderTable";
 import { ConfirmOrderModal } from "./ConfirmOrderModal";
 import { CompleteOrderModal } from "./CompleteOrderModal";
@@ -106,17 +106,20 @@ export default function OrdersManagement() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const [dateType, setDateType] = useState<DateType>("created");
+
   const queryArgs = {
     page,
     limit,
-    ...(searchTerm && { searchTerm: debouncedSearch }),
+    dateType,
+    ...(debouncedSearch && { searchTerm: debouncedSearch }),
     ...(status && { orderStatus: status }),
     ...(deliveryStatus && { deliveryStatus }),
     ...(dateFilter.from && {
-      "createdAt[gte]": format(dateFilter.from, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
+      "updatedAt[gte]": format(dateFilter.from, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
     }),
     ...(dateFilter.to && {
-      "createdAt[lte]": format(dateFilter.to, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
+      "updatedAt[lte]": format(dateFilter.to, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
     }),
   };
 
@@ -164,6 +167,13 @@ export default function OrdersManagement() {
   const handleReset = () => {
     setStatus("");
     setDeliveryStatus("");
+    setDateFilter({ from: undefined, to: undefined });
+    setDateType("created");
+    setPage(1);
+  };
+
+  const handleDateTypeChange = (type: DateType) => {
+    setDateType(type);
     setDateFilter({ from: undefined, to: undefined });
     setPage(1);
   };
@@ -422,11 +432,13 @@ export default function OrdersManagement() {
         statusFilter={status}
         searchFilter={searchTerm}
         dateFilter={dateFilter}
+        dateType={dateType}
         deliveryStatusFilter={deliveryStatus}
         onStatusChange={handleStatusChange}
         onDeliveryStatusChange={handleDeliveryStatusChange}
         onSearchChange={handleSearchChange}
         onDateChange={handleDateChange}
+        onDateTypeChange={handleDateTypeChange}
         onReset={handleReset}
         totalResults={totalCount}
       />

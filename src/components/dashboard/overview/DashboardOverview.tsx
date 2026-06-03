@@ -302,8 +302,8 @@ export default function DashboardOverview() {
   const [orderStatus, setOrderStatus] = useState("");
 
   const queryParams: Record<string, string> = {};
-  if (dateFrom) queryParams["createdAt[gte]"] = dateFrom.toISOString();
-  if (dateTo) queryParams["createdAt[lte]"] = dateTo.toISOString();
+  if (dateFrom) queryParams["updatedAt[gte]"] = dateFrom.toISOString();
+  if (dateTo) queryParams["updatedAt[lte]"] = dateTo.toISOString();
   if (orderStatus) queryParams.orderStatus = orderStatus;
 
   const {
