@@ -99,14 +99,13 @@ export default function OrdersManagement() {
   const [courierModalOpen, setCourierModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [deliveryStatus, setDeliveryStatus] = useState("");
+  const [dateType, setDateType] = useState<DateType>("created");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  const [dateType, setDateType] = useState<DateType>("created");
 
   const queryArgs = {
     page,
@@ -169,12 +168,6 @@ export default function OrdersManagement() {
     setDeliveryStatus("");
     setDateFilter({ from: undefined, to: undefined });
     setDateType("created");
-    setPage(1);
-  };
-
-  const handleDateTypeChange = (type: DateType) => {
-    setDateType(type);
-    setDateFilter({ from: undefined, to: undefined });
     setPage(1);
   };
 
@@ -435,10 +428,13 @@ export default function OrdersManagement() {
         dateType={dateType}
         deliveryStatusFilter={deliveryStatus}
         onStatusChange={handleStatusChange}
+        onDateTypeChange={(t) => {
+          setDateType(t);
+          setPage(1);
+        }}
         onDeliveryStatusChange={handleDeliveryStatusChange}
         onSearchChange={handleSearchChange}
         onDateChange={handleDateChange}
-        onDateTypeChange={handleDateTypeChange}
         onReset={handleReset}
         totalResults={totalCount}
       />
