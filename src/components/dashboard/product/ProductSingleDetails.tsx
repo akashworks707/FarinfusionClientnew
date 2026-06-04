@@ -382,19 +382,19 @@ export default function ProductSingleDetails() {
                       <Barcode
                         value={product.barcode}
                         format="CODE128"
-                        width={2}
+                        width={4}
                         height={80}
                         displayValue
                       />
                     </div>
 
                     {/* Barcode value pill */}
-                    <div className="flex items-center justify-center">
+                    {/* <div className="flex items-center justify-center">
                       <code className="flex items-center gap-2 text-sm font-mono bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 px-4 py-2 rounded-full border border-amber-200 dark:border-amber-700 select-all">
                         <BarcodeIcon className="h-4 w-4 opacity-60" />
                         {product.barcode}
                       </code>
-                    </div>
+                    </div> */}
 
                     {/* Info block */}
                     <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-3">
