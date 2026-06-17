@@ -17,6 +17,7 @@ import {
   useGetAllDamagedProductsQuery,
   useCancelOrderMutation,
   useUpdateManualDeliveryStatusMutation,
+  useGetAllNoResponseOrdersQuery,
 } from "@/redux/features/orders/ordersApi";
 import { useCreateCourierMutation } from "@/lib/hooks";
 import { OrderStats } from "./OrderStats";
@@ -59,6 +60,7 @@ import { InvoiceDialog } from "../shared/InvoiceDialog";
 import { CourierProvider } from "@/types";
 
 // const LIMIT = 10;
+type ActiveTab = "instant" | "scheduled" | "hold" | "no-response" | "damaged";
 
 export default function OrdersManagement() {
   const [status, setStatus] = useState<OrderStatus | "">("");
@@ -84,9 +86,7 @@ export default function OrdersManagement() {
   const userRole = user?.role;
   const [damageModalOpen, setDamageModalOpen] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<
-    "instant" | "scheduled" | "hold" | "damaged"
-  >("instant");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("instant");
 
   const [doPartialUpdate] = usePartialUpdateOrderMutation();
   const [cancelOrder] = useCancelOrderMutation();
@@ -132,6 +132,9 @@ export default function OrdersManagement() {
     useGetAllScheduledOrdersQuery(queryArgs, {
       skip: activeTab !== "scheduled",
     });
+
+    const { data: noResponseOrdersData, isLoading: isNoResponseLoading } =
+    useGetAllNoResponseOrdersQuery({});
 
   const { data: HoldOrdersData, isLoading: isHoldLoading } =
     useGetAllholdOrdersQuery(queryArgs, {
@@ -391,15 +394,23 @@ export default function OrdersManagement() {
         ? (scheduledOrdersData?.data as Order[]) || []
         : (HoldOrdersData?.data as Order[]) || [];
 
-  const isLoadingFinal =
-    activeTab === "instant" ? isLoading : isScheduledLoading;
-  const meta: any =
-    activeTab === "instant" ? ordersData?.meta : scheduledOrdersData?.meta;
+ const isLoadingFinal = activeTab === "instant" ? isLoading : activeTab === "scheduled" ? isScheduledLoading : activeTab === "no-response" ? isNoResponseLoading : isHoldLoading;
+
+   const meta: any = activeTab === "instant" ? ordersData?.meta : activeTab === "scheduled" ? scheduledOrdersData?.meta : activeTab === "no-response" ? noResponseOrdersData?.meta : HoldOrdersData?.meta;
   const totalCount = meta?.total ?? 0;
   const totalPages = meta?.totalPage ?? Math.ceil(totalCount / limit);
   // const allOrders = (allOrdersData?.data as Order[]) || [];
 
   // console.log(ordersData?.stats);
+
+   const tabs: { value: ActiveTab; label: string; adminOnly?: boolean }[] = [
+    { value: "instant",     label: "Instant Orders" },
+    { value: "scheduled",   label: "Scheduled Orders" },
+    { value: "hold",        label: "Hold Orders" },
+    { value: "no-response", label: "No Response" },
+    { value: "damaged",     label: "Damaged Products", adminOnly: true },
+  ];
+ 
 
   return (
     <div className="min-h-screen space-y-6 bg-background p-4 md:p-8">
@@ -442,67 +453,29 @@ export default function OrdersManagement() {
       <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
         {/* Tabs Header */}
         <TabsList className="bg-transparent">
-          <div className="flex gap-2 border-gray-200 dark:border-gray-700 pb-2">
-            <button
-              onClick={() => {
-                setActiveTab("instant");
-                setPage(1);
-              }}
-              className={cn(
-                "px-4 py-2 text-sm font-semibold rounded-md transition",
-                activeTab === "instant"
-                  ? "bg-amber-500 text-white"
-                  : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
-              )}
-            >
-              Instant Orders
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab("scheduled");
-                setPage(1);
-              }}
-              className={cn(
-                "px-4 py-2 text-sm font-semibold rounded-md transition",
-                activeTab === "scheduled"
-                  ? "bg-blue-500 text-white"
-                  : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
-              )}
-            >
-              Scheduled Orders
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("hold");
-                setPage(1);
-              }}
-              className={cn(
-                "px-4 py-2 text-sm font-semibold rounded-md transition",
-                activeTab === "hold"
-                  ? "bg-amber-500 text-white"
-                  : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
-              )}
-            >
-              Hold Orders
-            </button>
-
-            {userRole === "ADMIN" && (
-              <button
-                onClick={() => {
-                  setActiveTab("damaged");
-                  setPage(1);
-                }}
-                className={cn(
-                  "px-4 py-2 text-sm font-semibold rounded-md transition",
-                  activeTab === "damaged"
-                    ? "bg-yellow-500 text-white"
-                    : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
-                )}
-              >
-                Damaged Products
-              </button>
-            )}
+          <div className="flex flex-wrap gap-2 pb-2">
+            {tabs.map((tab) => {
+              if (tab.adminOnly && userRole !== "ADMIN") return null;
+              const isActive = activeTab === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  onClick={() => { setActiveTab(tab.value); setPage(1); }}
+                  className={cn(
+                    "px-4 py-2 text-sm font-semibold rounded-md transition",
+                    isActive
+                      ? tab.value === "no-response"
+                        ? "bg-rose-500 text-white"
+                        : tab.value === "scheduled"
+                        ? "bg-blue-500 text-white"
+                        : "bg-amber-500 text-white"
+                      : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
+                  )}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </TabsList>
 
@@ -554,6 +527,25 @@ export default function OrdersManagement() {
           <OrderTable
             orders={(HoldOrdersData?.data as Order[]) || []}
             loading={isHoldLoading}
+            error={null}
+            onConfirmOrder={handleConfirmClick}
+            onViewInvoice={handleViewInvoice}
+            refetch={refetch}
+            onViewOrder={handleViewClick}
+            onCancelOrder={handleCancelOrder}
+            setDeleteTarget={setDeleteTarget}
+            setDeleteOpen={setDeleteOpen}
+            onAssignCourier={handleOpenCourierModal}
+            onCompleteOrder={handleCompleteClick}
+          />
+        </TabsContent>
+
+        {/* No response section */}
+
+         <TabsContent value="no-response">
+          <OrderTable
+            orders={(noResponseOrdersData?.data as Order[]) || []}
+            loading={isNoResponseLoading}
             error={null}
             onConfirmOrder={handleConfirmClick}
             onViewInvoice={handleViewInvoice}

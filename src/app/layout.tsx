@@ -20,30 +20,32 @@ const openSans = Open_Sans({
 })
 
 export const metadata: Metadata = {
-  title: {
-    default: "Farin Fusion",
-    template: "%s | Farin Fusion",
-  },
+   title: "Farin Fusion | Premium Skincare & Beauty Products",
 
   description:
-    "Farin Fusion is a modern e-commerce platform offering premium fashion, lifestyle products, and seamless POS-powered order management. Discover trendy collections with fast delivery and secure checkout.",
+    "Discover premium skincare and beauty products from Farin Fusion. Nourish your skin with carefully selected beauty essentials and enjoy fast delivery across Bangladesh.",
 
-  keywords: [
+   keywords: [
     "Farin Fusion",
-    "Bangladesh e-commerce",
-    "fashion store",
-    "online shopping",
-    "POS system",
-    "lifestyle products",
-    "trendy fashion",
+    "skincare products",
+    "beauty products Bangladesh",
+    "face care",
+    "skin care",
+    "beauty essentials",
+    "cosmetics Bangladesh",
+    "glowing skin",
+    "organic skincare",
+    "premium skincare",
+    "online beauty shop",
+    "Bangladesh skincare brand",
   ],
 
   metadataBase: new URL("https://farinfusion.com"),
 
   openGraph: {
-    title: "Farin Fusion",
+    title: "Farin Fusion | Premium Skincare & Beauty Products",
     description:
-      "Shop premium fashion and lifestyle products with Farin Fusion. Fast delivery, secure checkout, and modern shopping experience.",
+      "Discover premium skincare and beauty products from Farin Fusion. Nourish your skin with carefully selected beauty essentials and enjoy fast delivery across Bangladesh.",
     url: "https://farinfusion.com",
     siteName: "Farin Fusion",
     images: [
@@ -60,9 +62,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Farin Fusion",
+     title: "Farin Fusion | Premium Skincare & Beauty Products",
     description:
-      "Premium fashion and lifestyle products with fast delivery and secure checkout.",
+      "Discover premium skincare and beauty products from Farin Fusion. Nourish your skin with carefully selected beauty essentials and enjoy fast delivery across Bangladesh.",
     images: ["/favicon.ico"],
   },
 

@@ -13,6 +13,7 @@ import {
   Pause,
   FileCheck,
   ArrowRightCircle,
+  PhoneMissed,
 } from "lucide-react";
 
 interface OrderStatusBadgeProps {
@@ -31,6 +32,8 @@ const orderStatusStyles: Record<string, string> = {
     "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
   PARTIAL:
     "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800",
+  NO_RESPONSE:
+    "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800",
 };
 
 const deliveryStatusStyles: Record<string, string> = {
@@ -73,6 +76,7 @@ const orderIcons: Record<string, React.ReactNode> = {
   COMPLETED: <CheckCircle className="h-3 w-3" />,
   CANCELLED: <XCircle className="h-3 w-3" />,
   PARTIAL: <AlertCircle className="h-3 w-3" />,
+  NO_RESPONSE: <PhoneMissed className="h-3 w-3" />,
 };
 
 const deliveryIcons: Record<string, React.ReactNode> = {
@@ -103,6 +107,7 @@ const formatStatusLabel = (status: string) => {
     PICKED_UP: "PICKED UP",
     IN_REVIEW: "IN REVIEW",
     NOT_SHIPPED: "NOT SHIPPED",
+    NO_RESPONSE: "NO RESPONSE",
   };
 
   return customLabels[status] || status.replace(/_/g, " ");

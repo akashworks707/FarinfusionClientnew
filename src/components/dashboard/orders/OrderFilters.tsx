@@ -58,7 +58,8 @@ export type DateType =
   | "delivered"
   | "partial"
   | "cancelled"
-  | "hold";
+  | "hold"
+   | "noResponse";
 
 export interface OrderFiltersProps {
   statusFilter: OrderStatus | "";
@@ -105,6 +106,13 @@ const ORDER_STATUSES: {
     dot: "bg-red-500",
     chip: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
   },
+
+  {
+    value: "NO_RESPONSE",
+    label: "No Response",
+    dot: "bg-rose-500",
+    chip: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800",
+  },
 ];
 
 const DELIVERY_STATUSES = [
@@ -129,6 +137,7 @@ const DATE_TYPES: { value: DateType; label: string; dot: string }[] = [
   { value: "partial",        label: "Partial Delivered", dot: "bg-orange-500" },
   { value: "cancelled",      label: "Cancelled At",      dot: "bg-red-500"    },
   { value: "hold",           label: "On Hold At",        dot: "bg-amber-500"  },
+  { value: "noResponse",      label: "No Response At",   dot: "bg-rose-500"    },
 ];
 
 const PRESETS = [

@@ -40,6 +40,7 @@ import {
   FileText,
   TimerReset,
   X,
+  PhoneMissed,
 } from "lucide-react";
 import type { Order } from "@/types/orders";
 import { Courier } from "@/types/courier";
@@ -50,7 +51,10 @@ import {
 } from "@/redux/features/user/user.api";
 import { toast } from "sonner";
 import { EditOrderModal } from "./EditOrderModal";
-import { useUpdateSellerMutation } from "@/redux/features/orders/ordersApi";
+import {
+  useMarkNoResponseMutation,
+  useUpdateSellerMutation,
+} from "@/redux/features/orders/ordersApi";
 import { OrderModeChangeModal } from "@/components/shared/OrderModeChangeModal";
 import { CancelOrderModal } from "./CancelOrderModal";
 
@@ -98,6 +102,7 @@ export function OrderRowActions({
   const canComplete = isConfirmed && isDelivered && !isCompleted;
   const { data } = useGetMeQuery(undefined);
   const userRole = data?.data?.role;
+  const [markNoResponse] = useMarkNoResponseMutation();
 
   const isAdmin = userRole === "ADMIN";
   const hasCourier = !!courier;
@@ -119,6 +124,8 @@ export function OrderRowActions({
 
   const hasAccess =
     userRole && ["ADMIN", "MANAGER", "TELLICELSS"].includes(userRole);
+    const isNoResponse =
+  order.orderStatus === "NO_RESPONSE";
 
   const [editOpen, setEditOpen] = useState(false);
   const [editOpenTiming, setEditOpenTiming] = useState(false);
@@ -158,6 +165,21 @@ export function OrderRowActions({
       toast.error("Failed to assign seller");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleNoResponse = async () => {
+    try {
+      await markNoResponse({
+        _id: order._id,
+        orderStatus: "NO_RESPONSE",
+      }).unwrap();
+
+      toast.success("Order marked as No Response");
+
+      refetch?.();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to update order");
     }
   };
 
@@ -201,7 +223,17 @@ export function OrderRowActions({
               </DropdownMenuItem>
             )}
 
-          {order.isPublished &&
+          {order.orderStatus === "PENDING" && (
+            <DropdownMenuItem
+              onClick={handleNoResponse}
+              className="text-rose-600"
+            >
+              <PhoneMissed className="mr-2 h-4 w-4" />
+              No Response
+            </DropdownMenuItem>
+          )}
+
+          {!isNoResponse && order.isPublished &&
             hasAccess &&
             isConfirmed &&
             !hasCourier &&
@@ -216,7 +248,7 @@ export function OrderRowActions({
             )}
 
           {/* order mode option */}
-          {!(isDelivered || isConfirmed) && (
+          {!isNoResponse && !(isDelivered || isConfirmed) && (
             <DropdownMenuItem
               className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
               onClick={() => setEditOpenTiming(true)}
@@ -238,7 +270,7 @@ export function OrderRowActions({
           </DropdownMenuItem>
 
           {/* Assign Seller */}
-          {order.isPublished && withoutTellicelss && (
+          {!isNoResponse && order.isPublished && withoutTellicelss && (
             <>
               <DropdownMenuItem
                 className="gap-2 text-sm cursor-pointer"
@@ -266,7 +298,7 @@ export function OrderRowActions({
           )}
 
           {/* Partial Update - Only for ADMIN and when order is CONFIRMED */}
-          {isAdmin && isConfirmed && onPartialUpdate && (
+          {!isNoResponse && isAdmin && isConfirmed && onPartialUpdate && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -280,7 +312,7 @@ export function OrderRowActions({
           )}
 
           {/* Confirm */}
-          {order.isPublished && hasAccess && isPending && onConfirm && (
+          {!isNoResponse && order.isPublished && hasAccess && isPending && onConfirm && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -293,7 +325,7 @@ export function OrderRowActions({
             </>
           )}
 
-          {order.isPublished &&
+          {!isNoResponse && order.isPublished &&
             hasAccess &&
             isConfirmed &&
             !hasCourier &&
@@ -311,7 +343,7 @@ export function OrderRowActions({
             )}
 
           {/* Reassign Courier - For ADMIN only when courier is already assigned */}
-          {isAdmin && isConfirmed && hasCourier && onAssignCourier && (
+          {!isNoResponse && isAdmin && isConfirmed && hasCourier && onAssignCourier && (
             <DropdownMenuItem
               className="gap-2 text-sm cursor-pointer text-purple-600 focus:text-purple-600 dark:text-purple-400"
               onClick={() => onAssignCourier(order)}
@@ -335,7 +367,7 @@ export function OrderRowActions({
           </DropdownMenuItem>
 
           {/* Mark as Completed */}
-          {order.isPublished && hasAccess && canComplete && onComplete && (
+          {!isNoResponse && order.isPublished && hasAccess && canComplete && onComplete && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -366,7 +398,7 @@ export function OrderRowActions({
           )}
 
           {/* Mark as Damage */}
-          {order.isPublished &&
+          {!isNoResponse && order.isPublished &&
             hasAccess &&
             (isPartial || isCanceled) &&
             onMarkDamage && (
@@ -383,7 +415,7 @@ export function OrderRowActions({
             )}
 
           {/* Mark as Exchange */}
-          {order.isPublished && hasAccess && isCompleted && onMarkExchange && (
+          {!isNoResponse && order.isPublished && hasAccess && isCompleted && onMarkExchange && (
             <DropdownMenuItem
               className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
               onClick={() => onMarkExchange(order)}

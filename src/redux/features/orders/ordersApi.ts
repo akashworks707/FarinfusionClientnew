@@ -64,6 +64,15 @@ export const ordersApi = baseApi.injectEndpoints({
       providesTags: ["ORDERS"],
     }),
 
+    getAllNoResponseOrders: builder.query<GetAllOrdersResponse, GetQueryParams>({
+      query: (params) => ({
+        url: "/order/no-response",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["ORDERS"],
+    }),
+
     getSingleOrder: builder.query<OrderResponse, string>({
       query: (id) => ({
         url: `/order/${id}`,
@@ -111,6 +120,23 @@ export const ordersApi = baseApi.injectEndpoints({
         method: "PATCH",
         data: {
           orderStatus: "CONFIRMED",
+        },
+      }),
+      invalidatesTags: (_result, _error, { _id }) => [
+        { type: "ORDER", id: _id },
+        "ORDERS",
+      ],
+    }),
+
+    markNoResponse: builder.mutation<
+      OrderResponse,
+      { _id: string; orderStatus: string }
+    >({
+      query: ({ _id }) => ({
+        url: `/order/${_id}/no-response`,
+        method: "PATCH",
+        data: {
+          orderStatus: "NO_RESPONSE",
         },
       }),
       invalidatesTags: (_result, _error, { _id }) => [
@@ -233,7 +259,9 @@ export const {
   useUpdateOrderMutation,
   useDeleteOrderMutation,
   useConfirmOrderMutation,
+  useMarkNoResponseMutation,
   useGetAllScheduledOrdersQuery,
+  useGetAllNoResponseOrdersQuery,
   useCancelOrderMutation,
   useGetAllDamagedProductsQuery,
   useUpdateDeliveryStatusMutation,

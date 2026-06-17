@@ -60,6 +60,7 @@ import {
   Wallet,
   Banknote,
   BadgeCheck,
+  PhoneMissed,
 } from "lucide-react";
 import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboard.api";
 import {
@@ -111,6 +112,8 @@ const ORDER_STATUS_OPTIONS = [
   { value: "ALL", label: "All Statuses" },
   { value: "PENDING", label: "Pending", dot: "bg-amber-500" },
   { value: "CONFIRMED", label: "Confirmed", dot: "bg-emerald-500" },
+  { value: "COURIER_ASSIGNED", label: "Courier Assigned", dot: "bg-blue-500" },
+  { value: "NO_RESPONSE", label: "No Response", dot: "bg-rose-500" },
   { value: "COMPLETED", label: "Completed", dot: "bg-violet-500" },
   { value: "CANCELLED", label: "Cancelled", dot: "bg-red-500" },
 ];
@@ -186,6 +189,11 @@ const STATUS_BADGE: Record<string, string> = {
     "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
   CONFIRMED:
     "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
+  COURIER_ASSIGNED:
+    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
+
+  NO_RESPONSE:
+    "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800",
   COMPLETED:
     "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800",
   CANCELLED:
@@ -377,6 +385,16 @@ export default function DashboardOverview() {
           fill: "#8b5cf6",
         },
         {
+          name: "Courier Assigned",
+          value: data?.orderStats?.COURIER_ASSIGNED || 0,
+          fill: "#3b82f6",
+        },
+        {
+          name: "No Response",
+          value: data?.orderStats?.NO_RESPONSE || 0,
+          fill: "#e11d48",
+        },
+        {
           name: "Cancelled",
           value: data?.orderStats?.CANCELLED,
           fill: "#ef4444",
@@ -465,11 +483,11 @@ export default function DashboardOverview() {
         <div className="flex gap-2 items-center">
           <span className="text-lg text-gray-800 font-semibold">Welcome</span>
           <div className="hidden sm:flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 dark:border-amber-900/40 dark:bg-amber-900/20">
-          <User className="h-3.5 w-3.5 text-amber-500" />
-          <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-            {me?.data?.name ?? "Welcome"}
-          </span>
-        </div>
+            <User className="h-3.5 w-3.5 text-amber-500" />
+            <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+              {me?.data?.name ?? "Welcome"}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -690,6 +708,21 @@ export default function DashboardOverview() {
               icon={ShoppingBag}
               accent="bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
             />
+            <StatCard
+              label="Courier Assigned"
+              value={data.orderStats?.COURIER_ASSIGNED || 0}
+              icon={Truck}
+              accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+              sub="waiting pickup"
+            />
+
+            <StatCard
+              label="No Response"
+              value={data.orderStats?.NO_RESPONSE || 0}
+              icon={PhoneMissed}
+              accent="bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400"
+              sub="customer unreachable"
+            />
             {isAdmin && (
               <StatCard
                 label="Total Revenue"
@@ -756,7 +789,7 @@ export default function DashboardOverview() {
           </div>
 
           {/* Order status cards */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {[
               {
                 key: "PENDING",
@@ -778,6 +811,20 @@ export default function DashboardOverview() {
                 icon: CheckCircle2,
                 cls: "border-violet-200 bg-violet-50/60 dark:border-violet-900/30 dark:bg-violet-900/10",
                 val: "text-violet-700 dark:text-violet-400",
+              },
+              {
+                key: "COURIER_ASSIGNED",
+                label: "Courier Assigned",
+                icon: Truck,
+                cls: "border-blue-200 bg-blue-50/60 dark:border-blue-900/30 dark:bg-blue-900/10",
+                val: "text-blue-700 dark:text-blue-400",
+              },
+              {
+                key: "NO_RESPONSE",
+                label: "No Response",
+                icon: PhoneMissed,
+                cls: "border-rose-200 bg-rose-50/60 dark:border-rose-900/30 dark:bg-rose-900/10",
+                val: "text-rose-700 dark:text-rose-400",
               },
               {
                 key: "CANCELLED",

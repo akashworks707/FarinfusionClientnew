@@ -4,6 +4,8 @@ export interface IOrderStats {
   CONFIRMED: number;
   COMPLETED: number;
   CANCELLED: number;
+  COURIER_ASSIGNED: number;
+  NO_RESPONSE: number;
 }
 
 export interface IStaffEarning {

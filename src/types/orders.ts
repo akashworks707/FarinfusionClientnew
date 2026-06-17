@@ -18,7 +18,9 @@ export type OrderStatus =
   | "NOT_SHIPPED"
   | "COMPLETED"
   | "DAMAGE"
-  | "PARTIAL";
+  | "PARTIAL"
+  | "NO_RESPONSE";
+
 export type DeliveryStatus =
   | "NOT_SHIPPED"
   | "COURIERASSIGNED"
