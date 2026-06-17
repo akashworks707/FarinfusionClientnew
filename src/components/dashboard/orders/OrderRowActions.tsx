@@ -177,7 +177,7 @@ export function OrderRowActions({
 
       toast.success("Order marked as No Response");
 
-      refetch?.();
+      refetch();
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to update order");
     }

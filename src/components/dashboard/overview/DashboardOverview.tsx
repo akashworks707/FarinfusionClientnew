@@ -112,7 +112,7 @@ const ORDER_STATUS_OPTIONS = [
   { value: "ALL", label: "All Statuses" },
   { value: "PENDING", label: "Pending", dot: "bg-amber-500" },
   { value: "CONFIRMED", label: "Confirmed", dot: "bg-emerald-500" },
-  { value: "COURIER_ASSIGNED", label: "Courier Assigned", dot: "bg-blue-500" },
+  { value: "COURIERASSIGNED", label: "Courier Assigned", dot: "bg-blue-500" },
   { value: "NO_RESPONSE", label: "No Response", dot: "bg-rose-500" },
   { value: "COMPLETED", label: "Completed", dot: "bg-violet-500" },
   { value: "CANCELLED", label: "Cancelled", dot: "bg-red-500" },
@@ -189,7 +189,7 @@ const STATUS_BADGE: Record<string, string> = {
     "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
   CONFIRMED:
     "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
-  COURIER_ASSIGNED:
+  COURIERASSIGNED:
     "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
 
   NO_RESPONSE:
@@ -312,7 +312,11 @@ export default function DashboardOverview() {
   const queryParams: Record<string, string> = {};
   if (dateFrom) queryParams["updatedAt[gte]"] = dateFrom.toISOString();
   if (dateTo) queryParams["updatedAt[lte]"] = dateTo.toISOString();
-  if (orderStatus) queryParams.orderStatus = orderStatus;
+  if (orderStatus === "COURIERASSIGNED") {
+  queryParams.deliveryStatus = "COURIERASSIGNED";
+} else if (orderStatus && orderStatus !== "ALL") {
+  queryParams.orderStatus = orderStatus;
+}
 
   const {
     data: overviewRes,
@@ -813,7 +817,7 @@ export default function DashboardOverview() {
                 val: "text-violet-700 dark:text-violet-400",
               },
               {
-                key: "COURIER_ASSIGNED",
+                key: "COURIERASSIGNED",
                 label: "Courier Assigned",
                 icon: Truck,
                 cls: "border-blue-200 bg-blue-50/60 dark:border-blue-900/30 dark:bg-blue-900/10",
