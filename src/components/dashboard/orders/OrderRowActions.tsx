@@ -53,6 +53,7 @@ import { toast } from "sonner";
 import { EditOrderModal } from "./EditOrderModal";
 import {
   useMarkNoResponseMutation,
+  useRestoreNoResponseMutation,
   useUpdateSellerMutation,
 } from "@/redux/features/orders/ordersApi";
 import { OrderModeChangeModal } from "@/components/shared/OrderModeChangeModal";
@@ -124,8 +125,7 @@ export function OrderRowActions({
 
   const hasAccess =
     userRole && ["ADMIN", "MANAGER", "TELLICELSS"].includes(userRole);
-    const isNoResponse =
-  order.orderStatus === "NO_RESPONSE";
+  const isNoResponse = order.orderStatus === "NO_RESPONSE";
 
   const [editOpen, setEditOpen] = useState(false);
   const [editOpenTiming, setEditOpenTiming] = useState(false);
@@ -135,12 +135,15 @@ export function OrderRowActions({
   const [sellerDialogOpen, setSellerDialogOpen] = useState(false);
   const [manualDeliveryModalOpen, setManualDeliveryModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
   const [selectedSellerId, setSelectedSellerId] = useState<string>(
     (order.seller as any)?._id ?? order.seller ?? "",
   );
   const [isSaving, setIsSaving] = useState(false);
   const limit = 150;
   const { data: users } = useGetAllUsersQuery({ limit });
+  const [restoreNoResponse, { isLoading: isRestoring }] =
+    useRestoreNoResponseMutation();
   const [updateSeller] = useUpdateSellerMutation();
 
   const sellerOptions = users?.data ?? [];
@@ -165,6 +168,23 @@ export function OrderRowActions({
       toast.error("Failed to assign seller");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleRestoreOrder = async () => {
+    try {
+      await restoreNoResponse({
+        _id: order._id,
+      }).unwrap();
+
+      toast.success("Order restored successfully", {
+        description: `Order ${order.customOrderId} has been restored to PENDING status.`,
+      });
+
+      setRestoreConfirmOpen(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to restore order");
     }
   };
 
@@ -233,7 +253,23 @@ export function OrderRowActions({
             </DropdownMenuItem>
           )}
 
-          {!isNoResponse && order.isPublished &&
+          {/* Restore Order - Only for NO_RESPONSE status */}
+          {order.orderStatus === "NO_RESPONSE" && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setRestoreConfirmOpen(true)}
+                className="gap-2 text-sm cursor-pointer text-emerald-600 focus:text-emerald-600 dark:text-emerald-400"
+                disabled={isRestoring}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                {isRestoring ? "Restoring..." : "Restore Order"}
+              </DropdownMenuItem>
+            </>
+          )}
+
+          {!isNoResponse &&
+            order.isPublished &&
             hasAccess &&
             isConfirmed &&
             !hasCourier &&
@@ -312,20 +348,25 @@ export function OrderRowActions({
           )}
 
           {/* Confirm */}
-          {!isNoResponse && order.isPublished && hasAccess && isPending && onConfirm && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="gap-2 text-sm cursor-pointer text-emerald-600 focus:text-emerald-600 dark:text-emerald-400"
-                onClick={() => onConfirm(order)}
-              >
-                <CheckCircle className="h-3.5 w-3.5" />
-                Confirm Order
-              </DropdownMenuItem>
-            </>
-          )}
+          {!isNoResponse &&
+            order.isPublished &&
+            hasAccess &&
+            isPending &&
+            onConfirm && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="gap-2 text-sm cursor-pointer text-emerald-600 focus:text-emerald-600 dark:text-emerald-400"
+                  onClick={() => onConfirm(order)}
+                >
+                  <CheckCircle className="h-3.5 w-3.5" />
+                  Confirm Order
+                </DropdownMenuItem>
+              </>
+            )}
 
-          {!isNoResponse && order.isPublished &&
+          {!isNoResponse &&
+            order.isPublished &&
             hasAccess &&
             isConfirmed &&
             !hasCourier &&
@@ -343,15 +384,19 @@ export function OrderRowActions({
             )}
 
           {/* Reassign Courier - For ADMIN only when courier is already assigned */}
-          {!isNoResponse && isAdmin && isConfirmed && hasCourier && onAssignCourier && (
-            <DropdownMenuItem
-              className="gap-2 text-sm cursor-pointer text-purple-600 focus:text-purple-600 dark:text-purple-400"
-              onClick={() => onAssignCourier(order)}
-            >
-              <Truck className="h-3.5 w-3.5" />
-              Reassign Courier
-            </DropdownMenuItem>
-          )}
+          {!isNoResponse &&
+            isAdmin &&
+            isConfirmed &&
+            hasCourier &&
+            onAssignCourier && (
+              <DropdownMenuItem
+                className="gap-2 text-sm cursor-pointer text-purple-600 focus:text-purple-600 dark:text-purple-400"
+                onClick={() => onAssignCourier(order)}
+              >
+                <Truck className="h-3.5 w-3.5" />
+                Reassign Courier
+              </DropdownMenuItem>
+            )}
 
           <DropdownMenuItem
             disabled={userRole !== "ADMIN"}
@@ -367,21 +412,25 @@ export function OrderRowActions({
           </DropdownMenuItem>
 
           {/* Mark as Completed */}
-          {!isNoResponse && order.isPublished && hasAccess && canComplete && onComplete && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className={cn(
-                  "gap-2 text-sm font-semibold cursor-pointer",
-                  "text-violet-600 focus:text-violet-600 dark:text-violet-400",
-                )}
-                onClick={() => onComplete(order)}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Mark as Completed
-              </DropdownMenuItem>
-            </>
-          )}
+          {!isNoResponse &&
+            order.isPublished &&
+            hasAccess &&
+            canComplete &&
+            onComplete && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className={cn(
+                    "gap-2 text-sm font-semibold cursor-pointer",
+                    "text-violet-600 focus:text-violet-600 dark:text-violet-400",
+                  )}
+                  onClick={() => onComplete(order)}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Mark as Completed
+                </DropdownMenuItem>
+              </>
+            )}
 
           {/* Already completed */}
           {isCompleted && (
@@ -398,7 +447,8 @@ export function OrderRowActions({
           )}
 
           {/* Mark as Damage */}
-          {!isNoResponse && order.isPublished &&
+          {!isNoResponse &&
+            order.isPublished &&
             hasAccess &&
             (isPartial || isCanceled) &&
             onMarkDamage && (
@@ -415,15 +465,19 @@ export function OrderRowActions({
             )}
 
           {/* Mark as Exchange */}
-          {!isNoResponse && order.isPublished && hasAccess && isCompleted && onMarkExchange && (
-            <DropdownMenuItem
-              className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
-              onClick={() => onMarkExchange(order)}
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              Mark as Exchange
-            </DropdownMenuItem>
-          )}
+          {!isNoResponse &&
+            order.isPublished &&
+            hasAccess &&
+            isCompleted &&
+            onMarkExchange && (
+              <DropdownMenuItem
+                className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
+                onClick={() => onMarkExchange(order)}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Mark as Exchange
+              </DropdownMenuItem>
+            )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -539,6 +593,106 @@ export function OrderRowActions({
             >
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Confirm Delivery
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={restoreConfirmOpen} onOpenChange={setRestoreConfirmOpen}>
+        <DialogContent className="sm:max-w-md gap-0 p-0 overflow-hidden rounded-2xl border-gray-200/80 dark:border-gray-700/60">
+          {/* Top gradient */}
+          <div className="h-1 w-full bg-linear-to-r from-emerald-500 via-green-500 to-teal-500" />
+
+          {/* Header */}
+          <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-5 dark:border-gray-800">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-900/20">
+              <RotateCcw className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+
+            <div>
+              <DialogTitle className="text-lg font-bold text-gray-900 dark:text-gray-50">
+                Restore Order
+              </DialogTitle>
+
+              <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">
+                Restore this order back to PENDING status
+              </DialogDescription>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="px-6 py-5 space-y-4">
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 dark:border-emerald-800/40 dark:bg-emerald-900/10">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Order ID</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-50">
+                    {order.customOrderId}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Customer</span>
+                  <span className="font-medium">
+                    {order.billingDetails?.fullName}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Current Status</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-900/20 dark:text-rose-400">
+                    NO_RESPONSE
+                  </span>
+                </div>
+
+                <div className="flex justify-between pt-2 border-t border-emerald-100 dark:border-emerald-800/40">
+                  <span className="text-gray-500">New Status</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                    PENDING
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800/40 dark:bg-blue-900/10">
+              <p className="text-xs leading-relaxed text-blue-700 dark:text-blue-300">
+                <strong>What happens next:</strong>
+                <br />• Order status will be restored to{" "}
+                <strong>PENDING</strong>
+                <br />• Stock quantities will be adjusted back to inventory
+                <br />• Order will appear in main orders list
+                <br />• You can continue processing this order normally
+              </p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <DialogFooter className="border-t my-1 border-gray-100 px-6 py-3 dark:border-gray-800">
+            <Button
+              variant="outline"
+              className="rounded-xl hover:cursor-pointer"
+              onClick={() => setRestoreConfirmOpen(false)}
+              disabled={isRestoring}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              className="rounded-xl hover:cursor-pointer bg-emerald-600 hover:bg-emerald-700"
+              onClick={handleRestoreOrder}
+              disabled={isRestoring}
+            >
+              {isRestoring ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                  Restoring...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Restore Order
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
