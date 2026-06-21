@@ -4,10 +4,8 @@ async function getBestSellingProducts() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/product/all-products`,
     {
-      next: {
-        revalidate: 300,
-      },
-    }
+      cache: "no-store",
+    },
   );
 
   if (!res.ok) return [];
