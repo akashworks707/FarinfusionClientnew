@@ -20,7 +20,7 @@ export function BestSellingProductsClient({
 
   const bestSellingProducts = products?.filter((item) => item.isBestSelling);
 
-  if (!products?.length) return null;
+  if (!bestSellingProducts?.length) return null;
 
   return (
     <section className="py-16 bg-gray-50">
