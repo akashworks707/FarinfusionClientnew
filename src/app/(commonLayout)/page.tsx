@@ -1,11 +1,12 @@
 import HomePage from "@/components/public-view/home/homePage";
+import { Suspense } from "react";
 
-export default async function Home() {
-
-
+export default function Home() {
   return (
-    <div className="">
-      <HomePage />
+    <div>
+      <Suspense fallback={null}>
+        <HomePage />
+      </Suspense>
     </div>
   );
 }
