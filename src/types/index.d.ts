@@ -134,6 +134,7 @@ export interface IProduct {
   totalRevenue: number;
   isCusFavorite: boolean;
   isFeatured: boolean;
+  isBestSelling: boolean;
   brand: {
     _id: string;
     title: string;

@@ -70,6 +70,7 @@ const schema = z.object({
   description: z.string().min(10, "Description required"),
   images: z.array(z.instanceof(File)).min(1, "At least one image required"),
   barcode: z.string().optional(),
+  isBestSelling: z.enum(["true", "false"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -97,6 +98,7 @@ export default function CreateProduct() {
     resolver: zodResolver(schema) as any,
     defaultValues: {
       status: ProductStatus.ACTIVE,
+      isBestSelling: "false",
     },
   });
 
@@ -156,6 +158,7 @@ export default function CreateProduct() {
         status: data.status,
         description: data.description,
         images: imageUrls,
+        isBestSelling: data.isBestSelling || false,
         barcode: data.barcode,
       };
 
@@ -307,6 +310,28 @@ export default function CreateProduct() {
                     </p>
                   </div>
                 )}
+              </div>
+
+              <div className={"space-y-2"}>
+                <Label>Best Selling Status</Label>
+
+                <Controller
+                  control={control}
+                  name="isBestSelling"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+
+                      <SelectContent position={"popper"}>
+                        <SelectItem value="true">Best Selling</SelectItem>
+
+                        <SelectItem value="false">Normal Product</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
 
               <div className="space-y-2">

@@ -69,6 +69,7 @@ const schema = z.object({
   description: z.string(),
   images: z.any().optional(),
   isCusFavorite: z.enum(["true", "false"]),
+  isBestSelling: z.enum(["true", "false"]),
   barcode: z.string().optional(),
   adjustStock: z.preprocess(
     (v) => (v === "" || v === undefined ? 0 : Number(v)),
@@ -151,6 +152,7 @@ const UpdateProduct = () => {
         description: p.description,
         barcode: p.barcode || "",
         isCusFavorite: p?.isCusFavorite === true ? "true" : "false",
+        isBestSelling: p?.isBestSelling === true ? "true" : "false",
       });
 
       setTimeout(() => {
@@ -237,6 +239,7 @@ const UpdateProduct = () => {
         status: data.status,
         description: data.description,
         isCusFavorite: data.isCusFavorite === "true",
+        isBestSelling: data.isBestSelling === "true",
         images: allImages,
         barcode: data.barcode,
       };
@@ -404,6 +407,28 @@ const UpdateProduct = () => {
                   )}
                 />
               </div>
+
+              <div className={"space-y-2"}>
+                <Label>Best Selling Status</Label>
+
+                <Controller
+                  control={control}
+                  name="isBestSelling"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+
+                      <SelectContent position={"popper"}>
+                        <SelectItem value="true">Best Selling</SelectItem>
+
+                        <SelectItem value="false">Normal Product</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
             </div>
 
             {/* PRICE */}
@@ -506,23 +531,22 @@ const UpdateProduct = () => {
               </div>
             )}
 
-             <div className="space-y-2">
-                <Label>Barcode</Label>
+            <div className="space-y-2">
+              <Label>Barcode</Label>
 
-                <div className="flex gap-2">
-                  <Input placeholder="Barcode" {...register("barcode")} />
+              <div className="flex gap-2">
+                <Input placeholder="Barcode" {...register("barcode")} />
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setValue("barcode", generateBarcode())}
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Generate
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setValue("barcode", generateBarcode())}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Generate
+                </Button>
               </div>
-
+            </div>
 
             {/* DESCRIPTION */}
             <div className={"space-y-2"}>

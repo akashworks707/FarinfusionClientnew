@@ -5,6 +5,8 @@ import HeroSection from '@/components/home/HeroSection';
 import CustomerFavorites from '../customerFavoriteProducts/CustomerFavorites';
 import OfferProduct from "@/components/public-view/home/OfferProduct";
 import ProductBlog from './ProductBlog';
+import { ReviewsCarousel } from './ReviewCarousel';
+import BestSellingProducts from './BestSellingProducts';
 
 const HomePage = () => {
     return (
@@ -14,6 +16,8 @@ const HomePage = () => {
                 <CategoryList />
                 <CustomerFavorites />
                 <ProductList />
+                <BestSellingProducts />
+                <ReviewsCarousel />
                 <OfferProduct />
                 <ProductBlog />
             </div>
