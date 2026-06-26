@@ -7,6 +7,7 @@ import OfferProduct from "@/components/public-view/home/OfferProduct";
 import ProductBlog from './ProductBlog';
 import { ReviewsCarousel } from './ReviewCarousel';
 import BestSellingProducts from './BestSellingProducts';
+import ProductVerificationSection from '@/components/dashboard/product-verification/ProductVerificationSection';
 
 const HomePage = () => {
     return (
@@ -17,6 +18,7 @@ const HomePage = () => {
                 <CustomerFavorites />
                 <ProductList />
                 <BestSellingProducts />
+                <ProductVerificationSection />
                 <ReviewsCarousel />
                 <OfferProduct />
                 <ProductBlog />

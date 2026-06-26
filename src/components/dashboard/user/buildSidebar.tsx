@@ -40,6 +40,7 @@ const iconMap: Record<PageAccess, React.ReactNode> = {
   "my-orders": <Package className="h-5 w-5" />,
   "orders-management": <ListOrdered className="h-5 w-5" />,
   "user-management": <Users className="h-5 w-5" />,
+  "product-verifications": <Box className="h-5 w-5" />,
   "staff-management": <Users className="h-5 w-5" />,
   "customer-management": <User className="h-5 w-5" />,
   "reviews-management": <Star className="h-5 w-5" />,
@@ -62,6 +63,7 @@ const pageHrefMap: Record<any, string> = {
   "category-management": "/staff/dashboard/admin/category-management",
   "brand-management": "/staff/dashboard/admin/brand-management",
   "purchase-products": "/staff/dashboard/admin/purchase-products",
+  "product-verifications": "/staff/dashboard/product-verifications",
   returns: "/staff/dashboard/admin/returns",
   
   coupons: "/staff/dashboard/coupons",
@@ -94,6 +96,7 @@ export const buildSidebarItems = (
       "purchase-products",
       "returns",
       "category-management",
+      "product-verifications",
       "reviews-management",
       "brand-management",
       "coupons",

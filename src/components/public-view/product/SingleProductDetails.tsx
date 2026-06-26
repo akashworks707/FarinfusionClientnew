@@ -71,7 +71,7 @@ const SingleProductDetails = () => {
 
   const availableStock = product?.availableStock || 0;
   const isOutOfStock = !product?.availableStock || product?.availableStock <= 0;
-  const isMaxQtyReached = cartItem && cartItem.quantity >= availableStock;
+  // const isMaxQtyReached = cartItem && cartItem.quantity >= availableStock;
   
 
   if (isLoading) {
@@ -216,12 +216,12 @@ const SingleProductDetails = () => {
                 </div>
 
                 {/* stock */}
-                <p className="text-sm text-gray-600">
+                {/* <p className="text-sm text-gray-600">
                   Stock:{" "}
                   <span className="font-semibold">
                     {availableStock > 0 ? availableStock : "Out of stock"}
                   </span>
-                </p>
+                </p> */}
 
                 {/* QTY */}
                 <div className="flex items-center gap-3 flex-wrap">
@@ -292,7 +292,7 @@ const SingleProductDetails = () => {
                       >
                         Add To Cart
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => {
                         if (isMaxQtyReached) {
                           router.push("/checkout");
@@ -304,7 +304,7 @@ const SingleProductDetails = () => {
                         className="cursor-pointer flex-1 min-w-40 h-10 text-white bg-[#c9a227] font-bold rounded-md"
                       >
                         Buy Now
-                      </button>
+                      </button> */}
                     </>
                   )}
                 </div>

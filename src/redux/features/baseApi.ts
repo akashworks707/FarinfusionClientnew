@@ -9,6 +9,7 @@ export const baseApi = createApi({
     "USER",
     "CUSTOMERS",
     "CUSTOMER",
+    "ProductVerification",
     "ME",
     "REVIEWS",
     "REVIEW",
