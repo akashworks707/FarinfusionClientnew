@@ -10,7 +10,7 @@ export const productVerificationApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
-      invalidatesTags: ["ProductVerification"],
+      invalidatesTags: ["PRODUCT_VERIFICATION"],
     }),
 
     // Get All
@@ -20,7 +20,7 @@ export const productVerificationApi = baseApi.injectEndpoints({
         method: "GET",
         params,
       }),
-      providesTags: ["ProductVerification"],
+      providesTags: ["PRODUCT_VERIFICATION"],
     }),
 
     // Get Single (id or slug)
@@ -29,7 +29,7 @@ export const productVerificationApi = baseApi.injectEndpoints({
         url: `/product-verifications/${idOrSlug}`,
         method: "GET",
       }),
-      providesTags: ["ProductVerification"],
+      providesTags: ["PRODUCT_VERIFICATION"],
     }),
 
     // Update
@@ -39,7 +39,7 @@ export const productVerificationApi = baseApi.injectEndpoints({
         method: "PATCH",
         data,
       }),
-      invalidatesTags: ["ProductVerification"],
+      invalidatesTags: ["PRODUCT_VERIFICATION"],
     }),
 
     increaseVerificationView: builder.mutation<
@@ -51,7 +51,7 @@ export const productVerificationApi = baseApi.injectEndpoints({
         method: "PATCH",
       }),
 
-      invalidatesTags: ["ProductVerification"],
+      invalidatesTags: ["PRODUCT_VERIFICATION"],
     }),
 
     // Delete
@@ -60,7 +60,7 @@ export const productVerificationApi = baseApi.injectEndpoints({
         url: `/product-verifications/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["ProductVerification"],
+      invalidatesTags: ["PRODUCT_VERIFICATION"],
     }),
   }),
 });
