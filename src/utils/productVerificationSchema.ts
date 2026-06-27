@@ -10,7 +10,7 @@ export const productVerificationFormSchema = z.object({
   mediaType: z.enum(["VIDEO", "PDF", "ARTICLE", "EXTERNAL_LINK"], {
     error: "Invalid media type",
   }),
-  category: z.enum(["COSMETICS", "SKIN_CARE", "HEALTH", "PERFUME", "ELECTRONICS", "OTHERS"], {
+  category: z.enum(["COSMETICS", "SKIN_CARE", "HEALTH", "PERFUME", "OTHERS"], {
     error: "Invalid category",
   }),
   tags: z.array(z.string()).optional(),

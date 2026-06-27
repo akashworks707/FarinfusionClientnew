@@ -1,6 +1,6 @@
 export type VerificationContentType = "VIDEO" | "ARTICLE" | "PDF" | "IMAGE" | "EXTERNAL_LINK";
 export type VerificationStatus = "PUBLISHED" | "DRAFT";
-export type VerificationCategory = "COSMETICS" | "SKIN_CARE" | "HEALTH" | "PERFUME" | "ELECTRONICS" | "OTHERS";
+export type VerificationCategory = "COSMETICS" | "SKIN_CARE" | "HEALTH" | "PERFUME" | "OTHERS";
 
 export interface IUser {
   _id: string;

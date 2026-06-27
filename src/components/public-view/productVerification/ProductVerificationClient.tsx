@@ -2,7 +2,10 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { useGetAllProductVerificationsQuery } from "@/redux/features/productVerification/productVerification.api";
+import {
+  useGetAllProductVerificationsQuery,
+  useIncreaseVerificationViewMutation,
+} from "@/redux/features/productVerification/productVerification.api";
 import { ProductVerificationCategories } from "./ProductVerificationCategories";
 import { FeaturedVerification } from "./FeaturedVerification";
 import { IProductVerification } from "@/types/productVerification";
@@ -53,10 +56,18 @@ export default function ProductVerificationClient() {
     setPage(1);
   }, []);
 
-  const handleWatchClick = useCallback((verification: IProductVerification) => {
+  const [increaseView] = useIncreaseVerificationViewMutation();
+
+  const handleWatchClick = async (verification: IProductVerification) => {
     setSelectedVerification(verification);
     setOpenModal(true);
-  }, []);
+
+    try {
+      await increaseView(verification._id).unwrap();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   // Fetch data with query params
   const {

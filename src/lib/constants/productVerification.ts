@@ -17,7 +17,6 @@ export const VERIFICATION_CATEGORY_OPTIONS: { label: string; value: Verification
   { label: "Skin Care", value: "SKIN_CARE" },
   { label: "Health", value: "HEALTH" },
   { label: "Perfume", value: "PERFUME" },
-  { label: "Electronics", value: "ELECTRONICS" },
   { label: "Others", value: "OTHERS" },
 ];
 
@@ -53,7 +52,6 @@ export const CATEGORY_DISPLAY: Record<VerificationCategory, string> = {
   SKIN_CARE: "Skin Care",
   HEALTH: "Health",
   PERFUME: "Perfume",
-  ELECTRONICS: "Electronics",
   OTHERS: "Others",
 };
 

@@ -1,3 +1,4 @@
+import { IResponse } from "@/types";
 import { baseApi } from "../baseApi";
 
 export const productVerificationApi = baseApi.injectEndpoints({
@@ -36,8 +37,20 @@ export const productVerificationApi = baseApi.injectEndpoints({
       query: ({ id, data }) => ({
         url: `/product-verifications/${id}`,
         method: "PATCH",
-       data,
+        data,
       }),
+      invalidatesTags: ["ProductVerification"],
+    }),
+
+    increaseVerificationView: builder.mutation<
+      IResponse<{ views: number }>,
+      string
+    >({
+      query: (id) => ({
+        url: `/product-verifications/${id}/view`,
+        method: "PATCH",
+      }),
+
       invalidatesTags: ["ProductVerification"],
     }),
 
@@ -58,4 +71,5 @@ export const {
   useGetSingleProductVerificationQuery,
   useUpdateProductVerificationMutation,
   useDeleteProductVerificationMutation,
+  useIncreaseVerificationViewMutation,
 } = productVerificationApi;

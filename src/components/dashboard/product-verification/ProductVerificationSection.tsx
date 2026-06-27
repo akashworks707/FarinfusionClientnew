@@ -13,7 +13,10 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useGetAllProductVerificationsQuery } from "@/redux/features/productVerification/productVerification.api";
+import {
+  useGetAllProductVerificationsQuery,
+  useIncreaseVerificationViewMutation,
+} from "@/redux/features/productVerification/productVerification.api";
 import { IProductVerification } from "@/types/productVerification";
 import { ProductVerificationCardSkeleton } from "./ProductVerificationSkeleton";
 import { cn } from "@/lib/utils";
@@ -167,14 +170,21 @@ export default function ProductVerificationSection() {
 
   const { data, isLoading } = useGetAllProductVerificationsQuery({});
 
+  const [increaseView] = useIncreaseVerificationViewMutation();
   const verifications = useMemo(
     () => data?.data?.data || [],
     [data?.data?.data],
   );
 
-  const handleWatch = (verification: IProductVerification) => {
+  const handleWatch = async (verification: IProductVerification) => {
     setSelectedVerification(verification);
     setIsModalOpen(true);
+
+    try {
+      await increaseView(verification._id).unwrap();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCloseModal = () => {
