@@ -36,7 +36,7 @@ const reviewFormSchema = z.object({
   rating: z.number().min(1).max(5),
   reviewText: z.string().min(10, "Review text must be at least 10 characters"),
   reviewSource: z.enum(["FACEBOOK", "WEBSITE"]),
-  status: z.enum(["PENDING", "APPROVED", "REJECTED"]),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
 });
 
 type ReviewFormValues = z.infer<typeof reviewFormSchema>;
@@ -91,6 +91,44 @@ export function ReviewFormDialog({
       status: review?.status || "PENDING",
     },
   });
+
+  useEffect(() => {
+    if (!open) return;
+
+    if (review) {
+      reset({
+        product: review.product?._id || "",
+        customerName: review.customerName || "",
+        rating: review.rating || 5,
+        reviewText: review.reviewText || "",
+        reviewSource: review.reviewSource || "WEBSITE",
+        status: review.status || "PENDING",
+      });
+
+      setSelectedProduct(review.product || null);
+      setImagePreview(review.reviewImage || null);
+      setImageFile(null);
+
+      // Show selected product in search input
+      setProductSearch(review.product?.title || "");
+      setDebouncedSearch("");
+    } else {
+      reset({
+        product: "",
+        customerName: "",
+        rating: 5,
+        reviewText: "",
+        reviewSource: "WEBSITE",
+        status: "PENDING",
+      });
+
+      setSelectedProduct(null);
+      setImagePreview(null);
+      setImageFile(null);
+      setProductSearch("");
+      setDebouncedSearch("");
+    }
+  }, [review, open, reset]);
 
   const rating = watch("rating");
 
@@ -168,7 +206,7 @@ export function ReviewFormDialog({
         rating: values.rating,
         reviewText: values.reviewText,
         reviewSource: values.reviewSource,
-        status: values.status,
+        status: values.status || "APPROVED",
       };
 
       if (imageFile) {
@@ -447,21 +485,6 @@ export function ReviewFormDialog({
               <SelectContent>
                 <SelectItem value="WEBSITE">Website</SelectItem>
                 <SelectItem value="FACEBOOK">Facebook</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Status *</label>
-            <Select {...register("status")} defaultValue="PENDING">
-              <SelectTrigger className={cn(inputCls)}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="APPROVED">Approved</SelectItem>
-                <SelectItem value="REJECTED">Rejected</SelectItem>
               </SelectContent>
             </Select>
           </div>

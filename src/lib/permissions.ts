@@ -11,6 +11,7 @@ export type PageAccess =
   | "reviews-management"
   | "brand-management"
   | "coupons"
+  | "blogs"
   | "customer-management"
   | "my-customers"
   | "orders-management"
@@ -44,6 +45,7 @@ export const defaultRolePermissions: Record<UserRole, PageAccess[]> = {
     "brand-management",
     "reviews-management",
     "coupons",
+    "blogs",
     "staff-management",
     "customer-management",
     "my-customers",
@@ -59,6 +61,7 @@ export const defaultRolePermissions: Record<UserRole, PageAccess[]> = {
     "category-management",
     "reviews-management",
     "coupons",
+    "blogs",
     "orders-management",
     "leads",
     "my-orders",
@@ -88,6 +91,7 @@ export const availablePages: { id: PageAccess; label: string; icon: string }[] =
     { id: "reviews-management", label: "Reviews", icon: "💼" },
     { id: "product-verifications", label: "Product Verifications", icon: "📦" },
     { id: "coupons", label: "Coupons", icon: "🎁" },
+    { id: "blogs", label: "Blogs", icon: "📋" },
     { id: "purchase-products", label: "Purchase Products", icon: "🛒" },
     { id: "returns", label: "Returns", icon: "📦" },
     { id: "staff-management", label: "Staffs", icon: "👥" },

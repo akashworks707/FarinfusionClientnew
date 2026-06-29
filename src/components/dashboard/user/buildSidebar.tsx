@@ -52,6 +52,7 @@ const iconMap: Record<PageAccess, React.ReactNode> = {
   "brand-management": <Tag className="h-5 w-5" />,
 
   coupons: <Ticket className="h-5 w-5" />,
+  blogs: <ListOrdered className="h-5 w-5" />,
   leads: <Target className="h-5 w-5" />,
   pos: <Store className="h-5 w-5" />,
   "courier-settings": <Settings className="h-5 w-5" />,
@@ -67,6 +68,7 @@ const pageHrefMap: Record<any, string> = {
   returns: "/staff/dashboard/admin/returns",
   
   coupons: "/staff/dashboard/coupons",
+  blogs: "/staff/dashboard/blog",
   "staff-management": "/staff/dashboard/admin/user-management",
   "reviews-management": "/staff/dashboard/reviews",
   "customer-management": "/staff/dashboard/admin/customer-management",
@@ -100,6 +102,7 @@ export const buildSidebarItems = (
       "reviews-management",
       "brand-management",
       "coupons",
+      "blogs",
       "staff-management",
       "customer-management",
       "my-customers",

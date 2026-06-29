@@ -53,6 +53,7 @@ export interface ProductBlogQueryParams {
   searchTerm?: string;
 
   status?: string;
+  sort?: string;
 
   category?: string;
 
