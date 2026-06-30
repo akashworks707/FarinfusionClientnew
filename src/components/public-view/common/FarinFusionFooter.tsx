@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import Link from "next/link";
@@ -5,28 +6,18 @@ import Image from "next/image";
 import payments from "../../../../public/payments.webp";
 import FooterServiceStrip from "@/components/public-view/common/FooterServiceStrip";
 import { Facebook, Instagram, Music } from "lucide-react";
-
-/* DATA */
-const categories = [
-  "Baby Cream",
-  "Baby Lotion",
-  "Baby Suncream",
-  "Cream",
-  "Face Serum",
-];
+import { useGetAllCategoriesQuery } from "@/redux/features/category/category.api";
 
 const usefulLinks = [
-  { title: "Promotions", link: "/promotions" },
+  { title: "Blog", link: "/blog" },
   { title: "Stores", link: "/stores" },
   { title: "Our contacts", link: "/our-contacts" },
   { title: "Delivery & Return", link: "/delivery-return" },
-  { title: "Outlet", link: "/outlet" },
 ];
 
 const footerMenu = [
   { title: "Blog", link: "/blog" },
   { title: "Our contacts", link: "/our-contacts" },
-  { title: "Promotions", link: "/promotions" },
   { title: "Stores", link: "/stores" },
   { title: "Delivery & Return", link: "/delivery-return" },
 ];
@@ -44,6 +35,7 @@ const socials = [
 ];
 
 export default function FarinFusionFooter() {
+  const { data: categories } = useGetAllCategoriesQuery({});
   return (
     <footer className="primaryDark text-white">
       <div className="container mx-auto border-b px-4 border-white/10">
@@ -73,10 +65,13 @@ export default function FarinFusionFooter() {
           <div>
             <h4 className="text-lg font-semibold mb-4">Categories</h4>
             <ul className="space-y-2 text-sm text-white/60">
-              {categories.map((item) => (
-                <li key={item}>
-                  <Link href="#" className="hover:text-[#e8c97e]">
-                    {item}
+              {categories?.data?.slice(0, 5).map((category: any) => (
+                <li key={category._id}>
+                  <Link
+                    href={`/shop?category=${category.slug}`}
+                    className="hover:text-[#e8c97e] transition-colors"
+                  >
+                    {category.title}
                   </Link>
                 </li>
               ))}

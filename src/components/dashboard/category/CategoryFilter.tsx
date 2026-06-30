@@ -19,8 +19,6 @@ interface CategoryFilterProps {
 export default function CategoryFilter({ onChange }: CategoryFilterProps) {
   const { data, isLoading } = useGetAllCategoriesQuery({});
 
-  console.log("categories ", data);
-
   const categories = data?.data || [];
 
   // "All Categories" এর জন্য dummy value "all" ব্যবহার করা হচ্ছে
