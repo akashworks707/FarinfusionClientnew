@@ -48,12 +48,7 @@ const signupSchema = z
   .object({
     name: z.string().min(2, "Full name must be at least 2 characters"),
     email: z.string().email("Please enter a valid email address"),
-    phone: z
-      .string({ message: "Phone Number must be string" })
-      .regex(/^(?:\+880|0)[1-9]\d{7,9}$/, {
-        message:
-          "Phone number must be valid for Bangladesh. Format: +88XXXXXXXXX or 0XXXXXXXXX",
-      }),
+    phone: z.string({ message: "Phone Number must be string" }),
     address: z.string().min(5, "Address must be at least 5 characters"),
     salary: z.preprocess((val) => {
       if (val === "" || val === undefined || val === null) return undefined;
