@@ -12,7 +12,6 @@ const usefulLinks = [
   { title: "Blog", link: "/blog" },
   { title: "Stores", link: "/stores" },
   { title: "Our contacts", link: "/our-contacts" },
-  { title: "Delivery & Return", link: "/delivery-return" },
 ];
 
 const footerMenu = [

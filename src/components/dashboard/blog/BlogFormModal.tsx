@@ -74,7 +74,6 @@ export function BlogFormModal({ isOpen, editBlog, onClose }: Props) {
   });
 
   const thumbnail = watch("thumbnail");
-  const banner = watch("banner");
 
   // Populate form when editing
   useEffect(() => {
@@ -86,7 +85,6 @@ export function BlogFormModal({ isOpen, editBlog, onClose }: Props) {
         category: editBlog.category,
         contentType: editBlog.contentType,
         thumbnail: editBlog.thumbnail || "",
-        banner: editBlog.banner || "",
         tags: tagsToString(editBlog.tags || []),
         featured: editBlog.featured,
         status: editBlog.status,
@@ -99,7 +97,6 @@ export function BlogFormModal({ isOpen, editBlog, onClose }: Props) {
         category: "",
         contentType: "ARTICLE",
         thumbnail: "",
-        banner: "",
         tags: "",
         featured: false,
         status: "PUBLISHED",
@@ -115,7 +112,6 @@ export function BlogFormModal({ isOpen, editBlog, onClose }: Props) {
       category: values.category,
       contentType: values.contentType,
       thumbnail: values.thumbnail || undefined,
-      banner: values.banner || undefined,
       tags: values.tags ? parseTags(values.tags) : [],
       featured: values.featured ?? false,
       status: values.status ?? "PUBLISHED",
@@ -233,7 +229,7 @@ export function BlogFormModal({ isOpen, editBlog, onClose }: Props) {
 
            
             {/* Thumbnail + Banner */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <ImageUploadField
                 label="Thumbnail"
                 hint="400×300"
@@ -242,14 +238,7 @@ export function BlogFormModal({ isOpen, editBlog, onClose }: Props) {
                 onClear={() => setValue("thumbnail", "")}
                 aspectRatio="thumbnail"
               />
-              <ImageUploadField
-                label="Banner"
-                hint="1200×400"
-                value={banner}
-                onChange={(url) => setValue("banner", url, { shouldValidate: true })}
-                onClear={() => setValue("banner", "")}
-                aspectRatio="banner"
-              />
+            
             </div>
 
             {/* Tags */}

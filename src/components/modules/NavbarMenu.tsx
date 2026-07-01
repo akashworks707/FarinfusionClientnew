@@ -12,7 +12,7 @@ import { RegisterForm } from "@/components/auth/SignupForm";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useGetAllCategoriesQuery } from "@/redux/features/category/category.api";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { SearchDropdown } from "./SearchDropdown";
@@ -36,6 +36,23 @@ const NavbarMenu: React.FC = () => {
 
   const cartCount = useSelector((state: RootState) => state.cart.items.length);
   const wishCount = useSelector((state: RootState) => state.wish.items.length);
+  const pathname = usePathname();
+
+  const handleSpecialBeautyDeal = () => {
+    if (pathname === "/") {
+      const section = document.getElementById("special-beauty-deal");
+
+      if (section) {
+        section.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+      return;
+    }
+
+    router.push("/#special-beauty-deal");
+  };
 
   function closeAll() {
     setLoginOpen(false);
@@ -174,13 +191,12 @@ const NavbarMenu: React.FC = () => {
           </div>
 
           {/* RIGHT */}
-          <div className="flex items-center gap-1" >
+          <div className="flex items-center gap-1">
             {/* SEARCH */}
-            <div className="relative" >
+            <div className="relative">
               <button
                 onClick={() => setSearchModalOpen((prev) => !prev)}
                 className="flex items-center bg-white/10 hover:bg-white/20 transition rounded-full p-2"
-                
               >
                 <Search size={20} className="text-white" />
               </button>
@@ -287,7 +303,7 @@ const NavbarMenu: React.FC = () => {
                 )}
               </div>
             ) : (
-              <button className="text-white">
+              <button onClick={handleSpecialBeautyDeal} className="text-white">
                 <div className="flex items-center gap-2.5 px-6 py-2 rounded-full fusion-offer">
                   <Gift className="w-5 h-5" />
                   <span className="text-[13px] font-bold">
