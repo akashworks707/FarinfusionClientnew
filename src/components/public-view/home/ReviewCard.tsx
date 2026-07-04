@@ -12,14 +12,9 @@ interface Props {
 export function ReviewCard({ review }: Props) {
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-amber-100">
-
       <div className="relative h-52 bg-linear-to-b from-amber-200 to-amber-100">
-
         <Image
-          src={
-            review.product?.images?.[0] ||
-            "/placeholder-product.jpg"
-          }
+          src={review.product?.images?.[0] || "/placeholder-product.jpg"}
           alt={review.product?.title || ""}
           fill
           className="object-contain p-4"
@@ -32,7 +27,7 @@ export function ReviewCard({ review }: Props) {
               alt={review.customerName}
               width={400}
               height={300}
-              className="w-full h-auto object-cover"
+              className="w-full h-40 object-cover"
             />
           </div>
         )}
@@ -52,7 +47,6 @@ export function ReviewCard({ review }: Props) {
       </div>
 
       <div className="p-4">
-
         <Link
           href={`/product/${review.product?.slug}`}
           className="font-bold text-base hover:text-amber-600 transition-colors line-clamp-2 uppercase"
@@ -69,9 +63,7 @@ export function ReviewCard({ review }: Props) {
             {new Date(review.createdAt).toLocaleDateString()}
           </p>
 
-          <p className="text-sm font-medium mt-1">
-            By {review.customerName}
-          </p>
+          <p className="text-sm font-medium mt-1">By {review.customerName}</p>
         </div>
       </div>
     </div>

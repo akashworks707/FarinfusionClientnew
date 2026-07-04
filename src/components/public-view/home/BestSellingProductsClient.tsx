@@ -23,7 +23,7 @@ export function BestSellingProductsClient({
   if (!bestSellingProducts?.length) return null;
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16 max-w-352 mx-auto">
       <div className="container mx-auto px-4">
         <div className="flex justify-center mb-10">
           <h2 className="px-4 py-2 text-xl md:text-3xl font-black uppercase tracking-wide">

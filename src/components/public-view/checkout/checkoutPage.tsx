@@ -6,6 +6,7 @@ import { AlertCircleIcon, X } from "lucide-react";
 import Image from "next/image";
 
 import { CartBreadcrumb } from "../common/CartBreadCrumb";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ReturnPolicy from "../common/ReturnPolicy";
 
 import { Input } from "@/components/ui/input";
@@ -43,6 +44,14 @@ export default function CheckoutPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [orderInfo, setOrderInfo] = useState<any>(null);
   const router = useRouter();
+  const INSIDE_DHAKA = 80;
+  const OUTSIDE_DHAKA = 120;
+
+  const [deliveryArea, setDeliveryArea] = useState<
+    "INSIDE_DHAKA" | "OUTSIDE_DHAKA"
+  >("INSIDE_DHAKA");
+
+  const [deliveryCharge, setDeliveryCharge] = useState(INSIDE_DHAKA);
 
   const {
     register,
@@ -56,22 +65,44 @@ export default function CheckoutPage() {
   const { data: user } = useGetMeQuery(undefined);
 
   const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null | undefined>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null | undefined>(
+    null,
+  );
 
   const [applyCoupon, { isLoading: isApplying }] = useApplyCouponMutation();
 
-  const [createOrder, { isLoading: isCreatingOrder }] = useCreateOrderMutation();
+  const [createOrder, { isLoading: isCreatingOrder }] =
+    useCreateOrderMutation();
 
   const cartTotal = useMemo(() => {
     return cartList.reduce((sum, item) => {
-      const unitPrice = item?.discountPrice && item.discountPrice > 0 ? item.discountPrice : item.price;
+      const unitPrice =
+        item?.discountPrice && item.discountPrice > 0
+          ? item.discountPrice
+          : item.price;
       return sum + unitPrice * item?.quantity;
       // return sum + (item.discountPrice || 0) * item.quantity;
     }, 0);
   }, [cartList]);
-  const hasInvalidQty = cartList.some((item) => item.quantity > item.availableStock);
+  const hasInvalidQty = cartList.some(
+    (item) => item.quantity > item.availableStock,
+  );
 
-  const payableTotal = finalTotal || cartTotal;
+  const handleDeliveryAreaChange = (
+    value: "INSIDE_DHAKA" | "OUTSIDE_DHAKA",
+  ) => {
+    setDeliveryArea(value);
+
+    if (value === "INSIDE_DHAKA") {
+      setDeliveryCharge(INSIDE_DHAKA);
+    } else {
+      setDeliveryCharge(OUTSIDE_DHAKA);
+    }
+  };
+
+  const subtotal = finalTotal || cartTotal;
+
+  const payableTotal = subtotal + Number(deliveryCharge || 0);
 
   const handleApplyCoupon = async () => {
     try {
@@ -129,6 +160,7 @@ export default function CheckoutPage() {
 
         total: payableTotal,
         discount: discount || 0,
+        shippingCost: deliveryCharge || 0,
 
         billingDetails: {
           fullName: data.fullName,
@@ -149,9 +181,7 @@ export default function CheckoutPage() {
     } catch (error: any) {
       toast.error(error?.data?.message || "Checkout failed");
     }
-  };  
-
-
+  };
 
   if (cartList.length === 0) {
     return <EmptyCartList />;
@@ -206,11 +236,57 @@ export default function CheckoutPage() {
                   </p>
                 )}
               </div>
+
+              <div className="mt-6 space-y-5">
+                <div>
+                  <Label className={labelClass}>Delivery Area</Label>
+
+                  <RadioGroup
+                    value={deliveryArea}
+                    onValueChange={(value) =>
+                      handleDeliveryAreaChange(
+                        value as "INSIDE_DHAKA" | "OUTSIDE_DHAKA",
+                      )
+                    }
+                    className="mt-3 flex gap-8"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="INSIDE_DHAKA" id="inside-dhaka" />
+                      <Label htmlFor="inside-dhaka" className="cursor-pointer">
+                        Inside Dhaka
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem
+                        value="OUTSIDE_DHAKA"
+                        id="outside-dhaka"
+                      />
+                      <Label htmlFor="outside-dhaka" className="cursor-pointer">
+                        Outside Dhaka
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div>
+                  <Label className={labelClass}>Delivery Charge</Label>
+
+                  <Input
+                    type="number"
+                    className={inputClass}
+                    value={deliveryCharge}
+                    onChange={(e) =>
+                      setDeliveryCharge(Number(e.target.value) || 0)
+                    }
+                  />
+                </div>
+              </div>
             </form>
           </div>
 
           {/*/!* Payment *!/*/}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-sm p-6 mt-5">
             <h2 className="text-xl font-bold mb-6">Payment Information</h2>
 
             <Alert className="bg-[#E0B252] border-yellow-300 mb-6">
@@ -269,12 +345,13 @@ export default function CheckoutPage() {
                     </p>
                   </div>
 
-                  <div>৳ 
+                  <div>
+                    ৳
                     {(
-                          (item?.discountPrice && item.discountPrice > 0
-                            ? item.discountPrice
-                            : item.price) * item.quantity
-                        ).toLocaleString()}
+                      (item?.discountPrice && item.discountPrice > 0
+                        ? item.discountPrice
+                        : item.price) * item.quantity
+                    ).toLocaleString()}
                   </div>
                 </div>
               ))
@@ -315,6 +392,11 @@ export default function CheckoutPage() {
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>৳{cartTotal}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Delivery Charge</span>
+                <span>৳{deliveryCharge}</span>
               </div>
 
               {discount > 0 && (

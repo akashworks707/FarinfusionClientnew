@@ -70,7 +70,6 @@ const schema = z.object({
   description: z.string().min(10, "Description required"),
   images: z.array(z.instanceof(File)).min(1, "At least one image required"),
   barcode: z.string().optional(),
-  isBestSelling: z.enum(["true", "false"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -98,7 +97,6 @@ export default function CreateProduct() {
     resolver: zodResolver(schema) as any,
     defaultValues: {
       status: ProductStatus.ACTIVE,
-      isBestSelling: "false",
     },
   });
 
@@ -158,7 +156,6 @@ export default function CreateProduct() {
         status: data.status,
         description: data.description,
         images: imageUrls,
-        isBestSelling: data.isBestSelling || false,
         barcode: data.barcode,
       };
 
@@ -312,27 +309,35 @@ export default function CreateProduct() {
                 )}
               </div>
 
-              <div className={"space-y-2"}>
-                <Label>Best Selling Status</Label>
+              {/* <div className="space-y-2">
+                <Label>Best Selling Product</Label>
 
                 <Controller
                   control={control}
                   name="isBestSelling"
                   render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
+                    <div className="flex items-center space-x-3 rounded-lg border p-4">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) =>
+                          field.onChange(checked === true)
+                        }
+                      />
 
-                      <SelectContent position={"popper"}>
-                        <SelectItem value="true">Best Selling</SelectItem>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Show as Best Selling Product
+                        </p>
 
-                        <SelectItem value="false">Normal Product</SelectItem>
-                      </SelectContent>
-                    </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Enable this to display the product in the Best Selling
+                          section on the homepage.
+                        </p>
+                      </div>
+                    </div>
                   )}
                 />
-              </div>
+              </div> */}
 
               <div className="space-y-2">
                 <Label>Barcode</Label>

@@ -37,6 +37,7 @@ import { IBrand, ICategory } from "@/types";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import { Separator } from "@/components/ui/separator";
 import { useGetMeQuery } from "@/redux/features/user/user.api";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Editor
 const ProductEditor = dynamic(
@@ -69,7 +70,7 @@ const schema = z.object({
   description: z.string(),
   images: z.any().optional(),
   isCusFavorite: z.enum(["true", "false"]),
-  isBestSelling: z.enum(["true", "false"]),
+  isBestSelling: z.boolean().default(false),
   barcode: z.string().optional(),
   adjustStock: z.preprocess(
     (v) => (v === "" || v === undefined ? 0 : Number(v)),
@@ -152,7 +153,7 @@ const UpdateProduct = () => {
         description: p.description,
         barcode: p.barcode || "",
         isCusFavorite: p?.isCusFavorite === true ? "true" : "false",
-        isBestSelling: p?.isBestSelling === true ? "true" : "false",
+        isBestSelling: !!p?.isBestSelling,
       });
 
       setTimeout(() => {
@@ -239,7 +240,7 @@ const UpdateProduct = () => {
         status: data.status,
         description: data.description,
         isCusFavorite: data.isCusFavorite === "true",
-        isBestSelling: data.isBestSelling === "true",
+        isBestSelling: data.isBestSelling,
         images: allImages,
         barcode: data.barcode,
       };
@@ -408,28 +409,36 @@ const UpdateProduct = () => {
                 />
               </div>
 
-              <div className={"space-y-2"}>
-                <Label>Best Selling Status</Label>
+            </div>
+              <div className="space-y-2 max-w-lg">
+                <Label>Best Selling Product</Label>
 
                 <Controller
                   control={control}
                   name="isBestSelling"
                   render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
+                    <div className="flex items-center space-x-3 rounded-lg border p-4">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) =>
+                          field.onChange(checked === true)
+                        }
+                      />
 
-                      <SelectContent position={"popper"}>
-                        <SelectItem value="true">Best Selling</SelectItem>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Show as Best Selling Product
+                        </p>
 
-                        <SelectItem value="false">Normal Product</SelectItem>
-                      </SelectContent>
-                    </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Enable this to display the product in the Best Selling
+                          section on the homepage.
+                        </p>
+                      </div>
+                    </div>
                   )}
                 />
               </div>
-            </div>
 
             {/* PRICE */}
             <div className="grid md:grid-cols-4 gap-4">

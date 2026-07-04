@@ -54,7 +54,7 @@ export function ReviewsCarousel() {
   const currentReviews = pages[currentPage] || [];
 
   return (
-    <section className="py-20 bg-amber-50">
+    <section className="py-16">
       <div className="max-w-352 px-5 container mx-auto">
 
         <div className="text-center mb-10">
