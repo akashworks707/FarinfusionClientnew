@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Heart, icons, Search, ShoppingCart, Star } from "lucide-react";
+import { Heart, Search, ShoppingCart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -105,7 +105,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <>
       <div
-        className="group w-full block bg-white rounded-2xl shadow-md overflow-hidden p-2 relative md:flex flex-col h-full
+        className="group w-full block rounded-2xl border overflow-hidden p-2 relative md:flex flex-col h-full
           transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
       >
         {/* Wishlist */}
