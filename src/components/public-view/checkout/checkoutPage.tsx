@@ -192,10 +192,10 @@ export default function CheckoutPage() {
 
   const onSubmitHandler = async (data: FormData) => {
     try {
-      if (!user?.data) {
-        toast.error("User not loaded");
-        return;
-      }
+      // if (!user?.data) {
+      //   toast.error("User not loaded");
+      //   return;
+      // }
 
       if (cartList.length === 0) {
         toast.error("Cart is empty");
@@ -222,7 +222,7 @@ export default function CheckoutPage() {
 
         billingDetails: {
           fullName: data.fullName,
-          email: userEmail,
+          email: userEmail || undefined,
           phone: data.phone,
           address: data.address,
         },

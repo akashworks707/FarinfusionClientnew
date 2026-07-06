@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import Image from 'next/image';
-import { ExternalLink} from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { IProductVerification } from '@/types/productVerification';
+import { useEffect } from "react";
+import Image from "next/image";
+import { ExternalLink } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { IProductVerification } from "@/types/productVerification";
 
 interface VerificationViewerModalProps {
   isOpen: boolean;
@@ -14,21 +14,21 @@ interface VerificationViewerModalProps {
 
 function getYouTubeEmbedUrl(url: string) {
   const patterns = [
-    /(?:youtube\.com\/watch\?v=)([^&]+)/,
-    /(?:youtu\.be\/)([^?]+)/,
-    /(?:youtube\.com\/embed\/)([^?]+)/,
-    /(?:youtube\.com\/shorts\/)([^?]+)/,
-    /(?:youtube\.com\/live\/)([^?]+)/,
+    /youtu\.be\/([^?&]+)/,
+    /youtube\.com\/watch\?v=([^&]+)/,
+    /youtube\.com\/shorts\/([^?&]+)/,
+    /youtube\.com\/live\/([^?&]+)/,
+    /youtube\.com\/embed\/([^?&]+)/,
   ];
 
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match?.[1]) {
-      return `https://www.youtube.com/embed/${match[1]}?rel=0&modestbranding=1`;
+      return `https://www.youtube.com/embed/${match[1]}`;
     }
   }
 
-  return "";
+  return url;
 }
 
 export default function PublicVerificationViewerModal({
@@ -39,15 +39,14 @@ export default function PublicVerificationViewerModal({
   // const [copied, setCopied] = useState(false);
   const embedUrl = getYouTubeEmbedUrl(verification.mediaUrl);
 
-
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
@@ -83,20 +82,24 @@ export default function PublicVerificationViewerModal({
 
   const renderMediaContent = () => {
     switch (verification.mediaType) {
-      case 'VIDEO':
+      case "VIDEO":
         return (
-          <div className="relative w-full bg-black rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+          <div
+            className="relative w-full bg-black rounded-lg overflow-hidden"
+            style={{ paddingBottom: "56.25%" }}
+          >
             <iframe
-              className="absolute top-0 left-0 w-full h-full"
               src={embedUrl}
               title={verification.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
             />
           </div>
         );
 
-      case 'PDF':
+      case "PDF":
         return (
           <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden">
             <iframe
@@ -118,7 +121,7 @@ export default function PublicVerificationViewerModal({
           </div>
         );
 
-      case 'IMAGE':
+      case "IMAGE":
         return (
           <div className="relative w-full h-96 bg-slate-200 dark:bg-slate-700 rounded-lg overflow-hidden">
             <Image
@@ -130,7 +133,7 @@ export default function PublicVerificationViewerModal({
           </div>
         );
 
-      case 'EXTERNAL_LINK':
+      case "EXTERNAL_LINK":
         return (
           <div className="w-full p-6 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
             <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
@@ -182,9 +185,7 @@ export default function PublicVerificationViewerModal({
         </div>
 
         {/* Media Content */}
-        <div className="mb-2">
-          {renderMediaContent()}
-        </div>
+        <div className="mb-2">{renderMediaContent()}</div>
 
         {/* Description */}
         {/* <div className="mb-6">
