@@ -144,7 +144,7 @@ const Navbar: FC = () => {
         </div>
 
         {/* ── Desktop header ── */}
-        <div className="max-w-352 container hidden mx-auto px-5 lg:flex items-center justify-between h-20 gap-6">
+        <div className="max-w-360 container hidden mx-auto px-5 lg:flex items-center justify-between h-20 gap-6">
           {/* Logo */}
           <Link
             href="/"
@@ -164,7 +164,7 @@ const Navbar: FC = () => {
           {/* Search Bar — with dropdown */}
           <div
             ref={searchContainerRef}
-            className="relative flex-1 max-w-md mx-6 lg:mx-10"
+            className="relative flex-1 max-w-2xl mx-6 lg:mx-10"
           >
             <div className="relative">
               <Input

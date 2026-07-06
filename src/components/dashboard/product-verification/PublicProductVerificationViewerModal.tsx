@@ -2,13 +2,9 @@
 
 import { useEffect } from 'react';
 import Image from 'next/image';
-import { X, Eye, Tag, ExternalLink, Copy, Check } from 'lucide-react';
+import { ExternalLink} from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { IProductVerification } from '@/types/productVerification';
-import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
-import { useState } from 'react';
 
 interface VerificationViewerModalProps {
   isOpen: boolean;
@@ -16,13 +12,23 @@ interface VerificationViewerModalProps {
   verification: IProductVerification;
 }
 
-function getYouTubeEmbedUrl(url: string): string {
-  const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-  const match = url.match(youtubeRegex);
-  if (match && match[1]) {
-    return `https://www.youtube.com/embed/${match[1]}`;
+function getYouTubeEmbedUrl(url: string) {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=)([^&]+)/,
+    /(?:youtu\.be\/)([^?]+)/,
+    /(?:youtube\.com\/embed\/)([^?]+)/,
+    /(?:youtube\.com\/shorts\/)([^?]+)/,
+    /(?:youtube\.com\/live\/)([^?]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match?.[1]) {
+      return `https://www.youtube.com/embed/${match[1]}?rel=0&modestbranding=1`;
+    }
   }
-  return url;
+
+  return "";
 }
 
 export default function PublicVerificationViewerModal({
@@ -30,7 +36,9 @@ export default function PublicVerificationViewerModal({
   onClose,
   verification,
 }: VerificationViewerModalProps) {
-  const [copied, setCopied] = useState(false);
+  // const [copied, setCopied] = useState(false);
+  const embedUrl = getYouTubeEmbedUrl(verification.mediaUrl);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -43,35 +51,35 @@ export default function PublicVerificationViewerModal({
     };
   }, [isOpen]);
 
-  const handleCopyLink = async () => {
-    try {
-      const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/product-verification`;
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      toast.success('Link copied to clipboard');
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Failed to copy link');
-    }
-  };
+  // const handleCopyLink = async () => {
+  //   try {
+  //     const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/product-verification`;
+  //     await navigator.clipboard.writeText(url);
+  //     setCopied(true);
+  //     toast.success('Link copied to clipboard');
+  //     setTimeout(() => setCopied(false), 2000);
+  //   } catch {
+  //     toast.error('Failed to copy link');
+  //   }
+  // };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: verification.title,
-          text: verification.shortDescription,
-          url: '/product-verification',
-        });
-      } catch (err) {
-        if (err instanceof Error && err.message !== 'AbortError') {
-          toast.error('Failed to share');
-        }
-      }
-    } else {
-      handleCopyLink();
-    }
-  };
+  // const handleShare = async () => {
+  //   if (navigator.share) {
+  //     try {
+  //       await navigator.share({
+  //         title: verification.title,
+  //         text: verification.shortDescription,
+  //         url: '/product-verification',
+  //       });
+  //     } catch (err) {
+  //       if (err instanceof Error && err.message !== 'AbortError') {
+  //         toast.error('Failed to share');
+  //       }
+  //     }
+  //   } else {
+  //     handleCopyLink();
+  //   }
+  // };
 
   const renderMediaContent = () => {
     switch (verification.mediaType) {
@@ -80,7 +88,7 @@ export default function PublicVerificationViewerModal({
           <div className="relative w-full bg-black rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
             <iframe
               className="absolute top-0 left-0 w-full h-full"
-              src={getYouTubeEmbedUrl(verification.mediaUrl)}
+              src={embedUrl}
               title={verification.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -149,7 +157,7 @@ export default function PublicVerificationViewerModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header with Close */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <span className="inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-xs font-semibold rounded-full">
@@ -165,31 +173,31 @@ export default function PublicVerificationViewerModal({
               {verification.title}
             </h2>
           </div>
-          <button
+          {/* <button
             onClick={onClose}
             className="ml-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-          </button>
+          </button> */}
         </div>
 
         {/* Media Content */}
-        <div className="mb-6">
+        <div className="mb-2">
           {renderMediaContent()}
         </div>
 
         {/* Description */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
             Description
           </h3>
           <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
             {verification.description}
           </p>
-        </div>
+        </div> */}
 
         {/* Metadata */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+        {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
           <div>
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium mb-1">
               Views
@@ -223,9 +231,9 @@ export default function PublicVerificationViewerModal({
               {formatDistanceToNow(new Date(verification.createdAt), { addSuffix: true })}
             </p>
           </div>
-        </div>
+        </div> */}
 
-        {/* Tags */}
+        {/* Tags
         {verification.tags && verification.tags.length > 0 && (
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
@@ -246,7 +254,7 @@ export default function PublicVerificationViewerModal({
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+        {/* <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
           <Button
             onClick={handleShare}
             variant="outline"
@@ -271,7 +279,7 @@ export default function PublicVerificationViewerModal({
               </>
             )}
           </Button>
-        </div>
+        </div>  */}
       </DialogContent>
     </Dialog>
   );

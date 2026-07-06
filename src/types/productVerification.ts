@@ -1,3 +1,5 @@
+import { IProduct } from ".";
+
 export type VerificationContentType = "VIDEO" | "ARTICLE" | "PDF" | "IMAGE" | "EXTERNAL_LINK";
 export type VerificationStatus = "PUBLISHED" | "DRAFT";
 export type VerificationCategory = "COSMETICS" | "SKIN_CARE" | "HEALTH" | "PERFUME" | "OTHERS";
@@ -11,6 +13,7 @@ export interface IUser {
 export interface IProductVerification {
   _id: string;
   title: string;
+  product: IProduct;
   slug?: string;
   shortDescription: string;
   description: string;

@@ -14,7 +14,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { usePathname, useRouter } from "next/navigation";
 import { useGetAllCategoriesQuery } from "@/redux/features/category/category.api";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { SearchDropdown } from "./SearchDropdown";
 import { Input } from "../ui/input";
 
@@ -40,7 +39,7 @@ const NavbarMenu: React.FC = () => {
 
   const handleSpecialBeautyDeal = () => {
     if (pathname === "/") {
-      const section = document.getElementById("special-beauty-deal");
+      const section = document.getElementById("best-selling");
 
       if (section) {
         section.scrollIntoView({
@@ -51,7 +50,7 @@ const NavbarMenu: React.FC = () => {
       return;
     }
 
-    router.push("/#special-beauty-deal");
+    router.push("/#best-selling");
   };
 
   function closeAll() {
@@ -150,7 +149,7 @@ const NavbarMenu: React.FC = () => {
                         : "relative"
                     }`}
       >
-        <div className="flex items-center justify-between gap-12 container mx-auto px-5">
+        <div className="max-w-354 flex items-center justify-between gap-12 container mx-auto px-5">
           {/* LEFT */}
           <div className="xl:hidden flex items-center gap-5">
             <button
@@ -193,7 +192,7 @@ const NavbarMenu: React.FC = () => {
           {/* RIGHT */}
           <div className="flex items-center gap-1">
             {/* SEARCH */}
-            <div className="relative">
+            <div className="lg:hidden block relative">
               <button
                 onClick={() => setSearchModalOpen((prev) => !prev)}
                 className="flex items-center bg-white/10 hover:bg-white/20 transition rounded-full p-2"
@@ -304,10 +303,10 @@ const NavbarMenu: React.FC = () => {
               </div>
             ) : (
               <button onClick={handleSpecialBeautyDeal} className="text-white">
-                <div className="flex items-center gap-2.5 px-6 py-2 rounded-full fusion-offer">
+                <div className="hover:cursor-pointer flex items-center gap-2.5 px-6 py-2 rounded-full fusion-offer">
                   <Gift className="w-5 h-5" />
                   <span className="text-[13px] font-bold">
-                    SPECIAL BEAUTY DEAL
+                    BEST SELLING PRODUCTS
                   </span>
                 </div>
               </button>

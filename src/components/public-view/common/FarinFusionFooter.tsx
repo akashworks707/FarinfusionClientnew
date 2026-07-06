@@ -37,11 +37,11 @@ export default function FarinFusionFooter() {
   const { data: categories } = useGetAllCategoriesQuery({});
   return (
     <footer className="primaryDark text-white">
-      <div className="container mx-auto border-b px-4 border-white/10">
+      <div className="container max-w-352 mx-auto border-b px-4 border-white/10">
         <FooterServiceStrip />
       </div>
 
-      <div className="container mx-auto px-4 py-14">
+      <div className="container max-w-352 mx-auto px-4 py-14">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
             <Link href="/">

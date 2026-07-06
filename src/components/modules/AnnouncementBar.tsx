@@ -67,7 +67,7 @@ export default function AnnouncementBar() {
         <div className="w-full bg-black">
             <div
                 className="
-        container
+        container max-w-354
            px-5
           mx-auto
           flex h-10

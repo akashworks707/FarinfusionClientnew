@@ -4,7 +4,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ImageIcon, Loader2, Upload, X } from "lucide-react";
+import {
+  ImageIcon,
+  Loader2,
+  Upload,
+  X,
+  Search,
+  Check,
+  Package,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +45,8 @@ import {
 } from "@/lib/constants/productVerification";
 import Image from "next/image";
 import { uploadToCloudinary } from "@/utils/cloudinary";
+import { useGetAllProductsQuery } from "@/redux/features/product/product.api";
+import { cn } from "@/lib/utils";
 
 interface ProductVerificationFormProps {
   open: boolean;
@@ -45,6 +55,9 @@ interface ProductVerificationFormProps {
   initialData?: IProductVerification;
   isLoading?: boolean;
 }
+
+const inputCls =
+  "h-9 rounded-lg border-gray-200 bg-gray-50/60 text-sm transition-colors placeholder:text-gray-400 focus:border-amber-400 focus:bg-white dark:border-gray-700 dark:bg-gray-800/60 dark:placeholder:text-gray-600 dark:focus:border-amber-500 dark:focus:bg-gray-800";
 
 export function ProductVerificationForm({
   open,
@@ -61,6 +74,17 @@ export function ProductVerificationForm({
   );
   const [thumbnailDragOver, setThumbnailDragOver] = useState(false);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Product search state — same pattern as ReviewFormDialog ──────────────
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [productSearch, setProductSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { data: productsData } = useGetAllProductsQuery({ limit: 500, page: 1 });
+  const products = productsData?.data ?? [];
 
   const {
     register,
@@ -91,13 +115,12 @@ export function ProductVerificationForm({
 
   useEffect(() => {
     if (mediaUrl) {
-      // Generate preview URL based on media type
       if (
         mediaType === "VIDEO" &&
         (mediaUrl.includes("youtube.com") || mediaUrl.includes("youtu.be"))
       ) {
         const videoId = mediaUrl.match(
-          /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/,
+          /(?:youtube\.com\/(?:watch\?v=|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
         )?.[1];
         if (videoId) {
           setMediaPreview(
@@ -110,10 +133,55 @@ export function ProductVerificationForm({
     }
   }, [mediaUrl, mediaType]);
 
+  // ── Close product dropdown on outside click ──────────────────────────────
+  useEffect(() => {
+    const handle = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      )
+        setDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, []);
+
+  const handleProductSearchChange = (val: string) => {
+    setProductSearch(val);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(val), 300);
+  };
+
+  const filteredProducts = products.filter(
+    (product: any) =>
+      product.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      product.slug?.toLowerCase().includes(debouncedSearch.toLowerCase()),
+  );
+
+  const selectProduct = (product: any) => {
+    setSelectedProduct(product);
+    setValue("product", product._id, { shouldValidate: true });
+    setProductSearch("");
+    setDebouncedSearch("");
+    setDropdownOpen(false);
+  };
+
+  const clearProduct = () => {
+    setSelectedProduct(null);
+    setValue("product", "", { shouldValidate: true });
+  };
+
+  // ── Thumbnail upload (unchanged) ──────────────────────────────────────────
+
   const handleThumbnailFile = async (file: File) => {
     if (!file.type.startsWith("image/")) return;
 
-    // Optimistic local preview
     const localUrl = URL.createObjectURL(file);
     setThumbnailPreview(localUrl);
 
@@ -123,7 +191,6 @@ export function ProductVerificationForm({
       setThumbnailPreview(cloudUrl);
       setValue("thumbnail", cloudUrl, { shouldValidate: true });
     } catch {
-      // Revert preview on failure
       setThumbnailPreview(initialData?.thumbnail ?? "");
       setValue("thumbnail", initialData?.thumbnail ?? "");
     } finally {
@@ -148,7 +215,11 @@ export function ProductVerificationForm({
   const onFormSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
-      await onSubmit(data);
+      const payload: IProductVerificationFormData = {
+        ...data,
+        product: selectedProduct?._id || undefined,
+      };
+      await onSubmit(payload);
       reset();
       onOpenChange(false);
     } catch {
@@ -163,6 +234,9 @@ export function ProductVerificationForm({
       reset();
       setMediaPreview("");
       setThumbnailPreview("");
+      setSelectedProduct(null);
+      setProductSearch("");
+      setDebouncedSearch("");
     }
     onOpenChange(newOpen);
   };
@@ -199,9 +273,13 @@ export function ProductVerificationForm({
         tags: initialData.tags ?? [],
         featured: initialData.featured,
         status: initialData.status,
+        product: (initialData as any).product?._id || "",
       });
 
       setThumbnailPreview(initialData.thumbnail ?? "");
+      setSelectedProduct((initialData as any).product || null);
+      setProductSearch("");
+      setDebouncedSearch("");
     } else {
       reset({
         title: "",
@@ -214,9 +292,13 @@ export function ProductVerificationForm({
         tags: [],
         featured: false,
         status: "PUBLISHED",
+        product: "",
       });
 
       setThumbnailPreview("");
+      setSelectedProduct(null);
+      setProductSearch("");
+      setDebouncedSearch("");
     }
   }, [initialData, open, reset]);
 
@@ -235,6 +317,131 @@ export function ProductVerificationForm({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+          {/* ── Product Selection (optional) — searchable, like Reviews ── */}
+          <div>
+            <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              Linked Product <span className="text-gray-400 font-normal">(Optional)</span>
+            </label>
+            <div ref={dropdownRef} className="relative">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search products to link…"
+                  value={productSearch}
+                  onChange={(e) => handleProductSearchChange(e.target.value)}
+                  onFocus={() => setDropdownOpen(true)}
+                  disabled={isSubmitting}
+                  className={cn(inputCls, "pl-9 pr-8")}
+                />
+                {productSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProductSearch("");
+                      setDebouncedSearch("");
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {dropdownOpen && (
+                <div className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-56 overflow-y-auto rounded-xl border border-gray-200/80 bg-white shadow-lg dark:border-gray-700/60 dark:bg-gray-900">
+                  {filteredProducts.length === 0 ? (
+                    <p className="px-3 py-3 text-xs text-gray-400">
+                      No products found
+                    </p>
+                  ) : (
+                    filteredProducts.map((product: any) => {
+                      const isSelected = selectedProduct?._id === product._id;
+                      return (
+                        <button
+                          key={product._id}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            selectProduct(product);
+                          }}
+                          className={cn(
+                            "flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors",
+                            isSelected
+                              ? "bg-amber-50 dark:bg-amber-900/10"
+                              : "hover:bg-gray-50/60 dark:hover:bg-gray-800/40",
+                          )}
+                        >
+                          {product.images?.[0] ? (
+                            <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                              <Image
+                                src={product.images[0]}
+                                alt={product.title}
+                                fill
+                                sizes="36px"
+                                className="object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                              <ImageIcon className="h-4 w-4 text-amber-400" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-gray-800 dark:text-gray-200">
+                              {product.title}
+                            </p>
+                          </div>
+                          {isSelected && (
+                            <Check className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                          )}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Selected product display */}
+            {selectedProduct ? (
+              <div className="mt-3 flex items-center gap-3 rounded-lg border border-amber-200/50 bg-amber-50/30 p-3 dark:border-amber-900/30 dark:bg-amber-900/10">
+                {selectedProduct.images?.[0] ? (
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
+                    <Image
+                      src={selectedProduct.images[0]}
+                      alt={selectedProduct.title}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/40">
+                    <Package className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-gray-800 dark:text-gray-200">
+                    {selectedProduct.title}
+                  </p>
+                  <p className="text-xs text-gray-400">Linked to this verification</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={clearProduct}
+                  className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                  aria-label="Remove linked product"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <p className="mt-2 text-xs text-gray-400">
+                Link a product so viewers can click through to it. Leave empty for a general guide.
+              </p>
+            )}
+          </div>
+
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -383,11 +590,9 @@ export function ProductVerificationForm({
               Thumbnail
             </label>
 
-            {/* Hidden RHF field keeps the URL value in the form state */}
             <input type="hidden" {...register("thumbnail")} />
 
             {thumbnailPreview ? (
-              /* ── Uploaded preview ── */
               <div className="relative w-full h-44 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700 bg-gray-100 dark:bg-slate-800 group">
                 <Image
                   src={thumbnailPreview}
@@ -396,7 +601,6 @@ export function ProductVerificationForm({
                   className="object-cover"
                 />
 
-                {/* Uploading overlay */}
                 {thumbnailUploading && (
                   <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
                     <Loader2 className="h-6 w-6 text-white animate-spin" />
@@ -406,37 +610,24 @@ export function ProductVerificationForm({
                   </div>
                 )}
 
-                {/* Remove button */}
                 {!thumbnailUploading && (
                   <button
                     type="button"
                     onClick={removeThumbnail}
                     disabled={isSubmitting}
-                    className="
-                      absolute top-2 right-2
-                      flex items-center justify-center
-                      h-7 w-7 rounded-full
-                      bg-black/60 hover:bg-red-600
-                      text-white transition-colors
-                      opacity-0 group-hover:opacity-100
-                    "
+                    className="absolute top-2 right-2 flex items-center justify-center h-7 w-7 rounded-full bg-black/60 hover:bg-red-600 text-white transition-colors opacity-0 group-hover:opacity-100"
                     aria-label="Remove thumbnail"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
                 )}
 
-                {/* Replace overlay on hover */}
                 {!thumbnailUploading && (
                   <button
                     type="button"
                     onClick={() => thumbnailInputRef.current?.click()}
                     disabled={isSubmitting}
-                    className="
-                      absolute inset-0 w-full
-                      flex items-end justify-center pb-3
-                      opacity-0 group-hover:opacity-100 transition-opacity
-                    "
+                    className="absolute inset-0 w-full flex items-end justify-center pb-3 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <span className="text-[11px] font-semibold text-white bg-black/50 px-3 py-1 rounded-full">
                       Replace image
@@ -445,7 +636,6 @@ export function ProductVerificationForm({
                 )}
               </div>
             ) : (
-              /* ── Drop zone ── */
               <div
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -456,24 +646,21 @@ export function ProductVerificationForm({
                 onClick={() =>
                   !isSubmitting && thumbnailInputRef.current?.click()
                 }
-                className={`
-                  relative flex flex-col items-center justify-center gap-3
-                  w-full h-44 rounded-lg border-2 border-dashed
-                  cursor-pointer transition-colors select-none
-                  ${
-                    thumbnailDragOver
-                      ? "border-amber-500 bg-amber-50/40 dark:bg-amber-900/10"
-                      : "border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 hover:border-amber-400 hover:bg-amber-50/20 dark:hover:bg-amber-900/5"
-                  }
-                  ${isSubmitting ? "pointer-events-none opacity-60" : ""}
-                `}
+                className={cn(
+                  "relative flex flex-col items-center justify-center gap-3 w-full h-44 rounded-lg border-2 border-dashed cursor-pointer transition-colors select-none",
+                  thumbnailDragOver
+                    ? "border-amber-500 bg-amber-50/40 dark:bg-amber-900/10"
+                    : "border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 hover:border-amber-400 hover:bg-amber-50/20 dark:hover:bg-amber-900/5",
+                  isSubmitting && "pointer-events-none opacity-60",
+                )}
               >
                 <div
-                  className={`
-                  flex h-10 w-10 items-center justify-center rounded-full
-                  ${thumbnailDragOver ? "bg-amber-100 dark:bg-amber-900/30" : "bg-gray-100 dark:bg-slate-700"}
-                  transition-colors
-                `}
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                    thumbnailDragOver
+                      ? "bg-amber-100 dark:bg-amber-900/30"
+                      : "bg-gray-100 dark:bg-slate-700",
+                  )}
                 >
                   {thumbnailDragOver ? (
                     <Upload className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -495,7 +682,6 @@ export function ProductVerificationForm({
               </div>
             )}
 
-            {/* Hidden file input */}
             <input
               ref={thumbnailInputRef}
               type="file"

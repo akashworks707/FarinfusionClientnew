@@ -100,9 +100,16 @@ function VerificationCard({ verification, onWatch }: VerificationCardProps) {
         )}
 
         {/* Overlay with play/media icon */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-          <div className="bg-white/90 dark:bg-slate-900/90 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            {mediaIcon}
+        <div
+          onClick={() => onWatch(verification)}
+          className="absolute inset-0 cursor-pointer group"
+        >
+          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition" />
+
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-16 w-16 rounded-full bg-red-600 text-white flex items-center justify-center shadow-xl group-hover:scale-110 transition">
+              <Play className="h-8 w-8 fill-white ml-1" />
+            </div>
           </div>
         </div>
 
@@ -122,7 +129,7 @@ function VerificationCard({ verification, onWatch }: VerificationCardProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-4 flex flex-col">
+      <div className="flex-1 p-2 flex flex-col">
         {/* Category Badge */}
         <div className="mb-3">
           <span
@@ -136,9 +143,12 @@ function VerificationCard({ verification, onWatch }: VerificationCardProps) {
         </div>
 
         {/* Title */}
-        <h3 className="font-semibold text-slate-900 dark:text-slate-100 line-clamp-2 mb-2">
-          {verification.title}
-        </h3>
+        <Link
+          href={`/product/${verification?.product?.slug}`}
+          className="font-bold text-base hover:text-amber-600 transition-colors line-clamp-2 uppercase"
+        >
+          {verification.product?.title}
+        </Link>
 
         {/* Description */}
         <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-4">
@@ -146,18 +156,10 @@ function VerificationCard({ verification, onWatch }: VerificationCardProps) {
         </p>
 
         {/* Views */}
-        <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mb-4">
+        <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
           <Eye className="w-4 h-4" />
           <span>{(verification.views || 0).toLocaleString()} views</span>
         </div>
-
-        {/* Watch Button */}
-        <button
-          onClick={() => onWatch(verification)}
-          className="hover:cursor-pointer w-full py-2 px-4 bg-linear-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 dark:from-amber-700 dark:to-orange-700 dark:hover:from-amber-800 dark:hover:to-orange-800 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
-        >
-          Watch Guide
-        </button>
       </div>
     </div>
   );

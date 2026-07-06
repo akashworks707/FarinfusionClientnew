@@ -120,26 +120,34 @@ export default function ProductBlog() {
 
   const blogs = data?.data?.data ?? [];
 
+  if (blogs.length === 0) return null;
+
   return (
     <section className="w-full py-10 md:py-14">
       <div className="max-w-352 container mx-auto px-6">
-
         {/* Heading */}
         <div className="text-center mb-10">
           <h2 className="text-3xl font-semibold tracking-tight md:text-4xl heading-animate">
             Glow Better with Our Beauty Tips
           </h2>
           <p className="mt-3 text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
-            Expert advice, tutorials, and skincare guides to help you look and feel your best.
+            Expert advice, tutorials, and skincare guides to help you look and
+            feel your best.
           </p>
         </div>
 
         {/* Grid */}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {isLoading
-            ? Array.from({ length: 4 }).map((_, i) => <HomeBlogCardSkeleton key={i} />)
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <HomeBlogCardSkeleton key={i} />
+              ))
             : blogs.map((blog, i) => (
-                <HomeBlogCard key={blog._id} blog={blog as any} priority={i === 0} />
+                <HomeBlogCard
+                  key={blog._id}
+                  blog={blog as any}
+                  priority={i === 0}
+                />
               ))}
         </div>
 

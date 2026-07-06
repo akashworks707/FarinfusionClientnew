@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const productVerificationFormSchema = z.object({
+    product: z.string().min(1, "Product is required"),
   title: z.string().min(3, "Title must be at least 3 characters").max(200, "Title must not exceed 200 characters"),
   slug: z.string().optional(),
   shortDescription: z.string().min(10, "Short description must be at least 10 characters").max(500, "Short description must not exceed 500 characters"),

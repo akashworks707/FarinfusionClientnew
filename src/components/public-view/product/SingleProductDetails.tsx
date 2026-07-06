@@ -125,7 +125,7 @@ const SingleProductDetails = () => {
           <div className="flex items-center gap-2 text-sm">
             <Link
               href="/"
-              className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-200"
+              className="font-semibold text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-200"
             >
               Home
             </Link>
@@ -135,7 +135,7 @@ const SingleProductDetails = () => {
               <>
                 <Link
                   href={`/shop?category=${product?.category?.slug}`}
-                  className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-200"
+                  className="font-semibold text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-200"
                 >
                   {product.category?.title}
                 </Link>
@@ -177,14 +177,14 @@ const SingleProductDetails = () => {
                 <ul className="space-y-2 text-[15px] text-gray-700">
                   {brand?.title && (
                     <li className="flex gap-2">
-                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                      {/* <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" /> */}
                       <span>
                         Brand:{" "}
                         <button
                           onClick={() =>
                             router.push(`/shop?brand=${product?.brand?.slug}`)
                           }
-                          className="font-semibold text-amber-600 hover:text-amber-700 hover:underline underline-offset-2 transition-colors duration-200 cursor-pointer"
+                          className="font-semibold text-amber-600 hover:text-amber-700  transition-colors duration-200 cursor-pointer"
                         >
                           {brand?.title}
                         </button>
@@ -193,14 +193,14 @@ const SingleProductDetails = () => {
                   )}
                   {product?.title && (
                     <li className="flex gap-2">
-                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                      {/* <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" /> */}
                       <span>
                         Product Name:{" "}
                         <button
                           onClick={() =>
                             router.push(`/product/${product?.slug}`)
                           }
-                          className="font-semibold text-amber-600 hover:text-amber-700 hover:underline underline-offset-2 transition-colors duration-200 cursor-pointer"
+                          className="font-semibold text-amber-600 hover:text-amber-700  transition-colors duration-200 cursor-pointer"
                         >
                           {product?.title}
                         </button>
@@ -209,7 +209,7 @@ const SingleProductDetails = () => {
                   )}
                   {category?.title && (
                     <li className="flex gap-2">
-                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                     
                       <span>
                         Category:{" "}
                         <button
@@ -218,7 +218,7 @@ const SingleProductDetails = () => {
                               `/shop?category=${product?.category?.slug}`,
                             )
                           }
-                          className="font-semibold text-amber-600 hover:text-amber-700 hover:underline underline-offset-2 transition-colors duration-200 cursor-pointer"
+                          className="font-semibold text-amber-600 hover:text-amber-700  transition-colors duration-200 cursor-pointer"
                         >
                           {category?.title}
                         </button>
@@ -226,7 +226,7 @@ const SingleProductDetails = () => {
                     </li>
                   )}
                   <li className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                    {/* <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" /> */}
                     <span>
                       Status:{" "}
                       <span
