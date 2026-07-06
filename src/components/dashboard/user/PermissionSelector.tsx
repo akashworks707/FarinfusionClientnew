@@ -12,30 +12,27 @@ interface PermissionSelectorProps {
   selectedPages: PageAccess[];
   onChange: (pages: PageAccess[]) => void;
   disabled?: boolean;
-  maxPages?: number;
 }
 
 export const PermissionSelector: React.FC<PermissionSelectorProps> = ({
   selectedPages,
   onChange,
   disabled = false,
-  maxPages = 11,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const handleSelectPage = useCallback(
-    (pageId: PageAccess, checked: boolean) => {
-      if (checked) {
-        if (selectedPages.length >= maxPages) {
-          return;
-        }
+const handleSelectPage = useCallback(
+  (pageId: PageAccess, checked: boolean) => {
+    if (checked) {
+      if (!selectedPages.includes(pageId)) {
         onChange([...selectedPages, pageId]);
-      } else {
-        onChange(selectedPages.filter((p) => p !== pageId));
       }
-    },
-    [selectedPages, onChange, maxPages]
-  );
+    } else {
+      onChange(selectedPages.filter((p) => p !== pageId));
+    }
+  },
+  [selectedPages, onChange]
+);
 
   const handleSelectAll = useCallback(() => {
     if (selectedPages.length === availablePages.length) {
