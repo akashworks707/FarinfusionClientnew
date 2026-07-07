@@ -344,7 +344,7 @@ export default function CheckoutPage() {
                 {/* Selected area info card — animated on change */}
                 <div
                   key={deliveryArea}
-                  className="animate-in fade-in slide-in-from-top-1 duration-300 flex items-center gap-3 rounded-2xl border border-amber-200/60 bg-linear-to-br from-amber-50 to-orange-50/60 px-4 py-3.5 dark:border-amber-900/30 dark:from-amber-900/10 dark:to-orange-900/5"
+                  className="animate-in md:w-full w-60 fade-in slide-in-from-top-1 duration-300 flex lg:flex-wrap lg:flex-row flex-col lg:items-center gap-3 rounded-2xl border border-amber-200/60 bg-linear-to-br from-amber-50 to-orange-50/60 px-4 py-3.5 dark:border-amber-900/30 dark:from-amber-900/10 dark:to-orange-900/5"
                 >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm dark:bg-gray-800">
                     <selectedArea.icon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -357,7 +357,7 @@ export default function CheckoutPage() {
                       {selectedArea.description}
                     </p>
                   </div>
-                  <div className="shrink-0 rounded-full bg-amber-500 px-3 py-1.5 text-right shadow-sm">
+                  <div className="shrink-0 rounded-full bg-amber-500 w-20 px-3 py-1.5 text-center shadow-sm">
                     <span className="text-sm font-bold text-white tabular-nums">
                       ৳{selectedArea.charge}
                     </span>
@@ -369,7 +369,7 @@ export default function CheckoutPage() {
 
           {/* Payment */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-            <div className="flex gap-3 justify-between items-center">
+            <div className="flex gap-3 justify-between flex-wrap items-center">
               {" "}
               <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-gray-50 flex items-center gap-2">
                 <Wallet className="h-5 w-5 text-amber-500" />
@@ -417,7 +417,7 @@ export default function CheckoutPage() {
                 {cartList.map((item) => (
                   <div
                     key={item._id}
-                    className="flex gap-3 border-b border-gray-100 dark:border-gray-800 py-3 last:border-0 group"
+                    className="flex gap-3 flex-wrap border-b border-gray-100 dark:border-gray-800 py-3 last:border-0 group"
                   >
                     <button
                       className="text-gray-300 hover:text-red-500 transition-colors duration-200 shrink-0"

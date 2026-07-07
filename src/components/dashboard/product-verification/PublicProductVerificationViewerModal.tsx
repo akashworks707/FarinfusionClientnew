@@ -84,12 +84,10 @@ export default function PublicVerificationViewerModal({
     switch (verification.mediaType) {
       case "VIDEO":
         return (
-          <div
-            className="relative w-full bg-black rounded-lg overflow-hidden"
-            style={{ paddingBottom: "56.25%" }}
-          >
+          <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
             <iframe
-              src={embedUrl}
+              className="absolute inset-0 h-full w-full"
+              src={`${embedUrl}?rel=0&modestbranding=1`}
               title={verification.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen

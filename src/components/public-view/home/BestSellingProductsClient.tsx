@@ -93,8 +93,8 @@ export function BestSellingProductsClient({
             ))}
           </CarouselContent>
 
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="lg:-left-4 left-1" />
+          <CarouselNext className="lg:-right-4 right-1" />
         </Carousel>
       </div>
     </section>

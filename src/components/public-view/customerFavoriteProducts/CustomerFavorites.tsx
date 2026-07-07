@@ -73,7 +73,7 @@ export default function CustomerFavorites() {
 
   return (
     <section className="bg-[#EEEE]">
-      <div className="container mx-auto max-w-352 py-5 sm:py-10">
+      <div className="container mx-auto max-w-352 md:px-0 px-4 py-5 sm:py-10">
         {/* Heading */}
         <div className="text-center mb-8">
           <h3 className="text-2xl font-bold heading-animate">
@@ -94,7 +94,7 @@ export default function CustomerFavorites() {
           <button
             onClick={scrollPrev}
             disabled={isLoading}
-            className="absolute -left-4 sm:-left-5 top-1/2 -translate-y-1/2 z-30
+            className="absolute left-2 sm:-left-5 top-1/2 -translate-y-1/2 z-30
               w-9 h-9 rounded-full bg-white shadow-md border border-gray-200
               flex items-center justify-center
               hover:bg-[#F5A623] hover:border-[#F5A623] hover:text-white
@@ -108,7 +108,7 @@ export default function CustomerFavorites() {
           <button
             onClick={scrollNext}
             disabled={isLoading}
-            className="absolute -right-4 sm:-right-5 top-1/2 -translate-y-1/2 z-30
+            className="absolute right-2 sm:-right-5 top-1/2 -translate-y-1/2 z-30
               w-9 h-9 rounded-full bg-white shadow-md border border-gray-200
               flex items-center justify-center
               hover:bg-[#F5A623] hover:border-[#F5A623] hover:text-white
