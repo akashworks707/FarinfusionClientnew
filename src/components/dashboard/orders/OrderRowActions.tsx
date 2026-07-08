@@ -450,7 +450,6 @@ export function OrderRowActions({
           {!isNoResponse &&
             order.isPublished &&
             hasAccess &&
-            (isPartial || isCanceled) &&
             onMarkDamage && (
               <>
                 <DropdownMenuSeparator />

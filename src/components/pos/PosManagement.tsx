@@ -261,6 +261,7 @@ export default function POSManagement() {
               schedule.scheduledAt ?? "",
             ).toLocaleString()}`,
           );
+          router.push("/staff/dashboard/orders-management");
         } else {
           if (user?.data?.role === "MODERATOR") {
             toast.success("Order created successfully!");

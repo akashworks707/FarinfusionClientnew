@@ -156,7 +156,7 @@ export default function Contacts() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300 pb-16">
       {/* Hero Section */}
       <section className="bg-linear-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 py-12 md:py-16">
         <div className="container mx-auto px-4 text-center">

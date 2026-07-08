@@ -71,6 +71,7 @@ export function ConfirmedProductsTable({
   confirmedProducts,
   dateLabel,
 }: ConfirmedProductsTableProps) {
+  console.log(confirmedProducts);
   const [sortKey, setSortKey] = useState<SortKey>("totalSoldInPeriod");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -147,9 +148,7 @@ export function ConfirmedProductsTable({
     {
       icon: Boxes,
       label: "Orders",
-      value: confirmedProducts
-        .reduce((s, p) => s + (p.orderCount ?? 0), 0)
-        .toString(),
+      value: confirmedProducts.length.toString(),
       accent: "text-blue-600 dark:text-blue-400",
     },
     {
