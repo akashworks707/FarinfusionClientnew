@@ -31,7 +31,7 @@ const socials = [
   { icon: Facebook, href: "https://www.facebook.com/farinfusion" },
   {
     icon: Instagram,
-    href: "https://www.instagram.com/reel/DQxO68fkbjd/?igsh=MXBzaTNmamZ1bmtqbA",
+    href: "https://www.instagram.com/farin_fusion",
   },
   {
     icon: TikTokIcon,

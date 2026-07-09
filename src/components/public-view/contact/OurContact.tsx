@@ -4,7 +4,8 @@
 import React, { useState } from 'react';
 import { Mail, Phone, Send, MapPinIcon, Facebook,
   Twitter,
-  Linkedin } from 'lucide-react';
+  Linkedin, 
+  Instagram} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -100,6 +101,12 @@ export default function Contacts() {
     icon: <Send className="w-5 h-5" />,
     href: "https://t.me/farinfusion",
     bg: "bg-sky-500 hover:bg-sky-600",
+  },
+  {
+    name: "Instagram",
+    icon: <Instagram className="w-5 h-5" />,
+    href: "https://www.instagram.com/farin_fusion",
+    bg: "bg-rose-500 hover:bg-rose-600",
   },
 ];
 
