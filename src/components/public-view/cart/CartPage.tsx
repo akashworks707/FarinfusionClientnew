@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Minus, Plus, ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,15 @@ import EmptyCartList from "@/components/public-view/cart/EmptyCart";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AnalyticsEvents } from "@/lib/analytics";
 
 export default function CartPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const cartItems = useSelector((state: RootState) => state.cart.items);
-  const hasInvalidQty = cartItems.some((item) => item.quantity > item.availableStock);
+  const hasInvalidQty = cartItems.some(
+    (item) => item.quantity > item.availableStock,
+  );
 
   // 🟡 Subtotal
   const subtotal = cartItems.reduce((total, item) => {
@@ -36,6 +39,12 @@ export default function CartPage() {
 
     return total + unitPrice * item.quantity;
   }, 0);
+
+  useEffect(() => {
+  if (!cartItems.length) return;
+
+  AnalyticsEvents.viewCart(cartItems);
+}, [cartItems]);
 
   if (cartItems.length === 0) {
     return <EmptyCartList />;
@@ -62,7 +71,8 @@ export default function CartPage() {
               </Button>
               <Separator className={"my-5"} />
               {cartItems.map((cartItem) => {
-                const isMaxQtyReached = cartItem.quantity > cartItem.availableStock;
+                const isMaxQtyReached =
+                  cartItem.quantity > cartItem.availableStock;
 
                 return (
                   <div key={cartItem._id}>
@@ -70,7 +80,11 @@ export default function CartPage() {
                       {/* LEFT */}
                       <div className="flex items-center gap-4 flex-1">
                         <button
-                          onClick={() => dispatch(removeFromCart(cartItem._id))}
+                          onClick={() => {
+    AnalyticsEvents.removeFromCart(cartItem);
+
+    dispatch(removeFromCart(cartItem._id));
+}}
                           className="text-gray-400 hover:text-red-500 cursor-pointer"
                         >
                           <X className="w-5 h-5" />
@@ -117,7 +131,8 @@ export default function CartPage() {
                       <div>
                         {isMaxQtyReached && (
                           <p className="text-xs text-red-500 mb-2 font-semibold text-center">
-                            only {cartItem.availableStock - cartItem.quantity} left
+                            only {cartItem.availableStock - cartItem.quantity}{" "}
+                            left
                           </p>
                         )}
                         <div className="flex items-center justify-center gap-2">
@@ -221,11 +236,13 @@ export default function CartPage() {
 
               <Button
                 onClick={() => {
-                  if(hasInvalidQty){
+                  if (hasInvalidQty) {
                     toast.error("Please fix quantity before checkout");
                     return;
                   }
-                  router.push("/checkout")
+                  AnalyticsEvents.beginCheckout(cartItems);
+
+                  router.push("/checkout");
                 }}
                 className="cursor-pointer w-full mt-6 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-6"
               >

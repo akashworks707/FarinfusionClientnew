@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronRight, Minus, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { addToCart } from "@/redux/slices/CartSlice";
 import SingleProductSkeleton from "./SingleProductSkeleton";
+import { AnalyticsEvents } from "@/lib/analytics";
 
 const SingleProductDetails = () => {
   const router = useRouter();
@@ -62,6 +63,16 @@ const SingleProductDetails = () => {
     );
   }, [allProductsData]);
 
+  useEffect(() => {
+    if (!recentProducts.length) return;
+
+    AnalyticsEvents.viewItemList({
+      products: recentProducts,
+      listId: "recent_products",
+      listName: "Recently Viewed Products",
+    });
+  }, [recentProducts]);
+
   const [qty, setQty] = useState(1);
 
   const cartItem = cartList.find(
@@ -71,6 +82,12 @@ const SingleProductDetails = () => {
   const availableStock = product?.availableStock || 0;
   const isOutOfStock = !product?.availableStock || product?.availableStock <= 0;
   // const isMaxQtyReached = cartItem && cartItem.quantity >= availableStock;
+
+  useEffect(() => {
+    if (!product) return;
+
+    AnalyticsEvents.viewItem(product);
+  }, [product]);
 
   if (isLoading) {
     return <SingleProductSkeleton />;
@@ -109,11 +126,36 @@ const SingleProductDetails = () => {
       }),
     );
 
+    AnalyticsEvents.addToCart({
+      ...product,
+
+      quantity: qty,
+    });
+
     toast.success(`${title} added to cart!`);
   };
 
   const handleBuyNow = () => {
-    handleAddToCart();
+    dispatch(
+      addToCart({
+        ...product,
+        quantity: qty,
+      }),
+    );
+
+    AnalyticsEvents.addToCart({
+      ...product,
+
+      quantity: qty,
+    });
+
+    AnalyticsEvents.beginCheckout([
+      {
+        ...product,
+        quantity: qty,
+      },
+    ]);
+
     router.push("/checkout");
   };
 
@@ -209,7 +251,6 @@ const SingleProductDetails = () => {
                   )}
                   {category?.title && (
                     <li className="flex gap-2">
-                     
                       <span>
                         Category:{" "}
                         <button

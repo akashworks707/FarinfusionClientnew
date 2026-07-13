@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { UserProvider } from "@/context/UserContext";
 import ReduxProvider from "@/providers/ReduxProvider";
 import Script from "next/script";
+import { AnalyticsPageView } from "@/hooks/analyticsPageView";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -126,7 +127,7 @@ export default function RootLayout({
             }}
           />
         </noscript>
-
+        <AnalyticsPageView />
         <ReduxProvider>
           <UserProvider>
             {children}

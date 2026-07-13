@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   X,
   MapPin,
@@ -48,6 +48,7 @@ import { useRouter } from "next/navigation";
 import EmptyCartList from "../cart/EmptyCart";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { AnalyticsEvents } from "@/lib/analytics";
 
 type DeliveryAreaValue = "INSIDE_DHAKA" | "OUTSIDE_DHAKA" | "SAVAR_KERANIGANJ";
 
@@ -172,6 +173,15 @@ export default function CheckoutPage() {
         setFinalTotal(res.data.finalTotal);
         setAppliedCoupon(couponCode.toUpperCase());
         toast.success("Coupon applied successfully");
+        AnalyticsEvents.applyCoupon({
+          coupon: couponCode,
+
+          discount: res.data.discount,
+
+          value: res.data.finalTotal,
+
+          cartItems: cartList,
+        });
       }
     } catch {
       setDiscount(0);
@@ -231,6 +241,19 @@ export default function CheckoutPage() {
       }).unwrap();
 
       if (res) {
+        AnalyticsEvents.purchase({
+          transactionId: res.data.order.customOrderId,
+
+          value: res.data.order.total,
+
+          shipping: deliveryCharge,
+
+          tax: 0,
+
+          coupon: appliedCoupon,
+
+          cartItems: cartList,
+        });
         setOrderInfo(res?.data?.order);
         setShowSuccessModal(true);
         cartList.forEach((item) => dispatch(removeFromCart(item._id)));
@@ -240,6 +263,12 @@ export default function CheckoutPage() {
       toast.error(error?.data?.message || "Checkout failed");
     }
   };
+
+  useEffect(() => {
+    if (!cartList.length) return;
+
+    AnalyticsEvents.beginCheckout(cartList);
+  }, [cartList]);
 
   if (!showSuccessModal && cartList.length === 0) {
     return <EmptyCartList />;
@@ -314,7 +343,19 @@ export default function CheckoutPage() {
 
                 <Select
                   value={deliveryArea}
-                  onValueChange={(v) => setDeliveryArea(v as DeliveryAreaValue)}
+                  onValueChange={(v) => {
+                    setDeliveryArea(v as DeliveryAreaValue);
+
+                    AnalyticsEvents.addShippingInfo({
+                      shippingTier:
+                        DELIVERY_AREAS.find((area) => area.value === v)
+                          ?.label ?? "Unknown",
+
+                      value: payableTotal,
+
+                      cartItems: cartList,
+                    });
+                  }}
                 >
                   <SelectTrigger className="h-12 rounded-xl border-gray-200 dark:border-gray-700 text-[15px] focus:ring-amber-400">
                     <SelectValue placeholder="Select your delivery area" />
@@ -421,7 +462,11 @@ export default function CheckoutPage() {
                   >
                     <button
                       className="text-gray-300 hover:text-red-500 transition-colors duration-200 shrink-0"
-                      onClick={() => dispatch(removeFromCart(item._id))}
+                      onClick={() => {
+                        AnalyticsEvents.removeFromCart(item);
+
+                        dispatch(removeFromCart(item._id));
+                      }}
                       aria-label="Remove item"
                     >
                       <X className="h-4 w-4" />
