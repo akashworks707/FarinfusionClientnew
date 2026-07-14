@@ -1,18 +1,29 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import { useGetAllProductsQuery } from "@/redux/features/product/product.api";
 import ProductSkeleton from "../home/ProductSkeleton";
 import ProductCard from "@/components/public-view/common/ProductCard";
 import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
+import { AnalyticsEvents } from "@/lib/analytics";
 
 const ProductList = () => {
   const limit = 1000;
-  const { data, isLoading, isError } = useGetAllProductsQuery({limit});
+  const { data, isLoading, isError } = useGetAllProductsQuery({ limit });
 
-  const productData = data?.data || [];
+  const productData = useMemo(() => data?.data || [], [data]);
   const featuredData = productData.filter((item) => item.isFeatured);
+
+  useEffect(() => {
+    if (!productData.length) return;
+
+    AnalyticsEvents.viewItemList({
+      products: productData,
+      listId: "home_products",
+      listName: "Home Products",
+    });
+  }, [productData]);
 
   if (isLoading) {
     return (
@@ -64,8 +75,8 @@ const ProductList = () => {
         </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {featuredData?.map((item) => (
-          <ProductCard key={item?._id} product={item} />
+        {featuredData?.map((item, index) => (
+          <ProductCard key={item?._id} index={index} product={item} />
         ))}
       </div>
     </div>

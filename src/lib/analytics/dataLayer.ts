@@ -12,7 +12,7 @@ export const pushDataLayer = (event: Record<string, any>) => {
   window.dataLayer.push(event);
 
   // Development only
-  if (process.env.NODE_ENV === "development") {
-    console.log("📊 dataLayer", event);
-  }
+  // if (process.env.NODE_ENV === "development") {
+  //   console.log("📊 dataLayer", event);
+  // }
 };

@@ -29,6 +29,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { BarcodeCameraScannerModal } from "./BarcodeCameraScannerModal";
+import { AnalyticsEvents } from "@/lib/analytics";
 
 export default function POSManagement() {
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -255,6 +256,25 @@ export default function POSManagement() {
       }).unwrap();
 
       if (res) {
+        const analyticsCartItems = cartItems.map((item) => ({
+          _id: item.product._id ?? "",
+          slug: item.product.slug ?? "",
+          title: item.product.title ?? "Unknown Product",
+          price: item.product.price ?? 0,
+          discountPrice: item.product.discountPrice,
+          availableStock: item.product.availableStock ?? 0,
+          quantity: item.quantity,
+          images: item.product.images ?? [],
+        }));
+
+        AnalyticsEvents.purchase({
+          transactionId: res.transactionId ?? "",
+          value: res.total,
+          shipping: res.shippingCost ?? 0,
+          coupon: res.couponCode ?? "",
+          cartItems: analyticsCartItems,
+        });
+
         if (schedule.type === "SCHEDULED") {
           toast.success(
             `Order scheduled for ${new Date(

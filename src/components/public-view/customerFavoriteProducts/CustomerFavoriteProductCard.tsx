@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import QuickViewModal from "../common/QuickViewModal";
 import Link from "next/link";
+import { AnalyticsEvents } from "@/lib/analytics";
 
 function IconButton({
   label,
@@ -50,8 +51,10 @@ function IconButton({
 
 export function CustomerFavoriteProductCard({
   product,
+  index
 }: {
   product: IProduct;
+  index: number;
 }) {
   const [hovered, setHovered] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -73,11 +76,24 @@ export function CustomerFavoriteProductCard({
   const displayPrice = hasDiscount ? product.discountPrice! : product.price;
   const originalPrice = hasDiscount ? product.price : null;
 
-  const handleCardClick = () => {
-    router.push(`/product/${product?.slug}`);
-  };
+const handleCardClick = () => {
+  AnalyticsEvents.selectItem({
+    product,
+    index,
+    listId: "home_products",
+    listName: "Home Products",
+  });
+
+  router.push(`/product/${product.slug}`);
+};
 
   const handleAddToCart = (qty: number = 1) => {
+     AnalyticsEvents.addToCart({
+          ...product,
+    
+          quantity: qty,
+        });
+        
     dispatch(
       addToCart({
         _id: product._id ?? "",

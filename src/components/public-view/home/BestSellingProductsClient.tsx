@@ -10,6 +10,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { IProduct } from "@/types";
+import { AnalyticsEvents } from "@/lib/analytics";
 
 export function BestSellingProductsClient({
   products,
@@ -39,13 +40,21 @@ export function BestSellingProductsClient({
           className="w-full"
         >
           <CarouselContent>
-            {bestSellingProducts.map((product) => (
+            {bestSellingProducts.map((product, index) => (
               <CarouselItem
                 key={product._id}
                 className="basis-1/2 md:basis-1/3 xl:basis-1/4"
               >
                 <div
-                  onClick={() => router.push(`/product/${product.slug}`)}
+                  onClick={() => {
+                    AnalyticsEvents.selectItem({
+                      product,
+                      index,
+                      listId: "home_products",
+                      listName: "Home Products",
+                    });
+                    router.push(`/product/${product.slug}`);
+                  }}
                   className="cursor-pointer bg-white rounded-xl overflow-hidden border hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="relative aspect-square">

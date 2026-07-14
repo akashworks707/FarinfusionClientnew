@@ -18,12 +18,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import QuickViewModal from "./QuickViewModal";
+import { AnalyticsEvents } from "@/lib/analytics";
 
 interface ProductCardProps {
   product: any;
+  index?: number;
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, index }: ProductCardProps) => {
   const {
     slug,
     title,
@@ -39,9 +41,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const wishlistItems = useSelector((state: RootState) => state.wish.items);
 
   const wished = wishlistItems.some((item) => item._id === product._id);
-  const hasDiscount =
-  typeof discountPrice === "number" &&
-  discountPrice > 0;
+  const hasDiscount = typeof discountPrice === "number" && discountPrice > 0;
 
   const [btnHovered, setBtnHovered] = useState(false);
 
@@ -87,6 +87,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   const onAddToCart = () => {
+     AnalyticsEvents.addToCart({
+      ...product,
+
+      quantity: 1,
+    });
+
     dispatch(
       addToCart({
         _id: product._id ?? "",
@@ -99,6 +105,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
         quantity: 1,
       }),
     );
+
+
     toast.success(`${title} added to cart!`);
   };
 
@@ -117,7 +125,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             }}
             className={cn(
               "absolute cursor-pointer top-3 right-3 z-10 bg-white shadow-md p-2 rounded-[8px] transition-all duration-300",
-              "opacity-100 lg:opacity-0 lg:translate-x-10 lg:group-hover:opacity-100 lg:group-hover:translate-x-0"
+              "opacity-100 lg:opacity-0 lg:translate-x-10 lg:group-hover:opacity-100 lg:group-hover:translate-x-0",
             )}
           >
             <Search size={15} className="text-gray-500" />
@@ -130,11 +138,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <TooltipTrigger
             className={cn(
               "absolute cursor-pointer top-12 right-3 z-10 bg-white shadow-md p-2 rounded-[8px] transition-all duration-300",
-              "opacity-100 lg:opacity-0 lg:translate-x-10 lg:group-hover:opacity-100 lg:group-hover:translate-x-0"
+              "opacity-100 lg:opacity-0 lg:translate-x-10 lg:group-hover:opacity-100 lg:group-hover:translate-x-0",
             )}
             onClick={onWishlist}
           >
-            <Heart size={15}
+            <Heart
+              size={15}
               className={cn(
                 "w-4 h-4",
                 wished ? "fill-red-500 text-red-500" : "text-gray-500",
@@ -205,9 +214,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
               {/* Discount Price (main price) */}
               <p className="text-[14px] font-bold text-yellow-500 mb-2">
                 ৳{" "}
-                {(hasDiscount ? discountPrice : price ?? 0).toLocaleString("en-BD", {
-                  minimumFractionDigits: 2,
-                })}
+                {(hasDiscount ? discountPrice : (price ?? 0)).toLocaleString(
+                  "en-BD",
+                  {
+                    minimumFractionDigits: 2,
+                  },
+                )}
               </p>
 
               {/* Original Price */}
@@ -286,11 +298,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
       {selectedSlug && modalOpen && (
         <QuickViewModal
-        product={product}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onAddToCart={onAddToCart}
-      />
+          product={product}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onAddToCart={onAddToCart}
+        />
       )}
     </>
   );

@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CustomerFavoriteProductCard } from "./CustomerFavoriteProductCard";
 import { IProduct } from "@/types";
 import FavoriteProductSkeleton from "../home/FavoriteProductSkeleton";
+import { AnalyticsEvents } from "@/lib/analytics";
 
 export default function CustomerFavorites() {
   const [productsData, setProductsData] = useState<IProduct[]>([]);
@@ -62,6 +63,16 @@ export default function CustomerFavorites() {
 
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    if (!productsData.length) return;
+
+    AnalyticsEvents.viewItemList({
+      products: productsData,
+      listId: "home_products",
+      listName: "Home Products",
+    });
+  }, [productsData]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -131,12 +142,15 @@ export default function CustomerFavorites() {
                   </div>
                 ))
               ) : productsData.length > 0 ? (
-                productsData.map((product) => (
+                productsData.map((product, index) => (
                   <div
                     key={product._id}
                     className="flex-[0_0_50%] sm:flex-[0_0_33.333%] md:flex-[0_0_25%] lg:flex-[0_0_20%]"
                   >
-                    <CustomerFavoriteProductCard product={product} />
+                    <CustomerFavoriteProductCard
+                      product={product}
+                      index={index}
+                    />
                   </div>
                 ))
               ) : (
