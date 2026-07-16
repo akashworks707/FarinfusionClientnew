@@ -99,23 +99,46 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {/* Google Tag Manager */}
-        <Script id="google-tag-manager" strategy="afterInteractive">
+        <Script id="gtm-init" strategy="afterInteractive">
           {`
-      (function(w,d,s,l,i){
-        w[l]=w[l]||[];
-        w[l].push({'gtm.start':
-        new Date().getTime(),event:'gtm.js'});
-        var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),
-            dl=l!='dataLayer'?'&l='+l:'';
-        j.async=true;
-        j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
-        f.parentNode.insertBefore(j,f);
-      })(window,document,'script','dataLayer','GTM-PV53DVVC');
-    `}
+    (function(w,d,s,l,i){
+      w[l]=w[l]||[];
+      w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),
+          dl=l!='dataLayer'?'&l='+l:'';
+      j.async=true;
+      j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+      f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PV53DVVC');
+  `}
         </Script>
 
-        {/* Google Tag Manager (noscript) */}
+        {/* Google Analytics (Client Measurement ID) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-WN91GRQ2TH"
+          strategy="afterInteractive"
+        />
+
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag(){
+      dataLayer.push(arguments);
+    }
+
+    window.gtag = gtag;
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-WN91GRQ2TH', {
+      send_page_view: false
+    });
+  `}
+        </Script>
+
+        {/* GTM NoScript */}
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-PV53DVVC"
@@ -127,6 +150,7 @@ export default function RootLayout({
             }}
           />
         </noscript>
+
         <AnalyticsPageView />
         <ReduxProvider>
           <UserProvider>
