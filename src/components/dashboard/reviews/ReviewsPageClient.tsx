@@ -50,7 +50,7 @@ export function ReviewsPageClient() {
     });
 
   const { data: statsData, isLoading: statsLoading } = useGetReviewStatsQuery();
-  const { data: productsData } = useGetAllProductsQuery({});
+  const { data: productsData } = useGetAllProductsQuery({limit: 1000});
 
   // Mutations
   const [createReview] = useCreateReviewMutation();

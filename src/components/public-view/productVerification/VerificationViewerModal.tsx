@@ -31,6 +31,25 @@ export function VerificationViewerModal({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  function getYouTubeEmbedUrl(url: string) {
+  const patterns = [
+    /youtu\.be\/([^?&]+)/,
+    /youtube\.com\/watch\?v=([^&]+)/,
+    /youtube\.com\/shorts\/([^?&]+)/,
+    /youtube\.com\/live\/([^?&]+)/,
+    /youtube\.com\/embed\/([^?&]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match?.[1]) {
+      return `https://www.youtube.com/embed/${match[1]}`;
+    }
+  }
+
+  return url;
+}
+
   const handleShareLink = () => {
     if (navigator.share) {
       navigator.share({
@@ -42,6 +61,8 @@ export function VerificationViewerModal({
       handleCopyLink();
     }
   };
+
+   const embedUrl = getYouTubeEmbedUrl(verification.mediaUrl);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -59,15 +80,14 @@ export function VerificationViewerModal({
               <div className="aspect-video rounded-lg overflow-hidden">
                 {verification.mediaUrl?.includes("youtube") ? (
                   <iframe
-                    width="100%"
-                    height="100%"
-                    src={`https://www.youtube.com/embed/${extractYouTubeId(
-                      verification.mediaUrl
-                    )}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="border-0"
-                  />
+              className="absolute inset-0 h-full w-full"
+              src={`${embedUrl}?rel=0&modestbranding=1`}
+              title={verification.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
                 ) : (
                   <video
                     src={verification.mediaUrl}
