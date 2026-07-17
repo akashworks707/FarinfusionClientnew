@@ -19,7 +19,7 @@ export function BestSellingProductsClient({
 }) {
   const router = useRouter();
 
-  const bestSellingProducts = products?.filter((item) => item.isBestSelling);
+  const bestSellingProducts = products;
 
   if (!bestSellingProducts?.length) return null;
 

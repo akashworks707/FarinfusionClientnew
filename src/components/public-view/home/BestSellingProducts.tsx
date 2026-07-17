@@ -2,7 +2,7 @@ import { BestSellingProductsClient } from "./BestSellingProductsClient";
 
 async function getBestSellingProducts() {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/product/all-products`,
+    `${process.env.NEXT_PUBLIC_API_URL}/product/all-products?isBestSelling=true&limit=500`,
     {
       cache: "no-store",
     },
