@@ -6,6 +6,8 @@ export interface IOrderStats {
   CANCELLED: number;
   COURIER_ASSIGNED: number;
   NO_RESPONSE: number;
+  IN_TRANSIT: number;
+
 }
 
 export interface IStaffEarning {

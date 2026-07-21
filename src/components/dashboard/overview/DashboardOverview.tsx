@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -116,6 +115,7 @@ const ORDER_STATUS_OPTIONS = [
   { value: "NO_RESPONSE", label: "No Response", dot: "bg-rose-500" },
   { value: "COMPLETED", label: "Completed", dot: "bg-violet-500" },
   { value: "CANCELLED", label: "Cancelled", dot: "bg-red-500" },
+  { value: "IN_TRANSIT", label: "In Transit", dot: "bg-purple-500 " },
 ];
 
 function formatDateLabel(from?: Date, to?: Date) {
@@ -197,6 +197,8 @@ const STATUS_BADGE: Record<string, string> = {
   COMPLETED:
     "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800",
   CANCELLED:
+    "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
+  IN_TRANSIT:
     "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
 };
 
@@ -309,14 +311,29 @@ export default function DashboardOverview() {
   const [calOpen, setCalOpen] = useState(false);
   const [orderStatus, setOrderStatus] = useState("");
 
+  //   const queryParams: Record<string, string> = {};
+  //   if (dateFrom) queryParams["updatedAt[gte]"] = dateFrom.toISOString();
+  //   if (dateTo) queryParams["updatedAt[lte]"] = dateTo.toISOString();
+  //   if (orderStatus === "COURIERASSIGNED") {
+  //   queryParams.deliveryStatus = "COURIERASSIGNED";
+  // } else if (orderStatus && orderStatus !== "ALL") {
+  //   queryParams.orderStatus = orderStatus;
+  // }
+  // console.log(orderStatus,"orderStatus")
+
   const queryParams: Record<string, string> = {};
+
   if (dateFrom) queryParams["updatedAt[gte]"] = dateFrom.toISOString();
   if (dateTo) queryParams["updatedAt[lte]"] = dateTo.toISOString();
-  if (orderStatus === "COURIERASSIGNED") {
-  queryParams.deliveryStatus = "COURIERASSIGNED";
-} else if (orderStatus && orderStatus !== "ALL") {
-  queryParams.orderStatus = orderStatus;
-}
+
+  const deliveryStatuses = ["COURIERASSIGNED", "IN_TRANSIT"];
+
+  if (deliveryStatuses.includes(orderStatus)) {
+    queryParams.deliveryStatus = orderStatus;
+  } else if (orderStatus && orderStatus !== "ALL") {
+    queryParams.orderStatus = orderStatus;
+  }
+
 
   const {
     data: overviewRes,
@@ -377,33 +394,38 @@ export default function DashboardOverview() {
 
   const orderStatsChartData = data
     ? [
-        { name: "Pending", value: data?.orderStats?.PENDING, fill: "#f59e0b" },
-        {
-          name: "Confirmed",
-          value: data?.orderStats?.CONFIRMED,
-          fill: "#10b981",
-        },
-        {
-          name: "Completed",
-          value: data?.orderStats?.COMPLETED,
-          fill: "#8b5cf6",
-        },
-        {
-          name: "Courier Assigned",
-          value: data?.orderStats?.COURIER_ASSIGNED || 0,
-          fill: "#3b82f6",
-        },
-        {
-          name: "No Response",
-          value: data?.orderStats?.NO_RESPONSE || 0,
-          fill: "#e11d48",
-        },
-        {
-          name: "Cancelled",
-          value: data?.orderStats?.CANCELLED,
-          fill: "#ef4444",
-        },
-      ]
+      { name: "Pending", value: data?.orderStats?.PENDING, fill: "#f59e0b" },
+      {
+        name: "Confirmed",
+        value: data?.orderStats?.CONFIRMED,
+        fill: "#10b981",
+      },
+      {
+        name: "Completed",
+        value: data?.orderStats?.COMPLETED,
+        fill: "#8f71d3",
+      },
+      {
+        name: "Courier Assigned",
+        value: data?.orderStats?.COURIER_ASSIGNED || 0,
+        fill: "#3b82f6",
+      },
+      {
+        name: "No Response",
+        value: data?.orderStats?.NO_RESPONSE || 0,
+        fill: "#e11d48",
+      },
+      {
+        name: "Cancelled",
+        value: data?.orderStats?.CANCELLED,
+        fill: "#ef4444",
+      },
+      {
+        name: "In Transit",
+        value: data?.orderStats?.IN_TRANSIT,
+        fill: "#580f9c",
+      },
+    ]
     : [];
 
   const staffBarData = useMemo(() => {
@@ -462,7 +484,7 @@ export default function DashboardOverview() {
       </div>
     );
   }
-
+  // console.log(setOrderStatus, "setOrderStatus")
   return (
     <div className="min-h-screen space-y-6 bg-background p-4 md:p-8">
       {/* Header */}
@@ -837,6 +859,13 @@ export default function DashboardOverview() {
                 cls: "border-red-200 bg-red-50/60 dark:border-red-900/30 dark:bg-red-900/10",
                 val: "text-red-700 dark:text-red-400",
               },
+              {
+                key: "IN_TRANSIT",
+                label: "In Transit",
+                icon: XCircle,
+                cls: "border-purple-200 bg-purple-50 dark:border-purple-900/30 dark:bg-purple-900/10",
+                val: "text-purple-700 dark:text-purple-400",
+              },
             ].map(({ key, label, icon: Icon, cls, val }) => (
               <div
                 key={key}
@@ -852,13 +881,18 @@ export default function DashboardOverview() {
                   <Icon className={cn("h-4 w-4", val)} />
                 </div>
                 <p className={cn("text-2xl font-bold tabular-nums", val)}>
-                  {data.orderStats[key as keyof typeof data.orderStats]}
+                  {data.orderStats[key as keyof typeof data.orderStats] ?? 0}
                 </p>
                 <p className="mt-0.5 text-[11px] text-gray-400 dark:text-gray-500">
                   {data.totalOrders > 0
-                    ? `${Math.round((data.orderStats[key as keyof typeof data.orderStats] / data.totalOrders) * 100)}% of total`
+                    ? `${Math.round(
+                      ((data.orderStats[key as keyof typeof data.orderStats] ?? 0) /
+                        data.totalOrders) *
+                      100
+                    )}% of total`
                     : "0%"}
                 </p>
+
               </div>
             ))}
           </div>
@@ -891,7 +925,7 @@ export default function DashboardOverview() {
                   </p>
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={220}>
+                <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
                       data={orderStatsChartData}
@@ -908,10 +942,13 @@ export default function DashboardOverview() {
                     </Pie>
                     <Tooltip content={<ChartTooltip />} />
                     <Legend
+                      wrapperStyle={{
+                        paddingTop: "18px",
+                      }}
                       iconType="circle"
                       iconSize={8}
                       formatter={(v) => (
-                        <span className="text-xs text-gray-600 dark:text-gray-400">
+                        <span className="text-xs text-gray-600 dark:text-gray-400 ">
                           {v}
                         </span>
                       )}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card } from "@/components/ui/card";
@@ -49,6 +48,15 @@ const statusColors: Record<string, { bg: string; text: string }> = {
     bg: "bg-red-100 dark:bg-red-900/40",
     text: "text-red-800 dark:text-red-300",
   },
+  COURIERASSIGNED: {
+    bg: "bg-sky-100 dark:bg-sky-900/40",
+    text: "text-sky-800 dark:text-sky-300",
+  },
+
+  IN_TRANSIT: {
+    bg: "bg-purple-100 dark:bg-purple-900/40",
+    text: "text-purple-800 dark:text-purple-300",
+  },
 };
 
 export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
@@ -94,31 +102,36 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
           </TableHeader>
           <TableBody>
             {orders.map((order) => {
-              const statusColor =
-                statusColors[order.orderStatus || "PENDING"] ||
-                statusColors?.PENDING ||
-                "PENDING";
+
               const createdDate = order.createdAt
                 ? new Date(order.createdAt)
                 : null;
               const orderDate = createdDate
                 ? createdDate.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
                 : "N/A";
               const orderTime = createdDate
                 ? createdDate.toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  })
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                })
                 : "N/A";
               const timeAgo = createdDate
                 ? formatDistanceToNow(createdDate, { addSuffix: true })
                 : "N/A";
+              const displayStatus =
+                order.deliveryStatus === "IN_TRANSIT"
+                  ? "IN_TRANSIT"
+                  : order.deliveryStatus === "COURIERASSIGNED"
+                    ? "COURIERASSIGNED"
+                    : order.orderStatus || "PENDING";
 
+              const statusColor =
+                statusColors[displayStatus] || statusColors.PENDING;
               return (
                 <TableRow
                   key={order._id}
@@ -142,7 +155,7 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     <Badge className={`${statusColor.bg} ${statusColor.text}`}>
-                      {order.orderStatus || "PENDING"}
+                      {displayStatus.replace("_", " ")}
                     </Badge>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
