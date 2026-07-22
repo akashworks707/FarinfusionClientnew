@@ -43,6 +43,7 @@ import Link from "next/link";
 import ProductGallery from "@/components/shared/ProductGallery";
 import { useGetMeQuery } from "@/redux/features/user/user.api";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 function useBarcodeActions(barcodeValue: string | undefined) {
   const barcodeRef = useRef<HTMLDivElement>(null);
@@ -177,7 +178,7 @@ export default function ProductSingleDetails() {
       toast.error(err?.data?.message || "Failed to generate barcode");
     }
   };
-  
+
   const handleOpenPOS = () => {
     router.push(
       `/staff/dashboard/pos?barcode=${encodeURIComponent(product?.barcode ?? "")}`,
@@ -203,6 +204,21 @@ export default function ProductSingleDetails() {
   }
 
   const hasBarcode = Boolean(product?.barcode);
+
+  const lastUpdatedUser = product?.lastStockUpdatedBy;
+
+  const lastUpdatedName =
+    lastUpdatedUser?.name ||
+    lastUpdatedUser?.fullName ||
+    `${lastUpdatedUser?.firstName || ""} ${lastUpdatedUser?.lastName || ""}`.trim();
+
+  const initials =
+    lastUpdatedName
+      ?.split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "NA";
 
   return (
     <div className="p-3 space-y-6">
@@ -506,6 +522,65 @@ export default function ProductSingleDetails() {
                         <span className="text-xs text-muted-foreground italic">
                           Not assigned
                         </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCell className="font-semibold w-44">
+                      Last Stock Updated By
+                    </TableCell>
+
+                    <TableCell>
+                      {lastUpdatedUser ? (
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-9 w-9">
+                            <AvatarImage src={lastUpdatedUser.profileImage} />
+                            <AvatarFallback>{initials}</AvatarFallback>
+                          </Avatar>
+
+                          <div>
+                            <p className="font-medium">{lastUpdatedName}</p>
+
+                            <p className="text-xs text-muted-foreground">
+                              {lastUpdatedUser.role}
+                            </p>
+
+                            <p className="text-xs text-muted-foreground">
+                              {lastUpdatedUser.email}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Never Updated
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCell className="font-semibold w-44">
+                      Last Stock Updated At
+                    </TableCell>
+
+                    <TableCell>
+                      {product?.lastStockUpdatedAt ? (
+                        <div className="flex flex-col">
+                          <span>
+                            {new Date(
+                              product.lastStockUpdatedAt,
+                            ).toLocaleDateString()}
+                          </span>
+
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(
+                              product.lastStockUpdatedAt,
+                            ).toLocaleTimeString()}
+                          </span>
+                        </div>
+                      ) : (
+                        "N/A"
                       )}
                     </TableCell>
                   </TableRow>

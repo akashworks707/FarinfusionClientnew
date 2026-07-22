@@ -259,7 +259,7 @@ const UpdateProduct = () => {
         payloadData.totalAddedStock = Number(data.adjustStock);
       }
 
-      if (role !== "MANAGER" && data.buyingPrice !== undefined) {
+      if (role === "ADMIN" && data.buyingPrice !== undefined) {
         payloadData.buyingPrice = data.buyingPrice;
       }
 
@@ -442,7 +442,7 @@ const UpdateProduct = () => {
 
             {/* PRICE */}
             <div className="grid md:grid-cols-4 gap-4">
-              {role !== "MANAGER" && (
+              {role === "ADMIN" && (
                 <div className="space-y-2">
                   <Label>Buying Price</Label>
                   <Input
@@ -486,7 +486,7 @@ const UpdateProduct = () => {
             </div>
 
             {/* STOCK ADJUSTMENT */}
-            {role !== "MANAGER" && (
+           
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                 <div className="space-y-3">
                   <div>
@@ -538,7 +538,6 @@ const UpdateProduct = () => {
                   </div>
                 </div>
               </div>
-            )}
 
             <div className="space-y-2">
               <Label>Barcode</Label>

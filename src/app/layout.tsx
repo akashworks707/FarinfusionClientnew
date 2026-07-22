@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Open_Sans } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
 import { UserProvider } from "@/context/UserContext";
 import ReduxProvider from "@/providers/ReduxProvider";
 import Script from "next/script";
 import { AnalyticsPageView } from "@/hooks/analyticsPageView";
+import AppBootstrap from "@/components/shared/AppBootstrap";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -154,8 +154,7 @@ export default function RootLayout({
         <AnalyticsPageView />
         <ReduxProvider>
           <UserProvider>
-            {children}
-            <Toaster richColors position="top-center" />
+            <AppBootstrap>{children}</AppBootstrap>
           </UserProvider>
         </ReduxProvider>
       </body>

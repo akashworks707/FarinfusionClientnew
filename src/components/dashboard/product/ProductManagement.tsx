@@ -1151,7 +1151,6 @@ export default function ProductManagement() {
                               View Details
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              disabled={role !== "ADMIN" && role !== "MANAGER"}
                               className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
                               onClick={() =>
                                 router.push(

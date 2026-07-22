@@ -159,7 +159,7 @@ export default function CreateProduct() {
         barcode: data.barcode,
       };
 
-      if (role !== "MANAGER") {
+      if (role === "ADMIN") {
         payloadData.buyingPrice = data.buyingPrice;
         payloadData.availableStock = data.availableStock;
       }
@@ -263,7 +263,7 @@ export default function CreateProduct() {
 
               {/* PRICE */}
               <div className="grid md:grid-cols-4 gap-4">
-                {role !== "MANAGER" && (
+                {role === "ADMIN" && (
                   <div className="space-y-2">
                     <Label>Buying Price</Label>
                     <Input
@@ -294,7 +294,6 @@ export default function CreateProduct() {
                   <Input type="number" {...register("discountPrice")} />
                 </div>
 
-                {role !== "MANAGER" && (
                   <div className="space-y-2">
                     <Label>Stock</Label>
                     <Input
@@ -306,7 +305,6 @@ export default function CreateProduct() {
                       {errors.availableStock?.message}
                     </p>
                   </div>
-                )}
               </div>
 
               {/* <div className="space-y-2">
