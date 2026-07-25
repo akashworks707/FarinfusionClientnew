@@ -63,9 +63,9 @@ const pageHrefMap: Record<any, string> = {
   "product-management": "/staff/dashboard/admin/product-management",
   "category-management": "/staff/dashboard/admin/category-management",
   "brand-management": "/staff/dashboard/admin/brand-management",
-  "purchase-products": "/staff/dashboard/admin/purchase-products",
+  "purchase-products": "/staff/dashboard/purchase-products",
   "product-verifications": "/staff/dashboard/product-verifications",
-  returns: "/staff/dashboard/admin/returns",
+  returns: "/staff/dashboard/returns",
   
   coupons: "/staff/dashboard/coupons",
   blogs: "/staff/dashboard/blog",

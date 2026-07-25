@@ -45,6 +45,40 @@ import { useGetMeQuery } from "@/redux/features/user/user.api";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+const UserInfo = ({ user }: { user?: any }) => {
+  if (!user) {
+    return <span className="text-muted-foreground">N/A</span>;
+  }
+
+  const name =
+    user.name ||
+    user.fullName ||
+    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+
+  const initials =
+    name
+      ?.split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "NA";
+
+  return (
+    <div className="flex items-center gap-3">
+      <Avatar className="h-9 w-9">
+        <AvatarImage src={user.profileImage} />
+        <AvatarFallback>{initials}</AvatarFallback>
+      </Avatar>
+
+      <div>
+        <p className="font-medium">{name}</p>
+        <p className="text-xs text-muted-foreground">{user.role}</p>
+        <p className="text-xs text-muted-foreground">{user.email}</p>
+      </div>
+    </div>
+  );
+};
+
 function useBarcodeActions(barcodeValue: string | undefined) {
   const barcodeRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -204,6 +238,13 @@ export default function ProductSingleDetails() {
   }
 
   const hasBarcode = Boolean(product?.barcode);
+  const formatDateTime = (date?: string) =>
+    date
+      ? new Date(date).toLocaleString("en-GB", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        })
+      : "N/A";
 
   const lastUpdatedUser = product?.lastStockUpdatedBy;
 
@@ -560,30 +601,32 @@ export default function ProductSingleDetails() {
                   </TableRow>
 
                   <TableRow>
-                    <TableCell className="font-semibold w-44">
-                      Last Stock Updated At
+                    <TableCell className="font-semibold">Created By</TableCell>
+
+                    <TableCell>
+                      <UserInfo user={product?.createdBy} />
+                    </TableCell>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCell className="font-semibold">
+                      Last Updated By
                     </TableCell>
 
                     <TableCell>
-                      {product?.lastStockUpdatedAt ? (
-                        <div className="flex flex-col">
-                          <span>
-                            {new Date(
-                              product.lastStockUpdatedAt,
-                            ).toLocaleDateString()}
-                          </span>
-
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(
-                              product.lastStockUpdatedAt,
-                            ).toLocaleTimeString()}
-                          </span>
-                        </div>
-                      ) : (
-                        "N/A"
-                      )}
+                      <UserInfo user={product?.lastUpdatedBy} />
                     </TableCell>
                   </TableRow>
+
+                  {/* <TableRow>
+                    <TableCell className="font-semibold">
+                      Last Stock Updated By
+                    </TableCell>
+
+                    <TableCell>
+                      <UserInfo user={product?.lastStockUpdatedBy} />
+                    </TableCell>
+                  </TableRow> */}
 
                   <TableRow>
                     <TableCell className="font-semibold w-44">
@@ -591,7 +634,17 @@ export default function ProductSingleDetails() {
                     </TableCell>
                     <TableCell>
                       {product?.createdAt
-                        ? new Date(product.createdAt).toLocaleString()
+                        ? formatDateTime(product?.createdAt)
+                        : "N/A"}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-semibold w-44">
+                      Updated Date
+                    </TableCell>
+                    <TableCell>
+                      {product?.lastUpdatedAt
+                        ? formatDateTime(product?.lastUpdatedAt)
                         : "N/A"}
                     </TableCell>
                   </TableRow>
