@@ -6,6 +6,8 @@ import ReduxProvider from "@/providers/ReduxProvider";
 import Script from "next/script";
 import { AnalyticsPageView } from "@/hooks/analyticsPageView";
 import AppBootstrap from "@/components/shared/AppBootstrap";
+import { Toaster } from "sonner";
+import SonnerProvider from "@/components/shared/SonnerProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -154,6 +156,7 @@ export default function RootLayout({
         <AnalyticsPageView />
         <ReduxProvider>
           <UserProvider>
+            <SonnerProvider />
             <AppBootstrap>{children}</AppBootstrap>
           </UserProvider>
         </ReduxProvider>
