@@ -70,6 +70,12 @@ import {
 import { cn } from "@/lib/utils";
 import { IDashboardOverview } from "@/types/dashboard-overview";
 import { StaffEarningsTable } from "./StaffEarningsTable";
+import { StaffPerformanceTable } from "./StaffPerformanceTable";
+import { MyPerformanceSection } from "./MyPerformanceSection";
+import {
+  StatusBreakdownGrid,
+  StatusBreakdownItem,
+} from "./StatusBreakdownGrid";
 import { TopProductsTable } from "./TopProductsTable";
 import { ConfirmedProductsTable } from "./ConfirmedProductsTable";
 import { RecentOrdersTable } from "./RecentOrdersTable";
@@ -192,7 +198,6 @@ const STATUS_BADGE: Record<string, string> = {
     "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
   COURIERASSIGNED:
     "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
-
   NO_RESPONSE:
     "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800",
   COMPLETED:
@@ -202,13 +207,6 @@ const STATUS_BADGE: Record<string, string> = {
   IN_TRANSIT:
     "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
 };
-
-// const STATUS_ICON: Record<string, React.ElementType> = {
-//   PENDING: Clock,
-//   CONFIRMED: CheckCircle2,
-//   COMPLETED: CheckCircle2,
-//   CANCELLED: XCircle,
-// };
 
 function Skeleton({ className }: { className?: string }) {
   return (
@@ -305,22 +303,14 @@ export default function DashboardOverview() {
   const isManager = userRole === "MANAGER";
   const isStaff = ["MANAGER", "MODERATOR", "TELLICELSS"].includes(userRole);
   const isGeneralStaff = userRole === "GENERALSTAFF";
+  // Roles whose backend payload includes `myPerformance` (individually scoped stats)
+  const isMyPerformanceRole = ["MODERATOR", "TELLICELSS"].includes(userRole);
 
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [calRange, setCalRange] = useState<DateRange | undefined>(undefined);
   const [calOpen, setCalOpen] = useState(false);
   const [orderStatus, setOrderStatus] = useState("");
-
-  //   const queryParams: Record<string, string> = {};
-  //   if (dateFrom) queryParams["updatedAt[gte]"] = dateFrom.toISOString();
-  //   if (dateTo) queryParams["updatedAt[lte]"] = dateTo.toISOString();
-  //   if (orderStatus === "COURIERASSIGNED") {
-  //   queryParams.deliveryStatus = "COURIERASSIGNED";
-  // } else if (orderStatus && orderStatus !== "ALL") {
-  //   queryParams.orderStatus = orderStatus;
-  // }
-  // console.log(orderStatus,"orderStatus")
 
   const queryParams: Record<string, string> = {};
 
@@ -335,7 +325,6 @@ export default function DashboardOverview() {
     queryParams.orderStatus = orderStatus;
   }
 
-
   const {
     data: overviewRes,
     isLoading,
@@ -343,8 +332,6 @@ export default function DashboardOverview() {
   } = useGetDashboardOverviewQuery(queryParams);
   const data: IDashboardOverview | undefined = overviewRes?.data;
   const commissionSalary = me?.data?.commissionSalary || 20;
-  const totalCommission =
-    (data?.orderStats?.COMPLETED as number) * commissionSalary;
 
   const { data: users } = useGetAllUsersQuery({});
 
@@ -395,51 +382,114 @@ export default function DashboardOverview() {
 
   const orderStatsChartData = data
     ? [
-      { name: "Pending", value: data?.orderStats?.PENDING, fill: "#f59e0b" },
-      {
-        name: "Confirmed",
-        value: data?.orderStats?.CONFIRMED,
-        fill: "#10b981",
-      },
-      {
-        name: "Completed",
-        value: data?.orderStats?.COMPLETED,
-        fill: "#8f71d3",
-      },
-      {
-        name: "Courier Assigned",
-        value: data?.orderStats?.COURIER_ASSIGNED || 0,
-        fill: "#3b82f6",
-      },
-      {
-        name: "No Response",
-        value: data?.orderStats?.NO_RESPONSE || 0,
-        fill: "#e11d48",
-      },
-      {
-        name: "Cancelled",
-        value: data?.orderStats?.CANCELLED,
-        fill: "#ef4444",
-      },
-      {
-        name: "In Transit",
-        value: data?.orderStats?.IN_TRANSIT,
-        fill: "#580f9c",
-      },
-    ]
+        { name: "Pending", value: data?.orderStats?.PENDING, fill: "#f59e0b" },
+        {
+          name: "Confirmed",
+          value: data?.orderStats?.CONFIRMED,
+          fill: "#10b981",
+        },
+        {
+          name: "Completed",
+          value: data?.orderStats?.COMPLETED,
+          fill: "#8f71d3",
+        },
+        {
+          name: "Courier Assigned",
+          value: data?.orderStats?.COURIER_ASSIGNED || 0,
+          fill: "#3b82f6",
+        },
+        {
+          name: "No Response",
+          value: data?.orderStats?.NO_RESPONSE || 0,
+          fill: "#e11d48",
+        },
+        {
+          name: "Cancelled",
+          value: data?.orderStats?.CANCELLED,
+          fill: "#ef4444",
+        },
+        {
+          name: "In Transit",
+          value: data?.orderStats?.IN_TRANSIT,
+          fill: "#580f9c",
+        },
+      ]
     : [];
 
+  // Org-wide status breakdown (Admin / Manager) — built via the shared StatusBreakdownGrid config
+  const orderStatusItems: StatusBreakdownItem[] = useMemo(() => {
+    if (!data) return [];
+    return [
+      {
+        key: "PENDING",
+        label: "Pending",
+        icon: Clock,
+        cls: "border-amber-200 bg-amber-50/60 dark:border-amber-900/30 dark:bg-amber-900/10",
+        val: "text-amber-700 dark:text-amber-400",
+        count: data.orderStats?.PENDING ?? 0,
+      },
+      {
+        key: "CONFIRMED",
+        label: "Confirmed",
+        icon: CheckCircle2,
+        cls: "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/30 dark:bg-emerald-900/10",
+        val: "text-emerald-700 dark:text-emerald-400",
+        count: data.orderStats?.CONFIRMED ?? 0,
+      },
+      {
+        key: "COMPLETED",
+        label: "Completed",
+        icon: CheckCircle2,
+        cls: "border-violet-200 bg-violet-50/60 dark:border-violet-900/30 dark:bg-violet-900/10",
+        val: "text-violet-700 dark:text-violet-400",
+        count: data.orderStats?.COMPLETED ?? 0,
+      },
+      {
+        key: "COURIERASSIGNED",
+        label: "Courier Assigned",
+        icon: Truck,
+        cls: "border-blue-200 bg-blue-50/60 dark:border-blue-900/30 dark:bg-blue-900/10",
+        val: "text-blue-700 dark:text-blue-400",
+        count: data.orderStats?.COURIER_ASSIGNED ?? 0,
+      },
+      {
+        key: "NO_RESPONSE",
+        label: "No Response",
+        icon: PhoneMissed,
+        cls: "border-rose-200 bg-rose-50/60 dark:border-rose-900/30 dark:bg-rose-900/10",
+        val: "text-rose-700 dark:text-rose-400",
+        count: data.orderStats?.NO_RESPONSE ?? 0,
+      },
+      {
+        key: "CANCELLED",
+        label: "Cancelled",
+        icon: XCircle,
+        cls: "border-red-200 bg-red-50/60 dark:border-red-900/30 dark:bg-red-900/10",
+        val: "text-red-700 dark:text-red-400",
+        count: data.orderStats?.CANCELLED ?? 0,
+      },
+      {
+        key: "IN_TRANSIT",
+        label: "In Transit",
+        icon: XCircle,
+        cls: "border-purple-200 bg-purple-50 dark:border-purple-900/30 dark:bg-purple-900/10",
+        val: "text-purple-700 dark:text-purple-400",
+        count: data.orderStats?.IN_TRANSIT ?? 0,
+      },
+    ];
+  }, [data]);
+
   const staffBarData = useMemo(() => {
-    if (!isAdmin || !data?.staffEarnings?.length) return [];
-    return [...data.staffEarnings]
-      .sort((a, b) => (b.totalEarnings ?? 0) - (a.totalEarnings ?? 0))
+    if (!(isAdmin || isManager) || !data?.staffPerformance?.length) return [];
+    return [...data.staffPerformance]
+      .sort((a, b) => (b.revenue ?? 0) - (a.revenue ?? 0))
       .slice(0, 8)
       .map((s) => ({
         name: s.sellerName?.split(" ")[0] ?? "Staff",
-        Revenue: s.totalEarnings ?? 0,
+        Revenue: s.revenue ?? 0,
         Orders: s.totalOrders ?? 0,
       }));
-  }, [data, isAdmin]);
+  }, [data, isAdmin, isManager]);
 
   const roleLabel = isAdmin
     ? "Admin Overview"
@@ -485,7 +535,7 @@ export default function DashboardOverview() {
       </div>
     );
   }
-  // console.log(setOrderStatus, "setOrderStatus")
+
   return (
     <div className="min-h-screen space-y-6 bg-background p-4 md:p-8">
       {/* Header */}
@@ -702,7 +752,7 @@ export default function DashboardOverview() {
         )}
       </div>
 
-      {/* KPI + order status + charts */}
+      {/* Content */}
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[...Array(isAdmin ? 4 : 2)].map((_, i) => (
@@ -718,320 +768,258 @@ export default function DashboardOverview() {
         </div>
       ) : data ? (
         <>
-          {/* KPI cards */}
-          <div
-            className={cn(
-              "grid gap-4",
-              isAdmin
-                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
-                : isModerator
-                  ? "grid-cols-1 sm:grid-cols-3"
-                  : "grid-cols-2",
-            )}
-          >
-            <StatCard
-              label="Total Orders"
-              value={data.totalOrders}
-              icon={ShoppingBag}
-              accent="bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
+          {/* ── Individually-scoped performance for Moderator / Tellicelss ── */}
+          {isMyPerformanceRole && data.myPerformance ? (
+            <MyPerformanceSection
+              performance={data.myPerformance}
+              dateLabel={dateChipLabel}
+              commissionRate={isModerator ? commissionSalary : undefined}
             />
-            <StatCard
-              label="Courier Assigned"
-              value={data.orderStats?.COURIER_ASSIGNED || 0}
-              icon={Truck}
-              accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-              sub="waiting pickup"
-            />
-
-            <StatCard
-              label="No Response"
-              value={data.orderStats?.NO_RESPONSE || 0}
-              icon={PhoneMissed}
-              accent="bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400"
-              sub="customer unreachable"
-            />
-            {isAdmin && (
-              <StatCard
-                label="Total Revenue"
-                value={`৳${data.totalRevenue}`}
-                icon={TrendingUp}
-                accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-                sub="All confirmed payments"
-              />
-            )}
-            {isModerator && (
-              <StatCard
-                label="Total Commission"
-                value={`৳${totalCommission}`}
-                icon={TrendingUp}
-                accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-                sub="All confirmed payments"
-              />
-            )}
-            {isAdmin && data.totalUsers !== undefined && (
-              <StatCard
-                label="Total Staffs"
-                value={data.totalUsers}
-                icon={Users}
-                accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-              />
-            )}
-            {isAdmin && (
-              <>
-                <StatCard
-                  label="Total Buying Price"
-                  value={`৳${(data as any).totalCost ?? 0}`}
-                  icon={Package}
-                  accent="bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
-                  sub="Total buying cost"
-                />
-                <StatCard
-                  label="Staff Salary"
-                  value={`৳${users?.meta?.totalSalary ?? 0}`}
-                  icon={Users}
-                  accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                  sub="Total salary paid"
-                />
-                <StatCard
-                  label="Net Profit"
-                  value={`৳${(data as any).netProfit.toFixed(0) ?? 0}`}
-                  icon={TrendingUp}
-                  accent={
-                    ((data as any).netProfit ?? 0) >= 0
-                      ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-                      : "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
-                  }
-                  sub={((data as any).netProfit ?? 0) >= 0 ? "Profit" : "Loss"}
-                />
-              </>
-            )}
-            {isAdmin && data.totalProducts !== undefined && (
-              <StatCard
-                label="Products"
-                value={data.totalProducts}
-                icon={Package}
-                accent="bg-violet-50 text-violet-600 dark:bg-violet-900/20 dark:text-violet-400"
-              />
-            )}
-          </div>
-
-          {/* Order status cards */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {[
-              {
-                key: "PENDING",
-                label: "Pending",
-                icon: Clock,
-                cls: "border-amber-200 bg-amber-50/60 dark:border-amber-900/30 dark:bg-amber-900/10",
-                val: "text-amber-700 dark:text-amber-400",
-              },
-              {
-                key: "CONFIRMED",
-                label: "Confirmed",
-                icon: CheckCircle2,
-                cls: "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/30 dark:bg-emerald-900/10",
-                val: "text-emerald-700 dark:text-emerald-400",
-              },
-              {
-                key: "COMPLETED",
-                label: "Completed",
-                icon: CheckCircle2,
-                cls: "border-violet-200 bg-violet-50/60 dark:border-violet-900/30 dark:bg-violet-900/10",
-                val: "text-violet-700 dark:text-violet-400",
-              },
-              {
-                key: "COURIERASSIGNED",
-                label: "Courier Assigned",
-                icon: Truck,
-                cls: "border-blue-200 bg-blue-50/60 dark:border-blue-900/30 dark:bg-blue-900/10",
-                val: "text-blue-700 dark:text-blue-400",
-              },
-              {
-                key: "NO_RESPONSE",
-                label: "No Response",
-                icon: PhoneMissed,
-                cls: "border-rose-200 bg-rose-50/60 dark:border-rose-900/30 dark:bg-rose-900/10",
-                val: "text-rose-700 dark:text-rose-400",
-              },
-              {
-                key: "CANCELLED",
-                label: "Cancelled",
-                icon: XCircle,
-                cls: "border-red-200 bg-red-50/60 dark:border-red-900/30 dark:bg-red-900/10",
-                val: "text-red-700 dark:text-red-400",
-              },
-              {
-                key: "IN_TRANSIT",
-                label: "In Transit",
-                icon: XCircle,
-                cls: "border-purple-200 bg-purple-50 dark:border-purple-900/30 dark:bg-purple-900/10",
-                val: "text-purple-700 dark:text-purple-400",
-              },
-            ].map(({ key, label, icon: Icon, cls, val }) => (
+          ) : (
+            <>
+              {/* KPI cards */}
               <div
-                key={key}
                 className={cn(
-                  "rounded-2xl border p-4 transition-all duration-200 hover:shadow-sm",
-                  cls,
+                  "grid gap-4",
+                  isAdmin
+                    ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+                    : "grid-cols-2 sm:grid-cols-3",
                 )}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                    {label}
-                  </p>
-                  <Icon className={cn("h-4 w-4", val)} />
-                </div>
-                <p className={cn("text-2xl font-bold tabular-nums", val)}>
-                  {data.orderStats[key as keyof typeof data.orderStats] ?? 0}
-                </p>
-                <p className="mt-0.5 text-[11px] text-gray-400 dark:text-gray-500">
-                  {data.totalOrders > 0
-                    ? `${Math.round(
-                      ((data.orderStats[key as keyof typeof data.orderStats] ?? 0) /
-                        data.totalOrders) *
-                      100
-                    )}% of total`
-                    : "0%"}
-                </p>
-
+                <StatCard
+                  label="Total Orders"
+                  value={data.totalOrders}
+                  icon={ShoppingBag}
+                  accent="bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
+                />
+                <StatCard
+                  label="Courier Assigned"
+                  value={data.orderStats?.COURIER_ASSIGNED || 0}
+                  icon={Truck}
+                  accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+                  sub="waiting pickup"
+                />
+                <StatCard
+                  label="No Response"
+                  value={data.orderStats?.NO_RESPONSE || 0}
+                  icon={PhoneMissed}
+                  accent="bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400"
+                  sub="customer unreachable"
+                />
+                {(isAdmin || isManager) && (
+                  <StatCard
+                    label="Total Revenue"
+                    value={`৳${data.totalRevenue}`}
+                    icon={TrendingUp}
+                    accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+                    sub="All confirmed payments"
+                  />
+                )}
+                {isAdmin && data.totalUsers !== undefined && (
+                  <StatCard
+                    label="Total Staffs"
+                    value={data.totalUsers}
+                    icon={Users}
+                    accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+                  />
+                )}
+                {isAdmin && (
+                  <>
+                    <StatCard
+                      label="Total Buying Price"
+                      value={`৳${(data as any).totalCost ?? 0}`}
+                      icon={Package}
+                      accent="bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+                      sub="Total buying cost"
+                    />
+                    <StatCard
+                      label="Staff Salary"
+                      value={`৳${users?.meta?.totalSalary ?? 0}`}
+                      icon={Users}
+                      accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+                      sub="Total salary paid"
+                    />
+                    <StatCard
+                      label="Net Profit"
+                      value={`৳${(data as any).netProfit.toFixed(0) ?? 0}`}
+                      icon={TrendingUp}
+                      accent={
+                        ((data as any).netProfit ?? 0) >= 0
+                          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+                          : "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+                      }
+                      sub={
+                        ((data as any).netProfit ?? 0) >= 0 ? "Profit" : "Loss"
+                      }
+                    />
+                  </>
+                )}
+                {isAdmin && data.totalProducts !== undefined && (
+                  <StatCard
+                    label="Products"
+                    value={data.totalProducts}
+                    icon={Package}
+                    accent="bg-violet-50 text-violet-600 dark:bg-violet-900/20 dark:text-violet-400"
+                  />
+                )}
               </div>
-            ))}
-          </div>
 
-          {/* Charts */}
-          <div
-            className={cn(
-              "grid gap-6",
-              isAdmin
-                ? "grid-cols-1 xl:grid-cols-5"
-                : "grid-cols-1 lg:grid-cols-2",
-            )}
-          >
+              {/* Org-wide order status breakdown */}
+              <StatusBreakdownGrid
+                items={orderStatusItems}
+                total={data.totalOrders}
+              />
+            </>
+          )}
+
+          {/* Charts — hidden for the individually-scoped staff view, which has its own breakdown */}
+          {!isMyPerformanceRole && (
             <div
               className={cn(
-                "rounded-2xl border border-gray-200/80 bg-white p-5 dark:border-gray-700/60 dark:bg-gray-900",
-                isAdmin ? "xl:col-span-2" : "",
+                "grid gap-6",
+                isAdmin || isManager
+                  ? "grid-cols-1 xl:grid-cols-5"
+                  : "grid-cols-1 lg:grid-cols-2",
               )}
             >
-              <p className="mb-1 text-sm font-bold text-gray-900 dark:text-gray-50">
-                Order Distribution
-              </p>
-              <p className="mb-4 text-xs text-gray-400 dark:text-gray-500">
-                Breakdown by status
-              </p>
-              {data.totalOrders === 0 ? (
-                <div className="flex h-48 items-center justify-center">
-                  <p className="text-xs text-gray-400">
-                    No orders in this period
+              <div
+                className={cn(
+                  "rounded-2xl border border-gray-200/80 bg-white p-5 dark:border-gray-700/60 dark:bg-gray-900",
+                  isAdmin || isManager ? "xl:col-span-2" : "",
+                )}
+              >
+                <p className="mb-1 text-sm font-bold text-gray-900 dark:text-gray-50">
+                  Order Distribution
+                </p>
+                <p className="mb-4 text-xs text-gray-400 dark:text-gray-500">
+                  Breakdown by status
+                </p>
+                {data.totalOrders === 0 ? (
+                  <div className="flex h-48 items-center justify-center">
+                    <p className="text-xs text-gray-400">
+                      No orders in this period
+                    </p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={orderStatsChartData}
+                        dataKey="value"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={55}
+                        outerRadius={85}
+                        paddingAngle={3}
+                      >
+                        {orderStatsChartData.map((entry, index) => (
+                          <Cell key={index} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<ChartTooltip />} />
+                      <Legend
+                        wrapperStyle={{
+                          paddingTop: "18px",
+                        }}
+                        iconType="circle"
+                        iconSize={8}
+                        formatter={(v) => (
+                          <span className="text-xs text-gray-600 dark:text-gray-400 ">
+                            {v}
+                          </span>
+                        )}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+
+              {(isAdmin || isManager) && staffBarData.length > 0 ? (
+                <div className="rounded-2xl border border-gray-200/80 bg-white p-5 dark:border-gray-700/60 dark:bg-gray-900 xl:col-span-3">
+                  <p className="mb-1 text-sm font-bold text-gray-900 dark:text-gray-50">
+                    Staff Performance
                   </p>
+                  <p className="mb-4 text-xs text-gray-400 dark:text-gray-500">
+                    Top {staffBarData.length} staff by revenue
+                  </p>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart
+                      data={staffBarData}
+                      margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                    >
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fontSize: 11, fill: "#9ca3af" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 11, fill: "#9ca3af" }}
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`}
+                      />
+                      <Tooltip content={<ChartTooltip />} />
+                      <Bar
+                        dataKey="Revenue"
+                        fill="#f59e0b"
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={36}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
+                <div className="rounded-2xl border border-gray-200/80 bg-white p-5 dark:border-gray-700/60 dark:bg-gray-900">
+                  <p className="mb-1 text-sm font-bold text-gray-900 dark:text-gray-50">
+                    Order Status
+                  </p>
+                  <p className="mb-4 text-xs text-gray-400 dark:text-gray-500">
+                    Count by status
+                  </p>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart
                       data={orderStatsChartData}
-                      dataKey="value"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={55}
-                      outerRadius={85}
-                      paddingAngle={3}
+                      margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                     >
-                      {orderStatsChartData.map((entry, index) => (
-                        <Cell key={index} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<ChartTooltip />} />
-                    <Legend
-                      wrapperStyle={{
-                        paddingTop: "18px",
-                      }}
-                      iconType="circle"
-                      iconSize={8}
-                      formatter={(v) => (
-                        <span className="text-xs text-gray-600 dark:text-gray-400 ">
-                          {v}
-                        </span>
-                      )}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fontSize: 11, fill: "#9ca3af" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 11, fill: "#9ca3af" }}
+                        axisLine={false}
+                        tickLine={false}
+                        allowDecimals={false}
+                      />
+                      <Tooltip content={<ChartTooltip />} />
+                      <Bar
+                        dataKey="value"
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={40}
+                      >
+                        {orderStatsChartData.map((entry, index) => (
+                          <Cell key={index} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               )}
             </div>
+          )}
 
-            {isAdmin && staffBarData.length > 0 ? (
-              <div className="rounded-2xl border border-gray-200/80 bg-white p-5 dark:border-gray-700/60 dark:bg-gray-900 xl:col-span-3">
-                <p className="mb-1 text-sm font-bold text-gray-900 dark:text-gray-50">
-                  Staff Performance
-                </p>
-                <p className="mb-4 text-xs text-gray-400 dark:text-gray-500">
-                  Top {staffBarData.length} staff by revenue
-                </p>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart
-                    data={staffBarData}
-                    margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-                  >
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`}
-                    />
-                    <Tooltip content={<ChartTooltip />} />
-                    <Bar
-                      dataKey="Revenue"
-                      fill="#f59e0b"
-                      radius={[6, 6, 0, 0]}
-                      maxBarSize={36}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-gray-200/80 bg-white p-5 dark:border-gray-700/60 dark:bg-gray-900">
-                <p className="mb-1 text-sm font-bold text-gray-900 dark:text-gray-50">
-                  Order Status
-                </p>
-                <p className="mb-4 text-xs text-gray-400 dark:text-gray-500">
-                  Count by status
-                </p>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart
-                    data={orderStatsChartData}
-                    margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-                  >
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
-                      axisLine={false}
-                      tickLine={false}
-                      allowDecimals={false}
-                    />
-                    <Tooltip content={<ChartTooltip />} />
-                    <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={40}>
-                      {orderStatsChartData.map((entry, index) => (
-                        <Cell key={index} fill={entry.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </div>
+          {/* ── Staff Performance Table — ADMIN + MANAGER analytics, date-filtered ── */}
+          {(isAdmin || isManager) && (
+            <StaffPerformanceTable
+              staffPerformance={data.staffPerformance ?? []}
+              dateLabel={dateChipLabel}
+            />
+          )}
 
-          {/* ── Staff Earnings Table — ADMIN date-filtered ── */}
+          {/* ── Staff Earnings Table — ADMIN only, payroll (commission-based), date-filtered ── */}
           {isAdmin && data.staffEarnings && (
             <StaffEarningsTable
               staffEarnings={(data as any).staffEarnings ?? []}

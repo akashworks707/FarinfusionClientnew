@@ -7,11 +7,10 @@ export interface IOrderStats {
   COURIER_ASSIGNED: number;
   NO_RESPONSE: number;
   IN_TRANSIT: number;
-
 }
 
 export interface IStaffEarning {
-  _id: string
+  _id: string;
   sellerId: string;
   sellerName: string;
   email: string;
@@ -26,6 +25,34 @@ export interface IDashboardOverview {
   totalOrders: number;
   totalRevenue: number;
   totalUsers?: number;
+  staffPerformance?: {
+    _id: string;
+    sellerName: string;
+    email: string;
+    phone: string;
+    role: string;
+    profileImage?: string;
+
+    totalOrders: number;
+    pendingOrders: number;
+    confirmedOrders: number;
+    completedOrders: number;
+    cancelledOrders: number;
+    partialOrders: number;
+
+    revenue: number;
+    totalCommission: number;
+  }[];
+
+  myPerformance?: {
+    totalOrders: number;
+    pendingOrders: number;
+    confirmedOrders: number;
+    completedOrders: number;
+    cancelledOrders: number;
+    partialOrders: number;
+    revenue: number;
+  };
   totalProducts?: number;
   totalCost: number;
   totalSalary: number;
