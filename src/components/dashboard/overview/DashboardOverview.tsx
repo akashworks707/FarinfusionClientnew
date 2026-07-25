@@ -1020,12 +1020,12 @@ export default function DashboardOverview() {
           )}
 
           {/* ── Staff Earnings Table — ADMIN only, payroll (commission-based), date-filtered ── */}
-          {isAdmin && data.staffEarnings && (
+          {/* {isAdmin && data.staffEarnings && (
             <StaffEarningsTable
               staffEarnings={(data as any).staffEarnings ?? []}
               dateLabel={dateChipLabel}
             />
-          )}
+          )} */}
 
           {/* ── Top Products Table — ADMIN + MANAGER, date-filtered ── */}
           {(isAdmin || isManager) && (
