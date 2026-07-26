@@ -69,7 +69,6 @@ import {
 } from "@/redux/features/user/user.api";
 import { cn } from "@/lib/utils";
 import { IDashboardOverview } from "@/types/dashboard-overview";
-import { StaffEarningsTable } from "./StaffEarningsTable";
 import { StaffPerformanceTable } from "./StaffPerformanceTable";
 import { MyPerformanceSection } from "./MyPerformanceSection";
 import {
@@ -786,34 +785,36 @@ export default function DashboardOverview() {
                     : "grid-cols-2 sm:grid-cols-3",
                 )}
               >
-                <StatCard
-                  label="Total Orders"
-                  value={data.totalOrders}
-                  icon={ShoppingBag}
-                  accent="bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
-                />
-                <StatCard
-                  label="Courier Assigned"
-                  value={data.orderStats?.COURIER_ASSIGNED || 0}
-                  icon={Truck}
-                  accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                  sub="waiting pickup"
-                />
-                <StatCard
-                  label="No Response"
-                  value={data.orderStats?.NO_RESPONSE || 0}
-                  icon={PhoneMissed}
-                  accent="bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400"
-                  sub="customer unreachable"
-                />
-                {(isAdmin || isManager) && (
-                  <StatCard
-                    label="Total Revenue"
-                    value={`৳${data.totalRevenue}`}
-                    icon={TrendingUp}
-                    accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-                    sub="All confirmed payments"
-                  />
+                {isAdmin && (
+                  <>
+                    <StatCard
+                      label="Total Orders"
+                      value={data.totalOrders}
+                      icon={ShoppingBag}
+                      accent="bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
+                    />
+                    <StatCard
+                      label="Courier Assigned"
+                      value={data.orderStats?.COURIER_ASSIGNED || 0}
+                      icon={Truck}
+                      accent="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+                      sub="waiting pickup"
+                    />
+                    <StatCard
+                      label="No Response"
+                      value={data.orderStats?.NO_RESPONSE || 0}
+                      icon={PhoneMissed}
+                      accent="bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400"
+                      sub="customer unreachable"
+                    />
+                    <StatCard
+                      label="Total Revenue"
+                      value={`৳${data.totalRevenue}`}
+                      icon={TrendingUp}
+                      accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+                      sub="All confirmed payments"
+                    />
+                  </>
                 )}
                 {isAdmin && data.totalUsers !== undefined && (
                   <StatCard
