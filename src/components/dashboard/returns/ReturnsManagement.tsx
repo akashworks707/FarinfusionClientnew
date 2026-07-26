@@ -54,8 +54,7 @@ const ReturnsManagement = () => {
     limit,
   });
 
-  const { data: productsData } = useGetAllProductsQuery({ limit: 1000 });
-  const { data: ordersData, isLoading: ordersLoading } = useGetAllOrdersQuery({ limit: 1000 });
+  const { data: productsData } = useGetAllProductsQuery({ limit: 100000 });
 
   // Modal states
   const [selectedReturn, setSelectedReturn] = useState<any>(null);
@@ -71,40 +70,6 @@ const ReturnsManagement = () => {
   // Delete states
   const [returnToDelete, setReturnToDelete] = useState<any>(null);
   const [openDeleteAlert, setOpenDeleteAlert] = useState(false);
-  const eligibleReturnOrders = useMemo(() => {
-    return (
-      ordersData?.data?.filter((order: any) => {
-        const validOrderStatuses = [
-          "CONFIRMED",
-          "COMPLETED",
-          "PARTIAL",
-          "CANCELLED",
-        ];
-
-        const isEligibleOrderStatus = validOrderStatuses.includes(
-          order.orderStatus,
-        );
-
-        const hasProducts = order.products?.length > 0;
-
-        const notDeleted = !order.isDeleted;
-
-        const hasRemainingReturnQty =
-          (order.totalReturnedQuantity || 0) <
-          order.products.reduce(
-            (sum: number, item: any) => sum + (item.quantity || 0),
-            0,
-          );
-
-        return (
-          isEligibleOrderStatus &&
-          hasProducts &&
-          notDeleted &&
-          hasRemainingReturnQty
-        );
-      }) || []
-    );
-  }, [ordersData]);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -260,9 +225,7 @@ const ReturnsManagement = () => {
       <CreateReturnModal
         open={openCreateModal}
         onOpenChange={setOpenCreateModal}
-        ordersLoading={ordersLoading}
         products={productsData?.data || []}
-        orders={eligibleReturnOrders}
         onSuccess={() => {
           refetch();
           setOpenCreateModal(false);

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -23,11 +23,12 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, X, Search, Package, MapPin, Phone, User } from "lucide-react";
+import { Plus, X, Search, Package, MapPin, Phone, User, Loader2 } from "lucide-react";
 import { useCreateReturnMutation } from "@/redux/features/return/returnApi";
+import { useGetAllOrdersQuery } from "@/redux/features/orders/ordersApi";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { IProduct, Order } from "@/types";
+import { IProduct } from "@/types";
 
 interface ReturnProduct {
   product: string;
@@ -42,21 +43,21 @@ interface CreateReturnModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   products: IProduct[];
-  orders: Order[];
-  ordersLoading: boolean;
   onSuccess: () => void;
 }
+
+// Orders eligible for a return
+const ELIGIBLE_ORDER_STATUSES = ["CONFIRMED", "COMPLETED", "CANCELLED"];
 
 export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
   open,
   onOpenChange,
   products,
-  orders,
-  ordersLoading,
   onSuccess,
 }) => {
   const [createReturn, { isLoading }] = useCreateReturnMutation();
   const [selectedOrder, setSelectedOrder] = useState<string>("");
+  const [selectedOrderObj, setSelectedOrderObj] = useState<any>(null);
   const [returnedProducts, setReturnedProducts] = useState<ReturnProduct[]>([]);
   const [refundAmount, setRefundAmount] = useState<number>(0);
   const [refundStatus, setRefundStatus] = useState<string>("PENDING");
@@ -68,8 +69,55 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
     Record<number, boolean>
   >({});
   const [orderSearch, setOrderSearch] = useState<string>("");
+  const [debouncedOrderSearch, setDebouncedOrderSearch] = useState<string>("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Debounce the order search so we don't hit the API on every keystroke
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedOrderSearch(orderSearch.trim());
+    }, 350);
+    return () => clearTimeout(t);
+  }, [orderSearch]);
+
+  // Only query the backend while the dropdown is actually open (and while modal is open)
+  const {
+    data: ordersData,
+    isFetching: ordersLoading,
+  } = useGetAllOrdersQuery(
+    {
+      ...(debouncedOrderSearch && { searchTerm: debouncedOrderSearch }),
+      limit: 15,
+    },
+    { skip: !open || !dropdownOpen },
+  );
+
+  const eligibleOrders = useMemo(() => {
+    const rawOrders = ordersData?.data || [];
+
+    return rawOrders.filter((order: any) => {
+      const isEligibleOrderStatus = ELIGIBLE_ORDER_STATUSES.includes(
+        order.orderStatus,
+      );
+      const hasProducts = order.products?.length > 0;
+      const notDeleted = !order.isDeleted;
+
+      const totalQty = (order.products || []).reduce(
+        (sum: number, item: any) => sum + (item.quantity || 0),
+        0,
+      );
+      const hasRemainingReturnQty =
+        (order.totalReturnedQuantity || 0) < totalQty;
+
+      return (
+        isEligibleOrderStatus &&
+        hasProducts &&
+        notDeleted &&
+        hasRemainingReturnQty
+      );
+    });
+  }, [ordersData]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -122,16 +170,43 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
     }));
   };
 
+  // Resolve product display info whether `item.product` came back populated
+  // (an object) or as a bare id (string), falling back to the products list.
+  const getProductInfo = (item: any) => {
+    const populated =
+      item?.product && typeof item.product === "object" ? item.product : null;
+
+    const productId = populated?._id ?? item?.product;
+
+    const fallback = !populated
+      ? products.find((p) => p._id === productId)
+      : null;
+
+    const source = populated || fallback;
+
+    return {
+      id: productId as string,
+      title: source?.title || "Unknown Product",
+      sku: (source as any)?.sku || "",
+      images: (source as any)?.images || [],
+    };
+  };
+
+  const orderProducts = Array.isArray(selectedOrderObj?.products)
+    ? selectedOrderObj.products
+    : [];
+
   const getFilteredOrderProducts = (index: number) => {
     const search = (productSearchMap[index] || "").toLowerCase();
 
-    return orderProducts.filter((item: any) => {
-      const product = item.product;
+    if (!search) return orderProducts;
 
+    return orderProducts.filter((item: any) => {
+      const info = getProductInfo(item);
       return (
-        product?.title?.toLowerCase().includes(search) ||
-        product?.sku?.toLowerCase().includes(search) ||
-        product?._id?.toLowerCase().includes(search)
+        info.title.toLowerCase().includes(search) ||
+        info.sku.toLowerCase().includes(search) ||
+        info.id?.toLowerCase().includes(search)
       );
     });
   };
@@ -177,6 +252,7 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
 
   const resetForm = () => {
     setSelectedOrder("");
+    setSelectedOrderObj(null);
     setReturnedProducts([]);
     setRefundAmount(0);
     setRefundStatus("PENDING");
@@ -184,45 +260,11 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
     setProductSearchMap({});
     setProductDropdownOpen({});
     setOrderSearch("");
+    setDebouncedOrderSearch("");
     onOpenChange(false);
   };
 
-  const filteredOrders = orders.filter((order: any) => {
-    const searchLower = orderSearch.trim().toLowerCase();
-
-    if (!searchLower) return true;
-
-    // order/customer matching
-    const basicMatch =
-      order._id?.toLowerCase().includes(searchLower) ||
-      order.customOrderId?.toLowerCase().includes(searchLower) ||
-      order.billingDetails?.fullName?.toLowerCase().includes(searchLower) ||
-      order.billingDetails?.phone?.toLowerCase().includes(searchLower);
-
-    // product matching using global products list
-    const productMatch = order.products?.some((item: any) => {
-      const productId =
-        typeof item.product === "string" ? item.product : item.product?._id;
-
-      const fullProduct = products.find((p) => p._id === productId);
-
-      return (
-        productId?.toLowerCase().includes(searchLower) ||
-        fullProduct?.title?.toLowerCase().includes(searchLower)
-      );
-    });
-
-    return basicMatch || productMatch;
-  });
-
-  const selectedOrderData = orders.find((o) => o._id === selectedOrder);
-  const orderProducts = Array.isArray(selectedOrderData?.products)
-    ? selectedOrderData.products
-    : selectedOrderData?.products
-      ? [selectedOrderData.products]
-      : [];
-
-  const selectedOrderDisplay = orders.find((o) => o._id === selectedOrder);
+  const selectedOrderDisplay = selectedOrderObj;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -250,13 +292,13 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
               <div ref={dropdownRef} className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
-                  placeholder="Search by Order ID, Product Name, SKU, Product ID, Customer Name or Phone..."
+                  placeholder="Search by Order ID, Customer Name or Phone..."
                   value={orderSearch}
                   onChange={(e) => setOrderSearch(e.target.value)}
                   onFocus={() => setDropdownOpen(true)}
                   className="h-10 rounded-lg border-gray-200 bg-gray-50/60 pl-9 pr-8 text-sm transition-colors placeholder:text-gray-400 focus:border-amber-400 focus:bg-white dark:border-gray-700 dark:bg-gray-800/60 dark:placeholder:text-gray-600 dark:focus:border-amber-500 dark:focus:bg-gray-800"
                 />
-                {orderSearch && (
+                {orderSearch ? (
                   <button
                     type="button"
                     onClick={() => setOrderSearch("")}
@@ -264,13 +306,21 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
-                )}
+                ) : ordersLoading && dropdownOpen ? (
+                  <Loader2 className="absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin text-gray-400" />
+                ) : null}
 
                 {/* Dropdown Menu */}
                 {dropdownOpen && (
                   <div className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-64 rounded-xl border border-gray-200/80 bg-white shadow-lg dark:border-gray-700/60 dark:bg-gray-900">
                     <ScrollArea className="h-64">
                       <div className="p-2">
+                        {!orderSearch.trim() && (
+                          <p className="px-3 pb-2 pt-1 text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                            Recent orders — type to search by ID, name or
+                            phone
+                          </p>
+                        )}
                         {ordersLoading ? (
                           <div className="space-y-2">
                             {Array.from({ length: 4 }).map((_, index) => (
@@ -296,130 +346,77 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
                               </div>
                             ))}
                           </div>
-                        ) : filteredOrders.length === 0 ? (
+                        ) : eligibleOrders.length === 0 ? (
                           <p className="px-3 py-6 text-center text-xs text-gray-400">
-                            No orders found
+                            {orderSearch.trim()
+                              ? "No matching orders found"
+                              : "No eligible orders found"}
                           </p>
                         ) : (
-                          filteredOrders.map((order: any) => {
-                            const searchLower = orderSearch
-                              .trim()
-                              .toLowerCase();
-
-                            const matchedProducts = order.products?.filter(
-                              (item: any) => {
-                                const productId =
-                                  typeof item.product === "string"
-                                    ? item.product
-                                    : item.product?._id;
-
-                                const fullProduct = products.find(
-                                  (p) => p._id === productId,
-                                );
-
-                                return (
-                                  productId
-                                    ?.toLowerCase()
-                                    .includes(searchLower) ||
-                                  fullProduct?.title
-                                    ?.toLowerCase()
-                                    .includes(searchLower)
-                                );
-                              },
-                            );
-
-                            return (
-                              <button
-                                key={order._id}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedOrder(order._id);
-                                  setOrderSearch("");
-                                  setDropdownOpen(false);
-                                }}
-                                className={cn(
-                                  "w-full rounded-lg px-3 py-2.5 text-left transition-colors mb-1",
-                                  selectedOrder === order._id
-                                    ? "bg-amber-50 dark:bg-amber-900/20"
-                                    : "hover:bg-gray-50/60 dark:hover:bg-gray-800/40",
-                                )}
-                              >
-                                <div className="space-y-1">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <p className="font-medium text-sm text-gray-800 dark:text-gray-200">
-                                      {order.customOrderId ||
-                                        order._id.slice(0, 8)}
-                                    </p>
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      ৳{order.total?.toFixed(2)}
-                                    </Badge>
-                                  </div>
-                                  <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-                                    <User className="h-3 w-3" />
-                                    {order.billingDetails?.fullName ||
-                                      "Unknown"}
-                                  </div>
-                                  <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-                                    <Phone className="h-3 w-3" />
-                                    {order.billingDetails?.phone || "N/A"}
-                                  </div>
-                                  {order.billingDetails?.address && (
-                                    <div className="flex items-start gap-1.5 text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
-                                      <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
-                                      {order.billingDetails.address}
-                                    </div>
-                                  )}
-
-                                  {matchedProducts?.length > 0 && (
-                                    <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-2 dark:border-blue-800 dark:bg-blue-900/20">
-                                      <p className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 mb-1">
-                                        Matched Products
-                                      </p>
-
-                                      {matchedProducts
-                                        .slice(0, 2)
-                                        .map((mp: any) => {
-                                          const productId =
-                                            typeof mp.product === "string"
-                                              ? mp.product
-                                              : mp.product?._id;
-
-                                          const fullProduct = products.find(
-                                            (p) => p._id === productId,
-                                          );
-
-                                          return (
-                                            <div
-                                              key={productId}
-                                              className="text-xs text-blue-700 dark:text-blue-300"
-                                            >
-                                              •{" "}
-                                              {fullProduct?.title || productId}
-                                            </div>
-                                          );
-                                        })}
-                                    </div>
-                                  )}
-                                  <div className="pt-1.5 flex items-center gap-2">
-                                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                      {order.products?.length || 0} item
-                                      {(order.products?.length || 0) !== 1
-                                        ? "s"
-                                        : ""}
-                                    </span>
-                                    {selectedOrder === order._id && (
-                                      <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">
-                                        Selected
-                                      </Badge>
-                                    )}
-                                  </div>
+                          eligibleOrders.map((order: any) => (
+                            <button
+                              key={order._id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedOrder(order._id);
+                                setSelectedOrderObj(order);
+                                setOrderSearch("");
+                                setDropdownOpen(false);
+                              }}
+                              className={cn(
+                                "w-full rounded-lg px-3 py-2.5 text-left transition-colors mb-1",
+                                selectedOrder === order._id
+                                  ? "bg-amber-50 dark:bg-amber-900/20"
+                                  : "hover:bg-gray-50/60 dark:hover:bg-gray-800/40",
+                              )}
+                            >
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="font-medium text-sm text-gray-800 dark:text-gray-200">
+                                    {order.customOrderId ||
+                                      order._id.slice(0, 8)}
+                                  </p>
+                                  <Badge variant="outline" className="text-xs">
+                                    ৳{order.total?.toFixed(2)}
+                                  </Badge>
                                 </div>
-                              </button>
-                            );
-                          })
+                                <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                                  <User className="h-3 w-3" />
+                                  {order.billingDetails?.fullName || "Unknown"}
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                                  <Phone className="h-3 w-3" />
+                                  {order.billingDetails?.phone || "N/A"}
+                                </div>
+                                {order.billingDetails?.address && (
+                                  <div className="flex items-start gap-1.5 text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
+                                    <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
+                                    {order.billingDetails.address}
+                                  </div>
+                                )}
+
+                                <div className="pt-1.5 flex items-center gap-2">
+                                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    {order.products?.length || 0} item
+                                    {(order.products?.length || 0) !== 1
+                                      ? "s"
+                                      : ""}
+                                  </span>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px]"
+                                  >
+                                    {order.orderStatus}
+                                  </Badge>
+                                  {selectedOrder === order._id && (
+                                    <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">
+                                      Selected
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </button>
+                          ))
                         )}
                       </div>
                     </ScrollArea>
@@ -464,6 +461,7 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
                   size="sm"
                   variant="outline"
                   onClick={handleAddProduct}
+                  disabled={!selectedOrder}
                   className="gap-1"
                 >
                   <Plus className="h-4 w-4" />
@@ -474,7 +472,9 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
               {returnedProducts.length === 0 ? (
                 <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 py-8 dark:border-gray-700">
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    No products added yet
+                    {selectedOrder
+                      ? "No products added yet"
+                      : "Select an order first"}
                   </p>
                 </div>
               ) : (
@@ -526,34 +526,23 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
                                   ) : (
                                     getFilteredOrderProducts(index).map(
                                       (item: any) => {
-                                        const productId =
-                                          typeof item.product === "string"
-                                            ? item.product
-                                            : item.product?._id;
-
+                                        const info = getProductInfo(item);
                                         const selected =
-                                          product.product === productId;
-
-                                        const productData =
-                                          typeof item.product === "string"
-                                            ? products.find(
-                                                (p) => p._id === item.product,
-                                              )
-                                            : item.product;
+                                          product.product === info.id;
 
                                         return (
                                           <button
-                                            key={productId}
+                                            key={info.id}
                                             type="button"
                                             onClick={() => {
                                               handleProductChange(
                                                 index,
                                                 "product",
-                                                productId,
+                                                info.id,
                                               );
                                               updateProductSearch(
                                                 index,
-                                                item.product.title,
+                                                info.title,
                                               );
                                               updateProductDropdown(
                                                 index,
@@ -571,13 +560,10 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
                                               <div className="relative h-12 w-12 overflow-hidden rounded-lg border bg-white">
                                                 <Image
                                                   src={
-                                                    productData?.images?.[0] ||
+                                                    info.images?.[0] ||
                                                     "/placeholder-product.png"
                                                   }
-                                                  alt={
-                                                    productData?.title ||
-                                                    "Product"
-                                                  }
+                                                  alt={info.title}
                                                   fill
                                                   className="object-cover"
                                                 />
@@ -585,23 +571,16 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
 
                                               <div className="min-w-0 flex-1">
                                                 <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                                                  {productData?.title ||
-                                                    "Unknown Product"}
+                                                  {info.title}
                                                 </p>
 
                                                 <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-500">
                                                   <span>
                                                     Ordered: {item.quantity}
                                                   </span>
-                                                  {/* <span>
-                                                    Stock:{" "}
-                                                    {
-                                                     selected?.availableStock
-                                                    }
-                                                  </span> */}
-                                                  {/* <span>
-                                                    ৳{item.product.price}
-                                                  </span> */}
+                                                  {info.sku && (
+                                                    <span>SKU: {info.sku}</span>
+                                                  )}
                                                 </div>
                                               </div>
 
@@ -805,7 +784,7 @@ export const CreateReturnModal: React.FC<CreateReturnModalProps> = ({
           <Button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="gap-2 bg-amber-600 hover:bg-amber-700 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+            className="gap-2 bg-amber-600 hover:cursor-pointer hover:bg-amber-700 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
           >
             {isLoading ? "Creating..." : "Create Return"}
           </Button>
