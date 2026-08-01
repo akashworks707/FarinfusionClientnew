@@ -21,7 +21,7 @@ interface OrderTableProps {
   orders: Order[];
   loading: boolean;
   error: string | null;
-  onConfirmOrder: (order: Order) => void;
+  onConfirmOrder?: (order: Order) => void;
   onViewOrder?: (order: Order) => void;
   onAssignCourier?: (order: Order) => void;
   onCancelOrder?: (order: Order) => void;

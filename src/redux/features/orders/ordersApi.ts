@@ -75,6 +75,18 @@ export const ordersApi = baseApi.injectEndpoints({
       },
     ),
 
+    getAllWaitingStockOrders: builder.query<
+      GetAllOrdersResponse,
+      GetQueryParams
+    >({
+      query: (params) => ({
+        url: "/order/waiting-stock",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["ORDERS"],
+    }),
+
     getSingleOrder: builder.query<OrderResponse, string>({
       query: (id) => ({
         url: `/order/${id}`,
@@ -277,6 +289,7 @@ export const {
   useRestoreNoResponseMutation,
   useGetAllScheduledOrdersQuery,
   useGetAllNoResponseOrdersQuery,
+  useGetAllWaitingStockOrdersQuery,
   useCancelOrderMutation,
   useGetAllDamagedProductsQuery,
   useUpdateDeliveryStatusMutation,

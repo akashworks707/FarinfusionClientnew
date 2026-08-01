@@ -99,41 +99,27 @@ export default function POSManagement() {
     0,
   );
 
-  // const handleAddToCart = (product: IProduct) => {
-  //   setCartItems((prev) => {
-  //     const existing = prev.find((item) => item.product._id === product._id);
-  //     if (existing) {
-  //       return prev.map((item) =>
-  //         item.product._id === product._id
-  //           ? { ...item, quantity: item.quantity + 1 }
-  //           : item,
-  //       );
-  //     }
-  //     return [...prev, { product, quantity: 1, selectedExtras: [] }];
-  //   });
-  //   toast.success(`${product.title} added to cart!`);
-  // };
-
+  // Adding to cart no longer hard-blocks once stock runs out — the backend's
+  // reservation logic (reserveOrderProducts) is the source of truth for what
+  // gets reserved vs. marked WAITING_FOR_STOCK. We just warn the cashier here.
   const handleAddToCart = useCallback((product: IProduct) => {
+    const stock = product.availableStock || 0;
+
     setCartItems((prev) => {
-      const stock = product.availableStock || 0;
-
       const existing = prev.find((item) => item.product._id === product._id);
+      const nextQuantity = (existing?.quantity || 0) + 1;
 
-      if (stock <= 0) {
-        toast.error("Product out of stock");
-        return prev;
-      }
-
-      if (existing && existing.quantity >= stock) {
-        toast.error(`Only ${stock} items available`);
-        return prev;
+      if (nextQuantity > stock) {
+        const waitingQty = nextQuantity - Math.max(stock, 0);
+        toast.warning(
+          `Only ${Math.max(stock, 0)} in stock — ${waitingQty} unit(s) will wait for restock`,
+        );
       }
 
       if (existing) {
         return prev.map((item) =>
           item.product._id === product._id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: nextQuantity }
             : item,
         );
       }
@@ -149,16 +135,18 @@ export default function POSManagement() {
 
     if (!cartItem) return;
 
-    const maxStock = cartItem.product.availableStock || 0;
-
-    if (quantity > maxStock) {
-      toast.error(`Only ${maxStock} items available`);
-      return;
-    }
-
     if (quantity <= 0) {
       handleRemoveFromCart(productId);
       return;
+    }
+
+    const maxStock = cartItem.product.availableStock || 0;
+
+    if (quantity > maxStock) {
+      const waitingQty = quantity - Math.max(maxStock, 0);
+      toast.warning(
+        `Only ${Math.max(maxStock, 0)} in stock — ${waitingQty} unit(s) will wait for restock`,
+      );
     }
 
     setCartItems((prev) =>
@@ -275,6 +263,8 @@ export default function POSManagement() {
           cartItems: analyticsCartItems,
         });
 
+        const isWaitingForStock = res.orderStatus === "WAITING_FOR_STOCK";
+
         if (schedule.type === "SCHEDULED") {
           toast.success(
             `Order scheduled for ${new Date(
@@ -283,11 +273,19 @@ export default function POSManagement() {
           );
           router.push("/staff/dashboard/orders-management");
         } else {
+          const successMessage = isWaitingForStock
+            ? "Order created — some items are waiting for stock and will be fulfilled once restocked."
+            : "Order created successfully!";
+
+          if (isWaitingForStock) {
+            toast.warning(successMessage);
+          } else {
+            toast.success(successMessage);
+          }
+
           if (user?.data?.role === "MODERATOR") {
-            toast.success("Order created successfully!");
             router.push("/staff/dashboard/my-orders");
           } else {
-            toast.success("Order created successfully!");
             router.push("/staff/dashboard/orders-management");
           }
         }

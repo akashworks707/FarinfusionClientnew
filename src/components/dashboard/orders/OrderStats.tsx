@@ -1,8 +1,13 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { ShoppingCart, Clock, CheckCircle2, PhoneMissed } from "lucide-react";
+import {
+  ShoppingCart,
+  Clock,
+  CheckCircle2,
+  PhoneMissed,
+  BoxesIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface OrderStatsProps {
@@ -59,10 +64,11 @@ export function OrderStats({ stats }: OrderStatsProps) {
   const pendingOrders = stats.PENDING || 0;
   const confirmedOrders = stats.CONFIRMED || 0;
   const completedOrders = stats.COMPLETED || 0;
+  const waitingForStock = stats.WAITING_FOR_STOCK || 0;
   const noResponseOrders = stats.NO_RESPONSE || 0;
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
       <StatCard
         label="Total Orders"
         value={totalOrders.toLocaleString()}
@@ -89,11 +95,18 @@ export function OrderStats({ stats }: OrderStatsProps) {
         accent="bg-teal-50 text-teal-600 dark:bg-teal-900/20 dark:text-teal-400"
       />
 
-       <StatCard
+      <StatCard
         label="No Response"
         value={noResponseOrders}
         icon={PhoneMissed}
         accent="bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400"
+        sub="unreachable customers"
+      />
+      <StatCard
+        label="Waiting For Stock"
+        value={waitingForStock}
+        icon={BoxesIcon}
+        accent="bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
         sub="unreachable customers"
       />
     </div>

@@ -18,6 +18,7 @@ import {
   useCancelOrderMutation,
   useUpdateManualDeliveryStatusMutation,
   useGetAllNoResponseOrdersQuery,
+  useGetAllWaitingStockOrdersQuery,
 } from "@/redux/features/orders/ordersApi";
 import { useCreateCourierMutation } from "@/lib/hooks";
 import { OrderStats } from "./OrderStats";
@@ -60,7 +61,13 @@ import { InvoiceDialog } from "../shared/InvoiceDialog";
 import { CourierProvider } from "@/types";
 
 // const LIMIT = 10;
-type ActiveTab = "instant" | "scheduled" | "hold" | "no-response" | "damaged";
+type ActiveTab =
+  | "instant"
+  | "scheduled"
+  | "hold"
+  | "waiting-stock"
+  | "no-response"
+  | "damaged";
 
 export default function OrdersManagement() {
   const [status, setStatus] = useState<OrderStatus | "">("");
@@ -133,7 +140,10 @@ export default function OrdersManagement() {
       skip: activeTab !== "scheduled",
     });
 
-    const { data: noResponseOrdersData, isLoading: isNoResponseLoading } =
+  const { data: waitingStockOrdersData, isLoading: isWaitingLoading } =
+    useGetAllWaitingStockOrdersQuery( {});
+
+  const { data: noResponseOrdersData, isLoading: isNoResponseLoading } =
     useGetAllNoResponseOrdersQuery({});
 
   const { data: HoldOrdersData, isLoading: isHoldLoading } =
@@ -394,23 +404,44 @@ export default function OrdersManagement() {
         ? (scheduledOrdersData?.data as Order[]) || []
         : (HoldOrdersData?.data as Order[]) || [];
 
- const isLoadingFinal = activeTab === "instant" ? isLoading : activeTab === "scheduled" ? isScheduledLoading : activeTab === "no-response" ? isNoResponseLoading : isHoldLoading;
+  const isLoadingFinal =
+    activeTab === "instant"
+      ? isLoading
+      : activeTab === "scheduled"
+        ? isScheduledLoading
+        : activeTab === "waiting-stock"
+          ? isWaitingLoading
+          : activeTab === "no-response"
+            ? isNoResponseLoading
+            : isHoldLoading;
 
-   const meta: any = activeTab === "instant" ? ordersData?.meta : activeTab === "scheduled" ? scheduledOrdersData?.meta : activeTab === "no-response" ? noResponseOrdersData?.meta : HoldOrdersData?.meta;
+  const meta: any =
+    activeTab === "instant"
+      ? ordersData?.meta
+      : activeTab === "scheduled"
+        ? scheduledOrdersData?.meta
+        : activeTab === "waiting-stock"
+          ? waitingStockOrdersData?.meta
+          : activeTab === "no-response"
+            ? noResponseOrdersData?.meta
+            : HoldOrdersData?.meta;
   const totalCount = meta?.total ?? 0;
   const totalPages = meta?.totalPage ?? Math.ceil(totalCount / limit);
   // const allOrders = (allOrdersData?.data as Order[]) || [];
 
   // console.log(ordersData?.stats);
 
-   const tabs: { value: ActiveTab; label: string; adminOnly?: boolean }[] = [
-    { value: "instant",     label: "Instant Orders" },
-    { value: "scheduled",   label: "Scheduled Orders" },
-    { value: "hold",        label: "Hold Orders" },
+  const tabs: { value: ActiveTab; label: string; adminOnly?: boolean }[] = [
+    { value: "instant", label: "Instant Orders" },
+    { value: "scheduled", label: "Scheduled Orders" },
+    { value: "hold", label: "Hold Orders" },
+    {
+      value: "waiting-stock",
+      label: "Out of Stock Orders",
+    },
     { value: "no-response", label: "No Response" },
-    { value: "damaged",     label: "Damaged Products", adminOnly: true },
+    { value: "damaged", label: "Damaged Products", adminOnly: true },
   ];
- 
 
   return (
     <div className="min-h-screen space-y-6 bg-background p-4 md:p-8">
@@ -460,15 +491,18 @@ export default function OrdersManagement() {
               return (
                 <button
                   key={tab.value}
-                  onClick={() => { setActiveTab(tab.value); setPage(1); }}
+                  onClick={() => {
+                    setActiveTab(tab.value);
+                    setPage(1);
+                  }}
                   className={cn(
                     "px-4 py-2 text-sm font-semibold rounded-md transition",
                     isActive
                       ? tab.value === "no-response"
                         ? "bg-rose-500 text-white"
                         : tab.value === "scheduled"
-                        ? "bg-blue-500 text-white"
-                        : "bg-amber-500 text-white"
+                          ? "bg-blue-500 text-white"
+                          : "bg-amber-500 text-white"
                       : "text-gray-500 hover:text-gray-900 dark:hover:text-white",
                   )}
                 >
@@ -540,9 +574,22 @@ export default function OrdersManagement() {
           />
         </TabsContent>
 
+        <TabsContent value="waiting-stock">
+          <OrderTable
+            orders={(waitingStockOrdersData?.data as Order[]) || []}
+            loading={isWaitingLoading}
+            error={null}
+            refetch={refetch}
+            onViewOrder={handleViewClick}
+            onViewInvoice={handleViewInvoice}
+            setDeleteTarget={setDeleteTarget}
+            setDeleteOpen={setDeleteOpen}
+          />
+        </TabsContent>
+
         {/* No response section */}
 
-         <TabsContent value="no-response">
+        <TabsContent value="no-response">
           <OrderTable
             orders={(noResponseOrdersData?.data as Order[]) || []}
             loading={isNoResponseLoading}

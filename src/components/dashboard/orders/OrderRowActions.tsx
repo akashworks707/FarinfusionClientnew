@@ -126,6 +126,7 @@ export function OrderRowActions({
   const hasAccess =
     userRole && ["ADMIN", "MANAGER", "TELLICELSS"].includes(userRole);
   const isNoResponse = order.orderStatus === "NO_RESPONSE";
+  const isWaitingStock = order.orderStatus === "WAITING_FOR_STOCK";
 
   const [editOpen, setEditOpen] = useState(false);
   const [editOpenTiming, setEditOpenTiming] = useState(false);
@@ -284,44 +285,51 @@ export function OrderRowActions({
             )}
 
           {/* order mode option */}
-          {!isNoResponse && !(isDelivered || isConfirmed) && (
+          {!isNoResponse &&
+            !isWaitingStock &&
+            !(isDelivered || isConfirmed) && (
+              <DropdownMenuItem
+                className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
+                onClick={() => setEditOpenTiming(true)}
+                disabled={hasCourier && !isAdmin}
+              >
+                <TimerReset className="h-3.5 w-3.5" />
+                Order Timing
+              </DropdownMenuItem>
+            )}
+
+          {/* Edit */}
+          {!isWaitingStock && (
             <DropdownMenuItem
-              className="gap-2 text-sm cursor-pointer text-amber-600 focus:text-amber-600 dark:text-amber-400"
-              onClick={() => setEditOpenTiming(true)}
+              className="gap-2 text-sm cursor-pointer text-blue-600 focus:text-blue-600 dark:text-blue-400"
+              onClick={() => setEditOpen(true)}
               disabled={hasCourier && !isAdmin}
             >
-              <TimerReset className="h-3.5 w-3.5" />
-              Order Timing
+              <PencilLine className="h-3.5 w-3.5" />
+              Edit Order
             </DropdownMenuItem>
           )}
 
-          {/* Edit */}
-          <DropdownMenuItem
-            className="gap-2 text-sm cursor-pointer text-blue-600 focus:text-blue-600 dark:text-blue-400"
-            onClick={() => setEditOpen(true)}
-            disabled={hasCourier && !isAdmin}
-          >
-            <PencilLine className="h-3.5 w-3.5" />
-            Edit Order
-          </DropdownMenuItem>
-
           {/* Assign Seller */}
-          {!isNoResponse && order.isPublished && withoutTellicelss && (
-            <>
-              <DropdownMenuItem
-                className="gap-2 text-sm cursor-pointer"
-                onClick={() => setSellerDialogOpen(true)}
-              >
-                <UserCog className="h-3.5 w-3.5 text-gray-500" />
-                <span className="flex-1">Assign Seller</span>
-                {currentSellerName && (
-                  <span className="truncate max-w-20 text-[10px] text-gray-400 dark:text-gray-500">
-                    {currentSellerName}
-                  </span>
-                )}
-              </DropdownMenuItem>
-            </>
-          )}
+          {!isNoResponse &&
+            !isWaitingStock &&
+            order.isPublished &&
+            withoutTellicelss && (
+              <>
+                <DropdownMenuItem
+                  className="gap-2 text-sm cursor-pointer"
+                  onClick={() => setSellerDialogOpen(true)}
+                >
+                  <UserCog className="h-3.5 w-3.5 text-gray-500" />
+                  <span className="flex-1">Assign Seller</span>
+                  {currentSellerName && (
+                    <span className="truncate max-w-20 text-[10px] text-gray-400 dark:text-gray-500">
+                      {currentSellerName}
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              </>
+            )}
 
           {hasAccess && !isCompleted && onCancelOrder && (
             <DropdownMenuItem
@@ -447,21 +455,18 @@ export function OrderRowActions({
           )}
 
           {/* Mark as Damage */}
-          {!isNoResponse &&
-            order.isPublished &&
-            hasAccess &&
-            onMarkDamage && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="gap-2 text-sm cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400"
-                  onClick={() => onMarkDamage(order)}
-                >
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  Mark as Damage
-                </DropdownMenuItem>
-              </>
-            )}
+          {!isNoResponse && order.isPublished && hasAccess && onMarkDamage && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="gap-2 text-sm cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400"
+                onClick={() => onMarkDamage(order)}
+              >
+                <AlertTriangle className="h-3.5 w-3.5" />
+                Mark as Damage
+              </DropdownMenuItem>
+            </>
+          )}
 
           {/* Mark as Exchange */}
           {!isNoResponse &&

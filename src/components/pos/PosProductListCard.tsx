@@ -40,18 +40,17 @@ export function POSProductListCard({
     <div
       role="button"
       aria-label={`Add ${product.title} to cart`}
-      tabIndex={isOutOfStock || isLoading ? -1 : 0}
-      onClick={() => !isOutOfStock && !isLoading && onAddToCart()}
+      tabIndex={isLoading ? -1 : 0}
+      onClick={() => !isLoading && onAddToCart()}
       onKeyDown={(e) => {
-        if ((e.key === "Enter" || e.key === " ") && !isOutOfStock && !isLoading)
+        if ((e.key === "Enter" || e.key === " ") && !isLoading)
           onAddToCart();
       }}
       className={cn(
         "pb-1 hover:cursor-pointer group relative flex items-stretch rounded-xl border bg-white overflow-hidden select-none",
         "transition-all duration-200 ease-out dark:bg-gray-900",
-        isOutOfStock || isLoading
-          ? "opacity-60 cursor-not-allowed border-gray-200 dark:border-gray-800"
-          : [
+       
+           [
               'cursor-[url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="%230f172a" opacity="0.85"/><line x1="12" y1="7" x2="12" y2="17" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>\'),_pointer]',
               "border-gray-200 dark:border-gray-700/60",
               "hover:border-blue-400 dark:hover:border-blue-500",

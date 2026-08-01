@@ -23,6 +23,7 @@ import {
   Banknote,
   User2,
   MinusCircle,
+  PackageSearch,
 } from "lucide-react";
 import { format } from "date-fns";
 import type { Order } from "@/types/orders";
@@ -45,9 +46,27 @@ export function OrderDetailsModal({
   });
 
   const courier = courierRes?.data;
-  // console.log(courier);
 
   if (!order) return null;
+
+  const isWaitingForStock = order.orderStatus === "WAITING_FOR_STOCK";
+  const hasIncompleteReservation = order.stockReservationCompleted === false;
+
+  const totalReserved =
+    order.products?.reduce(
+      (sum: number, p: any) =>
+        sum + (p.reservedQuantity ?? p.quantity ?? 0),
+      0,
+    ) ?? 0;
+
+  const totalPending =
+    order.products?.reduce(
+      (sum: number, p: any) => sum + (p.pendingQuantity ?? 0),
+      0,
+    ) ?? 0;
+
+  const showStockReservationCard =
+    isWaitingForStock || hasIncompleteReservation || !!order.waitingStockResolvedAt;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -78,7 +97,17 @@ export function OrderDetailsModal({
                 <div>
                   <p className="text-xs text-muted-foreground">Order Status</p>
                   <div className="mt-1">
-                    <OrderStatusBadge status={order.orderStatus} type="order" />
+                    {isWaitingForStock ? (
+                      <Badge
+                        variant="outline"
+                        className="gap-1 border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400"
+                      >
+                        <PackageSearch className="h-3.5 w-3.5" />
+                        Waiting for Stock
+                      </Badge>
+                    ) : (
+                      <OrderStatusBadge status={order.orderStatus} type="order" />
+                    )}
                   </div>
                 </div>
                 {order.confirmedBy && (
@@ -135,6 +164,52 @@ export function OrderDetailsModal({
               )}
             </div>
 
+            {/* Stock Reservation Summary */}
+            {showStockReservationCard && (
+              <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-800/60 dark:bg-amber-900/10">
+                <div className="flex items-center gap-2">
+                  <PackageSearch className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                    Stock Reservation
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Total Reserved
+                    </p>
+                    <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                      {Number(totalReserved)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Total Pending
+                    </p>
+                    <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
+                      {Number(totalPending)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Status</p>
+                    <p className="text-sm font-semibold">
+                      {order.stockReservationCompleted
+                        ? "Fully Reserved"
+                        : "Waiting for Stock"}
+                    </p>
+                  </div>
+                </div>
+
+                {order.waitingStockResolvedAt && (
+                  <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                    Resolved on{" "}
+                    {format(new Date(order.waitingStockResolvedAt), "PPpp")}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Customer Information */}
             <div className="space-y-3 rounded-lg border p-4">
               <p className="text-sm font-semibold">Customer Information</p>
@@ -179,24 +254,71 @@ export function OrderDetailsModal({
             </div>
 
             <div className="space-y-3 rounded-lg border p-4">
-              <p className="text-sm font-semibold">Order Items</p>
-              <div className="space-y-2">
-                {order?.products.map((product: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="flex items-start justify-between border-t pt-2 first:border-t-0 first:pt-0"
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold">Order Items</p>
+                {hasIncompleteReservation && (
+                  <Badge
+                    variant="outline"
+                    className="gap-1 border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400"
                   >
-                    <div className="flex-1">
-                      <p className="font-medium">{product.product?.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Qty: {product.quantity} × ৳{product?.price?.toFixed(2)}
-                      </p>
+                    <PackageSearch className="h-3 w-3" />
+                    Partially Reserved
+                  </Badge>
+                )}
+              </div>
+              <div className="space-y-2">
+                {order?.products.map((product: any, idx: number) => {
+                  const reserved =
+                    product.reservedQuantity ?? product.quantity;
+                  const pending = product.pendingQuantity ?? 0;
+                  const itemIsWaiting =
+                    product.isWaitingStock || pending > 0;
+
+                  return (
+                    <div
+                      key={idx}
+                      className="border-t pt-2 first:border-t-0 first:pt-0"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {product.product?.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Qty: {product.quantity} × ৳
+                            {product?.price?.toFixed(2)}
+                          </p>
+                        </div>
+                        <p className="font-medium">
+                          ৳{(product.quantity * product.price)?.toFixed(2)}
+                        </p>
+                      </div>
+
+                      {itemIsWaiting && (
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
+                          >
+                            Reserved: {reserved}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400"
+                          >
+                            Pending: {pending}
+                          </Badge>
+                          {product.fulfilledAt && (
+                            <span className="text-[11px] text-muted-foreground">
+                              Fulfilled{" "}
+                              {format(new Date(product.fulfilledAt), "PPp")}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <p className="font-medium">
-                      ৳{(product.quantity * product.price)?.toFixed(2)}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

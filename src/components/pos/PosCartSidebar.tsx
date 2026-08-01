@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ShoppingCart, UserCheck, Tag, X } from "lucide-react";
+import { ShoppingCart, UserCheck, Tag, X, PackageSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { POSCartItemComponent } from "./PosCartItem";
@@ -69,7 +69,7 @@ const PayOption = [
   "cash",
 ];
 
-const DEFAULT_NOTES = `কাস্টমার পেমেন্ট ছাড়া পার্সেল খুলবেন না। খুললে ভিডিও বাধ্যতামূলক। ড্যামেজ বা প্রডাক্ট পরিবর্তন হলে দায় মার্চেন্ট নেবে না। রিটার্ন চেক করা হবে—সতর্ক থাকুন।`;
+const DEFAULT_NOTES = `কাস্টমার পেমেন্ট ছাড়া পার্সেল খুলবেন না। খুললে ভিডিও বাধ্যতামূলক। ড্যামেজ বা প্রডাক্ট পরিবর্তন হলে দায় মার্চেন্ট নেবে না। রিটার্ন চেক করা হবে—সতর্ক থাকুন।`;
 
 export function POSCartSidebar({
   items,
@@ -148,6 +148,13 @@ export function POSCartSidebar({
   const total = subtotal - (advanceAmount ?? 0);
 
   const totalAmount = Math.max(0, total + deliveryFee - discountCapped);
+
+  // Total quantity across the cart that exceeds current available stock —
+  // these units will be created as WAITING_FOR_STOCK by the backend.
+  const waitingStockCount = items.reduce((sum, item) => {
+    const avail = item.product.availableStock ?? 0;
+    return sum + Math.max(0, item.quantity - avail);
+  }, 0);
 
   const handleDiscountChange = (val: string) => {
     setDiscountInput(val);
@@ -523,6 +530,18 @@ export function POSCartSidebar({
       </ScrollArea>
 
       <ScheduleOrder value={schedule} onChange={setSchedule} />
+
+      {/* ── Waiting-for-stock notice ── */}
+      {waitingStockCount > 0 && (
+        <div className="mx-4 mb-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800/60 dark:bg-amber-900/20">
+          <PackageSearch className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-400">
+            {waitingStockCount} unit(s) exceed current stock and will be
+            marked <span className="font-semibold">Waiting for Stock</span>{" "}
+            until restocked.
+          </p>
+        </div>
+      )}
 
       {/* ── PINNED: Checkout button ── */}
       <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 p-4">

@@ -17,6 +17,7 @@ export type OrderStatus =
   | "CANCELLED"
   | "NOT_SHIPPED"
   | "COMPLETED"
+  | "WAITING_FOR_STOCK"
   | "DAMAGE"
   | "PARTIAL"
   | "NO_RESPONSE";
@@ -59,7 +60,9 @@ export type CreateOrderPayload = {
 export interface Order {
   _id: string;
   customOrderId?: string;
+  waitingStockResolvedAt: Date;
   payment?: string;
+  stockReservationCompleted: boolean;
   seller: {
     name?: string;
     role?: string;

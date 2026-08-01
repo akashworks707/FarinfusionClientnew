@@ -1,9 +1,10 @@
 "use client";
 
-import { X, Minus, Plus } from "lucide-react";
+import { X, Minus, Plus, PackageSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { POSCartItem } from "@/types/pos";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface POSCartItemProps {
   item: POSCartItem;
@@ -18,7 +19,9 @@ export function POSCartItemComponent({
 }: POSCartItemProps) {
   const { product, quantity } = item;
   const itemTotal = (product.discountPrice || product.price) * quantity;
-  // const isMaxStockReached = quantity >= (product.availableStock || 0);
+
+  const availableStock = product.availableStock ?? 0;
+  const waitingQty = Math.max(0, quantity - availableStock);
 
   return (
     <div className="flex gap-3 rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
@@ -78,7 +81,6 @@ export function POSCartItemComponent({
             </span>
             <Button
               size="sm"
-              // disabled={isMaxStockReached}
               variant="ghost"
               className="h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
               onClick={() => onQuantityChange(quantity + 1)}
@@ -93,6 +95,22 @@ export function POSCartItemComponent({
             ৳{itemTotal.toFixed(2)}
           </span>
         </div>
+
+        {/* Waiting for stock indicator */}
+        {waitingQty > 0 && (
+          <div
+            className={cn(
+              "flex items-center gap-1.5 rounded-md px-2 py-1",
+              "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400",
+            )}
+          >
+            <PackageSearch className="h-3 w-3 shrink-0" />
+            <span className="text-[10px] font-medium leading-none">
+              {waitingQty} of {quantity} will wait for stock (
+              {availableStock} available now)
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
