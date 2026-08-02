@@ -64,7 +64,7 @@ export function OrderStats({ stats }: OrderStatsProps) {
   const pendingOrders = stats.PENDING || 0;
   const confirmedOrders = stats.CONFIRMED || 0;
   const completedOrders = stats.COMPLETED || 0;
-  const waitingForStock = stats.total || 0;
+  const waitingForStock = stats.length || 0;
   const noResponseOrders = stats.NO_RESPONSE || 0;
 
   return (
