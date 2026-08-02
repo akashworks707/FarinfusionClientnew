@@ -54,9 +54,17 @@ export const myOrdersApi = baseApi.injectEndpoints({
       }),
       providesTags: ["ORDERS"],
     }),
+    getMyWaitingForStockOrders: builder.query<MyOrdersResponse, MyOrdersQueryParams>({
+      query: (params) => ({
+        url: "/order/my-waiting-for-stock",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["ORDERS"],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetMyOrdersQuery, useGetMyScheduledOrdersQuery, useGetMyHoldOrdersQuery } =
+export const { useGetMyOrdersQuery, useGetMyScheduledOrdersQuery, useGetMyHoldOrdersQuery, useGetMyWaitingForStockOrdersQuery } =
   myOrdersApi;

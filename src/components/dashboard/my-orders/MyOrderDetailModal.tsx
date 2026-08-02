@@ -439,9 +439,6 @@
 //   );
 // }
 
-
-
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -472,6 +469,7 @@ import {
   AlertCircle,
   ArrowUpRight,
   Zap,
+  PackageSearch,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -493,6 +491,11 @@ const ORDER_STATUS_MAP: Record<
     label: "Pending",
     cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
     icon: Clock,
+  },
+  WAITING_FOR_STOCK: {
+    label: "Waiting for Stock",
+    cls: "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800",
+    icon: PackageSearch,
   },
   CONFIRMED: {
     label: "Confirmed",
@@ -575,22 +578,6 @@ function InfoRow({
   );
 }
 
-// function DetailSkeleton() {
-//   return (
-//     <div className="space-y-4 py-2 px-6">
-//       {[...Array(6)].map((_, i) => (
-//         <div key={i} className="flex items-start gap-3">
-//           <div className="h-6 w-6 animate-pulse rounded-md bg-amber-100 dark:bg-amber-900/20" />
-//           <div className="flex-1 space-y-1.5">
-//             <div className="h-2.5 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-//             <div className="h-4 w-40 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
-//           </div>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
-
 export function MyOrderDetailModal({
   open,
   order,
@@ -611,6 +598,26 @@ export function MyOrderDetailModal({
   const isConfirmed = order?.orderStatus === "CONFIRMED";
   const moderatorEdit = ["MODERATOR"].includes(userRole) && !isConfirmed;
   const canEditOrder = moderatorEdit && canEdit && !order?.courierName;
+
+  // ── Waiting for Stock — derived data (same logic as OrderDetailsModal) ──
+  const hasIncompleteReservation = order?.stockReservationCompleted === false;
+
+  const totalReserved =
+    order?.products?.reduce(
+      (sum: number, p: any) => sum + (p.reservedQuantity ?? p.quantity ?? 0),
+      0,
+    ) ?? 0;
+
+  const totalPending =
+    order?.products?.reduce(
+      (sum: number, p: any) => sum + (p.pendingQuantity ?? 0),
+      0,
+    ) ?? 0;
+
+  const showStockReservationCard =
+    order?.orderStatus === "WAITING_FOR_STOCK" ||
+    hasIncompleteReservation ||
+    !!order?.waitingStockResolvedAt;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -653,20 +660,6 @@ export function MyOrderDetailModal({
 
         {/* Body */}
         <div className="max-h-[65vh] overflow-y-auto">
-          {/* {isLoading ? (
-            <div className="py-4">
-              <DetailSkeleton />
-            </div>
-          ) : isError ? (
-            <div className="flex flex-col items-center gap-2 py-12 text-center px-6">
-              <div className="rounded-full bg-red-50 p-3 dark:bg-red-900/20">
-                <AlertCircle className="h-6 w-6 text-red-500" />
-              </div>
-              <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                Failed to load order details
-              </p>
-            </div>
-          ) : order ? ( */}
           {order ? (
             <div className="px-6 py-4 space-y-0">
               {/* ── Financial summary card ── */}
@@ -705,6 +698,54 @@ export function MyOrderDetailModal({
                   </span>
                 </div>
               </div>
+
+              {/* ── Stock Reservation summary ── */}
+              {showStockReservationCard && (
+                <div className="mb-4 rounded-xl border border-orange-200/60 bg-orange-50/40 dark:border-orange-900/30 dark:bg-orange-900/10 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <PackageSearch className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                    <p className="text-xs font-semibold uppercase tracking-widest text-orange-700 dark:text-orange-400">
+                      Stock Reservation
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="text-center">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-orange-600/70 dark:text-orange-500/70">
+                        Reserved
+                      </p>
+                      <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                        {Number(totalReserved)}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-orange-600/70 dark:text-orange-500/70">
+                        Pending
+                      </p>
+                      <p className="text-sm font-bold text-orange-700 dark:text-orange-400 tabular-nums">
+                        {Number(totalPending)}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-orange-600/70 dark:text-orange-500/70">
+                        Status
+                      </p>
+                      <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                        {order.stockReservationCompleted
+                          ? "Fully Reserved"
+                          : "Waiting"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {order.waitingStockResolvedAt && (
+                    <p className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 text-center pt-1 border-t border-orange-200/60 dark:border-orange-900/30">
+                      Resolved on{" "}
+                      {format(new Date(order.waitingStockResolvedAt), "PPpp")}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* ── Info rows ── */}
               <div className="divide-y divide-gray-100 dark:divide-gray-800/60">
@@ -824,44 +865,88 @@ export function MyOrderDetailModal({
               {/* ── Products ── */}
               {order.products && order.products.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-                    <Package className="h-3 w-3" />
-                    Products ({order.products.length})
-                  </p>
-                  <div className="space-y-2">
-                    {order.products.map((item: any, idx: number) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-2.5 dark:border-gray-800 dark:bg-gray-800/30"
+                  <div className="flex items-center justify-between">
+                    <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                      <Package className="h-3 w-3" />
+                      Products ({order.products.length})
+                    </p>
+                    {hasIncompleteReservation && (
+                      <Badge
+                        variant="outline"
+                        className="gap-1 rounded-full border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-orange-700 dark:border-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
                       >
-                        {item.product?.images?.[0] ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={item.product.images[0]}
-                            alt={item.title ?? "Product"}
-                            className="h-10 w-10 shrink-0 rounded-md object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-amber-50 dark:bg-amber-900/20">
-                            <Package className="h-4 w-4 text-amber-400" />
+                        <PackageSearch className="h-3 w-3" />
+                        Partially Reserved
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {order.products.map((item: any, idx: number) => {
+                      const reserved =
+                        item.reservedQuantity ?? item.quantity;
+                      const pending = item.pendingQuantity ?? 0;
+                      const itemIsWaiting =
+                        item.isWaitingStock || pending > 0;
+
+                      return (
+                        <div
+                          key={idx}
+                          className="rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-2.5 dark:border-gray-800 dark:bg-gray-800/30"
+                        >
+                          <div className="flex items-center gap-3">
+                            {item.product?.images?.[0] ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={item.product.images[0]}
+                                alt={item.title ?? "Product"}
+                                className="h-10 w-10 shrink-0 rounded-md object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-amber-50 dark:bg-amber-900/20">
+                                <Package className="h-4 w-4 text-amber-400" />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-gray-800 dark:text-gray-200">
+                                {item.title ?? item.product?.title ?? "Product"}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                ৳{item.price?.toFixed(2)} × {item.quantity}
+                              </p>
+                            </div>
+                            <p className="shrink-0 text-sm font-bold tabular-nums text-amber-600 dark:text-amber-400">
+                              ৳
+                              {(
+                                (item.price ?? 0) * (item.quantity ?? 1)
+                              ).toFixed(2)}
+                            </p>
                           </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-gray-800 dark:text-gray-200">
-                            {item.title ?? item.product?.title ?? "Product"}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            ৳{item.price?.toFixed(2)} × {item.quantity}
-                          </p>
-                        </div>
-                        <p className="shrink-0 text-sm font-bold tabular-nums text-amber-600 dark:text-amber-400">
-                          ৳
-                          {((item.price ?? 0) * (item.quantity ?? 1)).toFixed(
-                            2,
+
+                          {itemIsWaiting && (
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-gray-100 pt-2 dark:border-gray-800">
+                              <Badge
+                                variant="outline"
+                                className="rounded-full border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400"
+                              >
+                                Reserved: {reserved}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className="rounded-full border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-orange-700 dark:border-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
+                              >
+                                Pending: {pending}
+                              </Badge>
+                              {item.fulfilledAt && (
+                                <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                                  Fulfilled{" "}
+                                  {format(new Date(item.fulfilledAt), "PPp")}
+                                </span>
+                              )}
+                            </div>
                           )}
-                        </p>
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

@@ -461,7 +461,7 @@ export default function OrdersManagement() {
       </div>
 
       {/* Stats */}
-      <OrderStats stats={ordersData?.stats as any} />
+      <OrderStats stats={activeTab === "instant" ? ordersData?.stats as any : waitingStockOrdersData?.meta} />
 
       <OrderFilters
         statusFilter={status}
