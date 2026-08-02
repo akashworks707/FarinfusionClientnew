@@ -227,7 +227,6 @@ export default function CheckoutPage() {
         })),
 
         total: payableTotal,
-        discount: discount || 0,
         shippingCost: deliveryCharge || 0,
 
         billingDetails: {
