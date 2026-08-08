@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/incompatible-library */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -84,6 +85,101 @@ const DELIVERY_AREAS: DeliveryAreaOption[] = [
   },
 ];
 
+const detectDeliveryArea = (address: string): DeliveryAreaValue => {
+  const normalizedAddress = address
+    .toLowerCase()
+    .trim()
+    .replace(/[.,/()-]/g, " ");
+
+  // Savar / Keraniganj
+  const savarKeraniganjKeywords = [
+    "savar",
+    "savar",
+    "keraniganj",
+    "keranigong",
+    "keranigonj",
+  ];
+
+  if (
+    savarKeraniganjKeywords.some((keyword) =>
+      normalizedAddress.includes(keyword),
+    )
+  ) {
+    return "SAVAR_KERANIGANJ";
+  }
+
+  // Known areas outside Dhaka
+  const outsideDhakaKeywords = [
+    "chittagong",
+    "chattogram",
+    "sylhet",
+    "comilla",
+    "cumilla",
+    "rajshahi",
+    "khulna",
+    "barisal",
+    "barishal",
+    "rangpur",
+    "mymensingh",
+    "gazipur",
+    "narayanganj",
+    "kishoreganj",
+    "tangail",
+    "bogura",
+    "bogra",
+    "jessore",
+    "jashore",
+    "dinajpur",
+    "cox's bazar",
+    "cox bazar",
+    "noakhali",
+    "feni",
+    "brahmanbaria",
+    "habiganj",
+    "moulvibazar",
+    "sunamganj",
+    "faridpur",
+    "gopalganj",
+    "madaripur",
+    "shariatpur",
+    "munshiganj",
+    "manikganj",
+    "rajbari",
+    "pabna",
+    "sirajganj",
+    "naogaon",
+    "natore",
+    "chapainawabganj",
+    "joypurhat",
+    "kurigram",
+    "lalmonirhat",
+    "nilphamari",
+    "thakurgaon",
+    "panchagarh",
+    "satkhira",
+    "bagerhat",
+    "chuadanga",
+    "kushtia",
+    "meherpur",
+    "jhenaidah",
+    "magura",
+    "narail",
+    "pirojpur",
+    "jhalokathi",
+    "bhola",
+    "patuakhali",
+  ];
+
+  if (
+    outsideDhakaKeywords.some((keyword) => normalizedAddress.includes(keyword))
+  ) {
+    return "OUTSIDE_DHAKA";
+  }
+
+  // Default
+  return "INSIDE_DHAKA";
+};
+
 // ─── Form Schema — email removed from the visible form ───────────────────────
 
 const formSchema = z.object({
@@ -119,6 +215,7 @@ export default function CheckoutPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -135,6 +232,7 @@ export default function CheckoutPage() {
   const [applyCoupon, { isLoading: isApplying }] = useApplyCouponMutation();
   const [createOrder, { isLoading: isCreatingOrder }] =
     useCreateOrderMutation();
+  const addressValue = watch("address");
 
   const cartTotal = useMemo(() => {
     return cartList.reduce((sum, item) => {
@@ -265,6 +363,22 @@ export default function CheckoutPage() {
   };
 
   useEffect(() => {
+    if (!addressValue || addressValue.trim().length < 5) {
+      return;
+    }
+
+    const detectedArea = detectDeliveryArea(addressValue);
+
+    setDeliveryArea((currentArea) => {
+      if (currentArea === detectedArea) {
+        return currentArea;
+      }
+
+      return detectedArea;
+    });
+  }, [addressValue]);
+
+  useEffect(() => {
     if (!cartList.length) return;
 
     AnalyticsEvents.beginCheckout(cartList);
@@ -343,16 +457,16 @@ export default function CheckoutPage() {
 
                 <Select
                   value={deliveryArea}
-                  onValueChange={(v) => {
-                    setDeliveryArea(v as DeliveryAreaValue);
+                  onValueChange={(value) => {
+                    setDeliveryArea(value as DeliveryAreaValue);
+
+                    const area = DELIVERY_AREAS.find(
+                      (item) => item.value === value,
+                    );
 
                     AnalyticsEvents.addShippingInfo({
-                      shippingTier:
-                        DELIVERY_AREAS.find((area) => area.value === v)
-                          ?.label ?? "Unknown",
-
+                      shippingTier: area?.label ?? "Unknown",
                       value: payableTotal,
-
                       cartItems: cartList,
                     });
                   }}
