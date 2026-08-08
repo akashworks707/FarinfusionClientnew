@@ -91,7 +91,6 @@ const detectDeliveryArea = (address: string): DeliveryAreaValue => {
     .trim()
     .replace(/[.,/()-]/g, " ");
 
-  // Savar / Keraniganj
   const savarKeraniganjKeywords = [
     "savar",
     "savar",
@@ -189,8 +188,6 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
-
-// ─── Component ─────────────────────────────────────────────────────────────
 
 export default function CheckoutPage() {
   const labelClass = "text-sm font-semibold text-gray-700 dark:text-gray-300";
