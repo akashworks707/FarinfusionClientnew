@@ -1,3 +1,5 @@
+import { PageAccess } from "@/lib/permissions";
+
 export * from "./pos";
 export type { Order, OrderStatus, DeliveryStatus } from "../types/orders";
 export type { CourierProvider } from "../types/courier";
@@ -70,7 +72,7 @@ export interface IUser {
   email: string;
   password?: string;
   phone?: string;
-  permissions?: IPermission[];
+  permissions?: PageAccess[];
   address: string;
   status?: string;
   picture?: string;
