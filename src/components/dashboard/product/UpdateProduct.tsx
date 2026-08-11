@@ -95,6 +95,9 @@ const UpdateProduct = () => {
   const [updateProduct, { isLoading }] = useUpdateProductMutation();
   const { data: user } = useGetMeQuery(undefined);
   const role = user?.data?.role;
+  const permissions = user?.data?.permissions || [];
+   const canAdjustStock =
+  role === "ADMIN" || permissions.includes("product-stock-adjustment");
 
   const { data: productData } = useGetSingleProductQuery(slug as string);
 
@@ -125,6 +128,7 @@ const UpdateProduct = () => {
   const currentStock = Number(productData?.data?.availableStock || 0);
   const adjustValue = Number(adjustStockValue || 0);
   const newStock = currentStock + adjustValue;
+ 
 
   // Image state
   const [previews, setPreviews] = useState<string[]>([]);
@@ -408,37 +412,36 @@ const UpdateProduct = () => {
                   )}
                 />
               </div>
-
             </div>
-              <div className="space-y-2 max-w-lg">
-                <Label>Best Selling Product</Label>
+            <div className="space-y-2 max-w-lg">
+              <Label>Best Selling Product</Label>
 
-                <Controller
-                  control={control}
-                  name="isBestSelling"
-                  render={({ field }) => (
-                    <div className="flex items-center space-x-3 rounded-lg border p-4">
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked) =>
-                          field.onChange(checked === true)
-                        }
-                      />
+              <Controller
+                control={control}
+                name="isBestSelling"
+                render={({ field }) => (
+                  <div className="flex items-center space-x-3 rounded-lg border p-4">
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={(checked) =>
+                        field.onChange(checked === true)
+                      }
+                    />
 
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium">
-                          Show as Best Selling Product
-                        </p>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">
+                        Show as Best Selling Product
+                      </p>
 
-                        <p className="text-xs text-muted-foreground">
-                          Enable this to display the product in the Best Selling
-                          section on the homepage.
-                        </p>
-                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Enable this to display the product in the Best Selling
+                        section on the homepage.
+                      </p>
                     </div>
-                  )}
-                />
-              </div>
+                  </div>
+                )}
+              />
+            </div>
 
             {/* PRICE */}
             <div className="grid md:grid-cols-4 gap-4">
@@ -486,7 +489,8 @@ const UpdateProduct = () => {
             </div>
 
             {/* STOCK ADJUSTMENT */}
-           
+
+            {canAdjustStock && (
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                 <div className="space-y-3">
                   <div>
@@ -538,7 +542,7 @@ const UpdateProduct = () => {
                   </div>
                 </div>
               </div>
-
+            )}
             <div className="space-y-2">
               <Label>Barcode</Label>
 
